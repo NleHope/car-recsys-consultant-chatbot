@@ -1,3 +1,10 @@
+{{ config(
+    materialized='incremental',
+    unique_key='vin',
+    incremental_strategy='merge',
+    merge_exclude_columns=['first_seen_date']
+) }}
+
 /*
   Gold mart: one row per listing — the backend's primary table (replaces the
   legacy raw.used_vehicles). `vehicle_id` is kept as an alias of `vin` so the
@@ -68,6 +75,9 @@ select
     coalesce(img.image_count, 0)    as image_count,
     img.primary_image_url,
     coalesce(feat.feature_count, 0) as feature_count,
+    fl.source,
+    fl.last_updated_date,
+    coalesce(fl.crawl_date, current_date) as first_seen_date,
     fl.crawled_at,
     fl.dbt_loaded_at,
     -- legacy-compatible aliases — let the FastAPI backend repoint from
@@ -86,3 +96,6 @@ left join {{ ref('fct_model_rating') }} mr on fl.car_model_sk = mr.car_model_sk
 left join {{ ref('dim_seller') }}      ds  on fl.seller_sk    = ds.seller_sk
 left join img_agg  img  on fl.listing_sk = img.listing_sk
 left join feat_agg feat on fl.listing_sk = feat.listing_sk
+{% if is_incremental() %}
+where fl.last_updated_date >= (select coalesce(max(last_updated_date), '1900-01-01') from {{ this }})
+{% endif %}
