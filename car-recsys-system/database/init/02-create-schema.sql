@@ -29,21 +29,24 @@ CREATE SCHEMA IF NOT EXISTS gold;     -- dbt marts + app tables below
 CREATE TABLE IF NOT EXISTS bronze.raw_listings (
     raw_id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     file_hash       TEXT NOT NULL,                 -- sha256 of file bytes — idempotency key
-    gcs_path        TEXT NOT NULL,                 -- gs://bronze-car-recsys/raw_data/<page>/<f>.json
+    gcs_path        TEXT NOT NULL,                 -- gs://incremental_raw/dt=YYYY-MM-DD/<page>/<f>.json
     page_number     INTEGER,                       -- parsed from the GCS path
+    crawl_date      DATE,                          -- dt= partition lifted from the path
     vin             TEXT,                          -- payload->post->basic_desc->VIN, lifted out
     car_model_slug  TEXT,                          -- payload->car->car_model, lifted out
     payload         JSONB NOT NULL,                -- the entire crawled file, untouched
     crawled_at      TIMESTAMPTZ,                   -- payload->>'datetime'
     ingested_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    dag_run_id      TEXT,                          -- Airflow run that loaded this row
+    source          TEXT NOT NULL DEFAULT 'incremental',  -- 'initial' | 'incremental'
+    run_id          TEXT,                          -- Temporal workflow run that loaded this row
     CONSTRAINT uq_raw_listings_file_hash UNIQUE (file_hash)
 );
 
-CREATE INDEX IF NOT EXISTS idx_raw_listings_vin       ON bronze.raw_listings (vin);
-CREATE INDEX IF NOT EXISTS idx_raw_listings_model     ON bronze.raw_listings (car_model_slug);
-CREATE INDEX IF NOT EXISTS idx_raw_listings_ingested  ON bronze.raw_listings (ingested_at);
-CREATE INDEX IF NOT EXISTS idx_raw_listings_payload   ON bronze.raw_listings USING GIN (payload jsonb_path_ops);
+CREATE INDEX IF NOT EXISTS idx_raw_listings_vin        ON bronze.raw_listings (vin);
+CREATE INDEX IF NOT EXISTS idx_raw_listings_model      ON bronze.raw_listings (car_model_slug);
+CREATE INDEX IF NOT EXISTS idx_raw_listings_ingested   ON bronze.raw_listings (ingested_at);
+CREATE INDEX IF NOT EXISTS idx_raw_listings_crawl_date ON bronze.raw_listings (crawl_date);
+CREATE INDEX IF NOT EXISTS idx_raw_listings_payload    ON bronze.raw_listings USING GIN (payload jsonb_path_ops);
 
 COMMENT ON TABLE bronze.raw_listings IS 'Raw crawled cars.com JSON, one row per file. Append-only, idempotent via file_hash.';
 
@@ -166,6 +169,39 @@ DROP TRIGGER IF EXISTS update_chat_sessions_updated_at ON gold.chat_sessions;
 CREATE TRIGGER update_chat_sessions_updated_at
     BEFORE UPDATE ON gold.chat_sessions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================================
+-- GOLD price/mileage history — change-event log, partitioned by crawl_date.
+-- dbt's gold.vehicle_price_history model APPENDS into this parent; Postgres
+-- routes each row to the monthly partition. Partitions are created on demand by
+-- gold.ensure_price_history_partition(), called by the Temporal ensure_partition
+-- activity before dbt runs.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS gold.vehicle_price_history (
+    vin           TEXT        NOT NULL,
+    price         NUMERIC,
+    mileage       INTEGER,
+    status        TEXT,
+    crawl_date    DATE        NOT NULL,
+    inserted_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+) PARTITION BY RANGE (crawl_date);
+
+CREATE INDEX IF NOT EXISTS idx_price_history_vin_date
+    ON gold.vehicle_price_history (vin, crawl_date);
+
+-- Idempotently create the monthly partition covering `d`.
+CREATE OR REPLACE FUNCTION gold.ensure_price_history_partition(d DATE)
+RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    start_m DATE := date_trunc('month', d)::date;
+    end_m   DATE := (date_trunc('month', d) + interval '1 month')::date;
+    part    TEXT := format('vehicle_price_history_%s', to_char(start_m, 'YYYY_MM'));
+BEGIN
+    EXECUTE format(
+        'CREATE TABLE IF NOT EXISTS gold.%I PARTITION OF gold.vehicle_price_history '
+        'FOR VALUES FROM (%L) TO (%L)', part, start_m, end_m
+    );
+END $$;
 
 -- ============================================================================
 -- Permissions
