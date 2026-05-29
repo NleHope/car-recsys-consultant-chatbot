@@ -50,3 +50,13 @@ models:
     columns:
       - name: vehicle_id
         tests: [not_null]
+
+  - name: vehicle_price_history
+    description: >
+      Append-only change-event log of price/mileage/status per VIN, partitioned
+      by crawl_date in Postgres. One row per detected change.
+    columns:
+      - name: vin
+        tests: [not_null]
+      - name: crawl_date
+        tests: [not_null]
