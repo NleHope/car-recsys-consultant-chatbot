@@ -43,15 +43,17 @@ services:
   bytebase:
     image: bytebase/bytebase:latest
     container_name: car-recsys-bytebase
-    profiles: ["tools"]        # optional — `docker compose --profile tools up`
+    profiles: ["tools"]        # optional — `docker compose --profile tools up bytebase`
     ports:
       - "8080:8080"
-    environment:
-      - PG_URL=postgresql://admin:admin123@postgres:5432/car_recsys
+    # No PG_URL: bytebase keeps its OWN metadata in the embedded store under
+    # /var/opt/bytebase, so it never writes into the car_recsys app database.
+    # Add car_recsys as an "instance" inside the Bytebase UI to browse it.
     volumes:
       - bytebase_data:/var/opt/bytebase
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - car-recsys-network
     restart: unless-stopped
