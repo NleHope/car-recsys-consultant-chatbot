@@ -24,6 +24,7 @@ from temporalio import activity
 @dataclass
 class CrawlInput:
     page: int
+    crawl_date: str = ""
 
 
 @dataclass
@@ -98,11 +99,13 @@ def scrape_details_activity(inp: CrawlInput) -> ScrapeResult:
 
 @activity.defn(name="upload_gcs")
 def upload_gcs_activity(inp: CrawlInput) -> UploadResult:
-    """Stage 3: push JSON + images to gs://bronze-car-recsys/."""
+    """Stage 3: push JSON + images to gs://incremental_raw/dt=<crawl_date>/."""
     from crawler.gcs_uploader import upload_to_gcs
 
-    activity.logger.info("upload_gcs page=%s", inp.page)
-    result = upload_to_gcs(from_page=inp.page, to_page=inp.page)
+    activity.logger.info("upload_gcs page=%s dt=%s", inp.page, inp.crawl_date)
+    result = upload_to_gcs(
+        from_page=inp.page, to_page=inp.page, crawl_date=inp.crawl_date
+    )
     return UploadResult(
         page=inp.page,
         json_uploaded=result.get("json_ok", 0),
@@ -142,20 +145,38 @@ class EmbedResult:
 
 
 @activity.defn(name="load_bronze")
-def load_bronze_activity() -> LoadBronzeResult:
-    """GCS raw JSON → bronze.raw_listings (append-only, idempotent)."""
+def load_bronze_activity(crawl_date: str) -> LoadBronzeResult:
+    """GCS dt=<crawl_date> slice → bronze.raw_listings (append-only, idempotent)."""
     from temporal_app.pipeline import BronzeLoaderConfig, load_bronze
 
     cfg = BronzeLoaderConfig(
-        bucket=os.environ.get("GCS_BUCKET", "bronze-car-recsys"),
-        prefix=os.environ.get("GCS_PREFIX", "raw_data").rstrip("/") + "/",
+        bucket=os.environ.get("GCS_BUCKET", "incremental_raw"),
+        crawl_date=crawl_date,
         warehouse_dsn=_require_env("WAREHOUSE_DSN"),
         gcp_project=os.environ.get("GCP_PROJECT_ID"),
     )
-    run_id = activity.info().workflow_run_id
-    result = load_bronze(cfg, dag_run_id=run_id)
-    activity.logger.info("load_bronze: %s", result)
+    result = load_bronze(cfg, run_id=activity.info().workflow_run_id)
+    activity.logger.info("load_bronze(%s): %s", crawl_date, result)
     return LoadBronzeResult(**result)
+
+
+@activity.defn(name="ensure_partition")
+def ensure_partition_activity(crawl_date: str) -> None:
+    """Ensure the price-history monthly partition for crawl_date exists."""
+    import psycopg2
+
+    dsn = _require_env("WAREHOUSE_DSN")
+    conn = psycopg2.connect(dsn)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT gold.ensure_price_history_partition(%s::date)",
+                (crawl_date,),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    activity.logger.info("ensured price-history partition for %s", crawl_date)
 
 
 @activity.defn(name="dbt_build")

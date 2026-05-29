@@ -30,6 +30,7 @@ with workflow.unsafe.imports_passed_through():
         crawl_links_activity,
         dbt_build_activity,
         embed_vehicles_activity,
+        ensure_partition_activity,
         load_bronze_activity,
         refresh_matviews_activity,
         scrape_details_activity,
@@ -80,7 +81,8 @@ class WeeklyCrawlWorkflow:
     async def run(self, inp: WeeklyCrawlInput) -> WeeklyCrawlResult:
         page = inp.page
         workflow.logger.info("WeeklyCrawl starting page=%s", page)
-        act_in = CrawlInput(page=page)
+        crawl_date = workflow.now().strftime("%Y-%m-%d")
+        act_in = CrawlInput(page=page, crawl_date=crawl_date)
 
         link_res: CrawlLinksResult = await workflow.execute_activity(
             crawl_links_activity,
@@ -138,16 +140,24 @@ class TransformWorkflow:
     """Bronze JSON → Postgres → dbt silver/gold → materialized views."""
 
     @workflow.run
-    async def run(self) -> TransformResult:
-        workflow.logger.info("Transform starting")
+    async def run(self, crawl_date: str = "") -> TransformResult:
+        dt = crawl_date or workflow.now().strftime("%Y-%m-%d")
+        workflow.logger.info("Transform starting dt=%s", dt)
 
         bronze: LoadBronzeResult = await workflow.execute_activity(
             load_bronze_activity,
+            dt,
             start_to_close_timeout=timedelta(minutes=30),
             retry_policy=_DB_RETRY,
         )
 
-        # dbt build is long; give it room and retry only once.
+        await workflow.execute_activity(
+            ensure_partition_activity,
+            dt,
+            start_to_close_timeout=timedelta(minutes=2),
+            retry_policy=_DB_RETRY,
+        )
+
         await workflow.execute_activity(
             dbt_build_activity,
             start_to_close_timeout=timedelta(hours=1),

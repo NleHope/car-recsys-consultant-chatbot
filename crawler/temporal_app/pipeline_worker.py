@@ -19,6 +19,7 @@ from temporal_app.activities import (
     compute_item_similarity_activity,
     dbt_build_activity,
     embed_vehicles_activity,
+    ensure_partition_activity,
     load_bronze_activity,
     refresh_matviews_activity,
 )
@@ -46,6 +47,7 @@ async def main() -> None:
             workflows=[TransformWorkflow, MLWorkflow],
             activities=[
                 load_bronze_activity,
+                ensure_partition_activity,
                 dbt_build_activity,
                 refresh_matviews_activity,
                 compute_item_similarity_activity,
