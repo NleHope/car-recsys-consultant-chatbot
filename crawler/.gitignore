@@ -1,0 +1,6 @@
+.venv/
+local_data/
+certs/
+temporal_app/.env
+__pycache__/
+*.pyc
