@@ -207,8 +207,7 @@ services:
       - OPENAI_EMBEDDING_MODEL=text-embedding-3-large
       - OPENAI_EMBEDDING_DIM=3072
       # Bronze: GCS source
-      - GCS_BUCKET=${GCS_BUCKET:-bronze-car-recsys}
-      - GCS_PREFIX=${GCS_PREFIX:-raw_data}
+      - GCS_BUCKET=${GCS_BUCKET:-incremental_raw}
       - GCP_PROJECT_ID=${GCP_PROJECT_ID:-}
       - GOOGLE_APPLICATION_CREDENTIALS=/gcp/adc.json
     volumes:
