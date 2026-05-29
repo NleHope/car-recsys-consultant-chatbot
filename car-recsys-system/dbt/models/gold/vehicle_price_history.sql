@@ -16,8 +16,13 @@
   is_incremental() returns True on every normal `dbt run`.  The only scenario
   where is_incremental() is False is `dbt run --full-refresh`, which must NOT
   be run against this model (it would try to DROP the partitioned parent and
-  recreate it as a plain table, destroying the partitioning).  Guard with
-  `--exclude vehicle_price_history` if a full-refresh is ever needed.
+  recreate it as a plain table, destroying the partitioning).
+
+  full_refresh=false: the target gold.vehicle_price_history is a pre-existing
+  PARTITIONED parent (created in database/init/02-create-schema.sql). A dbt
+  full-refresh would drop/replace it with a plain table and destroy all
+  partitions, so full_refresh is permanently disabled at the model level — even
+  if `--full-refresh` is passed on the CLI, dbt will skip this model.
 
   On the very first run the target table is empty, so latest_history returns
   zero rows and all current_listings are inserted as first-ever history rows —
@@ -28,7 +33,8 @@
 */
 {{ config(
     materialized='incremental',
-    incremental_strategy='append'
+    incremental_strategy='append',
+    full_refresh=false
 ) }}
 
 with current_listings as (
