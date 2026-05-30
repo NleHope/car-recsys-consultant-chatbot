@@ -180,3 +180,174 @@ flowchart LR
   classDef vec fill:#eebefa,stroke:#ec4899,color:#000
   classDef orch fill:#d0bfff,stroke:#8b5cf6,color:#000
 ```
+
+---
+
+## 6. SILVER — ERD (3NF dimensional)
+
+Surrogate key = `md5(natural_key)`, NULL-safe. FK được enforce bằng dbt
+`relationships` tests (không dùng FK cứng vì gold rebuild). **Grain rule:** dữ liệu
+`car.*` (rating/reviews) thuộc về car MODEL — keyed `car_model_sk`, không bao giờ per-listing.
+
+```mermaid
+erDiagram
+  dim_car_model   ||--o{ fct_listing       : "1 model : N listings"
+  dim_car_model   ||--|| fct_model_rating   : "1 : 1 rating"
+  dim_car_model   ||--o{ fct_model_review   : "1 : N reviews"
+  dim_seller      ||--o{ fct_listing        : "1 dealer : N listings"
+  fct_listing     ||--o{ bridge_listing_feature : "listing has features"
+  dim_feature     ||--o{ bridge_listing_feature : "feature in listings"
+  fct_listing     ||--o{ dim_listing_image  : "1 listing : N images"
+
+  dim_car_model {
+    text    car_model_sk PK "md5(car_model_slug)"
+    text    car_model_slug
+    text    brand
+    text    car_name
+    text    car_link
+    text    review_link
+  }
+  fct_model_rating {
+    text    car_model_sk PK "= FK dim_car_model (1:1)"
+    numeric car_rating
+    int     car_rating_count
+    numeric percentage_recommend
+    numeric rating_comfort
+    numeric rating_interior
+    numeric rating_performance
+    numeric rating_value
+    numeric rating_exterior
+    numeric rating_reliability
+  }
+  fct_model_review {
+    text    review_sk PK "content hash"
+    text    car_model_sk FK
+    numeric overall_rating
+    date    review_date
+    text    review_title
+    text    review_text
+  }
+  dim_seller {
+    text    seller_sk PK "md5(seller_key)"
+    text    seller_key
+    text    seller_name
+    text    seller_link
+    text    destination
+    numeric seller_rating
+    int     seller_rating_count
+    text    phone_new
+    text    phone_used
+    jsonb   hours
+    jsonb   highlights
+  }
+  fct_listing {
+    text    listing_sk PK "md5(vin)"
+    text    vin
+    text    car_model_sk FK
+    text    seller_sk FK
+    text    stock_number
+    text    new_used
+    text    title
+    numeric price
+    numeric monthly_payment
+    int     mileage
+    date    crawl_date
+    text    source
+    date    last_updated_date
+    text    fuel_type
+    text    transmission
+    text    drivetrain
+    bool    clean_title
+    bool    has_accidents
+    bool    is_one_owner
+    bool    has_open_recall
+    timestamp crawled_at
+  }
+  dim_feature {
+    text    feature_sk PK "md5(cat||name)"
+    text    feature_category
+    text    feature_name
+  }
+  bridge_listing_feature {
+    text    listing_sk FK
+    text    feature_sk FK
+  }
+  dim_listing_image {
+    text    listing_sk FK
+    text    vin
+    int     image_order
+    text    image_url
+  }
+```
+
+---
+
+## 7. GOLD — ERD (app marts, denormalized)
+
+Gold làm phẳng silver (join sẵn) để backend đọc nhanh. Quan hệ qua
+`vehicle_id = vin` (TEXT, không FK cứng — `gold.vehicles` bị dbt DROP/CREATE).
+`vehicles` MERGE theo VIN (current state); `vehicle_price_history` append (change-events).
+
+```mermaid
+erDiagram
+  vehicles ||--o{ vehicle_images        : "vehicle_id"
+  vehicles ||--o{ vehicle_features      : "vehicle_id"
+  vehicles ||--o{ vehicle_price_history : "vin (history)"
+  car_models ||--o{ vehicles            : "car_model (slug)"
+  car_models ||--o{ reviews             : "car_model"
+  sellers  ||--o{ vehicles              : "seller_key"
+
+  vehicles {
+    text    vehicle_id PK "= vin"
+    text    title
+    text    brand
+    text    car_model
+    numeric price
+    int     mileage
+    text    fuel_type
+    numeric car_rating "copied from model"
+    text    seller_name "copied from seller"
+    text    primary_image_url
+    int     image_count
+    int     feature_count
+    text    source
+    date    first_seen_date
+    date    last_updated_date
+  }
+  vehicle_price_history {
+    text    vin FK
+    numeric price
+    int     mileage
+    text    status
+    date    crawl_date "partition key"
+    timestamp inserted_at
+  }
+  vehicle_images {
+    text    vehicle_id FK
+    int     image_order
+    text    image_url
+  }
+  vehicle_features {
+    text    vehicle_id FK
+    text    feature_category
+    text    feature_name
+  }
+  car_models {
+    text    car_model PK
+    text    brand
+    numeric car_rating
+    int     listing_count
+    int     review_count
+  }
+  sellers {
+    text    seller_key PK
+    text    seller_name
+    int     inventory_count
+  }
+  reviews {
+    text    review_sk PK
+    text    car_model FK
+    numeric overall_rating
+    text    review_text
+  }
+```
