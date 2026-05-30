@@ -1,5 +1,6 @@
 .venv/
 local_data/
+downloaded_files/
 certs/
 temporal_app/.env
 __pycache__/
