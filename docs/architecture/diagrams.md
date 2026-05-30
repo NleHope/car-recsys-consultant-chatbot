@@ -13,6 +13,7 @@ VSCode (extension *Markdown Preview Mermaid*), hoặc Notion. Đã verify render
 ## 1. Kiến trúc tổng thể
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart TB
   subgraph HOST["🖥️ HOST (./run_worker.sh)"]
     direction LR
@@ -67,6 +68,7 @@ flowchart TB
 ## 2. Temporal pipeline — WeeklyPipeline
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart TB
   sched{{"Schedule<br/>cron Mon 02:00"}}:::sched
   parent["WeeklyPipeline<br/>(parent workflow)"]:::orch
@@ -97,6 +99,7 @@ flowchart TB
 ## 3. dbt medallion — data flow
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart TB
   bronze["bronze.raw_listings<br/>JSONB landing · idempotent (file_hash)"]:::bronze
   stg["staging (views)<br/>stg_raw_latest (DISTINCT ON vin) → stg_listings (parse)"]:::stg
@@ -132,6 +135,7 @@ flowchart TB
 ## 4. Recommendation engine (multi-stage hybrid)
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart LR
   subgraph RECALL["Candidate generation"]
     collab["Collaborative<br/>(gold.item_similarity)"]:::recall
@@ -159,6 +163,7 @@ flowchart LR
 ## 5. Chatbot — RAG hybrid retrieval
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart LR
   umsg["user message"]:::host
   parser["query_parser<br/>(hard constraints)"]:::rank
@@ -430,6 +435,7 @@ erDiagram
 ### Hệ thống đề xuất dùng các store này thế nào
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart LR
   interactions["gold.user_interactions<br/>(app ghi: view/click/save...)"]:::store
   itemsim["gold.item_similarity<br/>(ML precompute CF)"]:::store
