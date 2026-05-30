@@ -195,7 +195,6 @@ Surrogate key = `md5(natural_key)`, NULL-safe. FK được enforce bằng dbt
 `car.*` (rating/reviews) thuộc về car MODEL — keyed `car_model_sk`, không bao giờ per-listing.
 
 ```mermaid
-%%{init: {'layout': 'elk'}}%%
 erDiagram
   dim_car_model   ||--o{ fct_listing       : "1 model : N listings"
   dim_car_model   ||--|| fct_model_rating   : "1 : 1 rating"
@@ -295,7 +294,6 @@ Gold làm phẳng silver (join sẵn) để backend đọc nhanh. Quan hệ qua
 `vehicles` MERGE theo VIN (current state); `vehicle_price_history` append (change-events).
 
 ```mermaid
-%%{init: {'layout': 'elk'}}%%
 erDiagram
   vehicles ||--o{ vehicle_images        : "vehicle_id"
   vehicles ||--o{ vehicle_features      : "vehicle_id"
@@ -372,7 +370,6 @@ Khác với marts dbt (#7) — đây là các bảng **app ghi runtime** + **ML 
 - `vehicle_id` (TEXT = VIN) nối tới `gold.vehicles` nhưng **không FK cứng** (vehicles bị dbt rebuild).
 
 ```mermaid
-%%{init: {'layout': 'elk'}}%%
 erDiagram
   users ||--o{ user_interactions : "tracks"
   users ||--o{ user_favorites    : "saves"
