@@ -27,7 +27,7 @@ async def get_listing(vehicle_id: str, db: Session = Depends(get_db)):
             v.price,
             v.monthly_payment,
             v.mileage,
-            v.mileage_str,
+            to_char(v.mileage, 'FM9,999,999') || ' mi.' as mileage_str,
             v.exterior_color,
             v.interior_color,
             v.drivetrain,
@@ -36,8 +36,8 @@ async def get_listing(vehicle_id: str, db: Session = Depends(get_db)):
             v.transmission,
             v.engine,
             v.condition,
-            v.accidents_damage,
-            v.one_owner,
+            v.has_accidents as accidents_damage,
+            v.is_one_owner as one_owner,
             v.car_rating,
             v.percentage_recommend,
             v.comfort_rating,
@@ -47,7 +47,7 @@ async def get_listing(vehicle_id: str, db: Session = Depends(get_db)):
             v.exterior_rating,
             v.reliability_rating,
             v.vehicle_url,
-            v.total_images
+            v.image_count as total_images
         FROM gold.vehicles v
         WHERE v.vehicle_id = :vehicle_id
     """)
@@ -134,7 +134,7 @@ async def get_listings(
             v.brand,
             v.car_model,
             v.price,
-            v.mileage_str,
+            to_char(v.mileage, 'FM9,999,999') || ' mi.' as mileage_str,
             v.fuel_type,
             v.transmission,
             v.exterior_color,
@@ -142,14 +142,14 @@ async def get_listings(
             v.vehicle_url,
             v.condition,
             COALESCE(
-                (SELECT image_url FROM gold.vehicle_images vi 
-                 WHERE vi.vehicle_id = v.vehicle_id 
+                (SELECT image_url FROM gold.vehicle_images vi
+                 WHERE vi.vehicle_id = v.vehicle_id
                  ORDER BY vi.id LIMIT 1),
                 ''
             ) as image_url
         FROM gold.vehicles v
         WHERE v.title IS NOT NULL
-        ORDER BY v.car_rating DESC NULLS LAST, v.created_at DESC
+        ORDER BY v.car_rating DESC NULLS LAST, v.first_seen_date DESC
         LIMIT :limit OFFSET :offset
     """)
     
@@ -210,7 +210,7 @@ async def get_similar_vehicles_simple(
             v.brand,
             v.car_model,
             v.price,
-            v.mileage_str,
+            to_char(v.mileage, 'FM9,999,999') || ' mi.' as mileage_str,
             v.fuel_type,
             v.transmission,
             v.exterior_color,
@@ -218,8 +218,8 @@ async def get_similar_vehicles_simple(
             v.vehicle_url,
             v.condition,
             COALESCE(
-                (SELECT image_url FROM gold.vehicle_images vi 
-                 WHERE vi.vehicle_id = v.vehicle_id 
+                (SELECT image_url FROM gold.vehicle_images vi
+                 WHERE vi.vehicle_id = v.vehicle_id
                  ORDER BY vi.id LIMIT 1),
                 ''
             ) as image_url

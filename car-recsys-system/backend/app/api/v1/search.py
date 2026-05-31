@@ -101,10 +101,10 @@ async def search_vehicles(
         'price': 'price',
         'mileage': 'mileage',
         'car_rating': 'car_rating',
-        'created_at': 'created_at',
+        'created_at': 'first_seen_date',
         'rating': 'car_rating',
     }
-    sort_column = sort_column_map.get(sort_by, 'created_at')
+    sort_column = sort_column_map.get(sort_by, 'first_seen_date')
     order = 'ASC' if sort_order.lower() == 'asc' else 'DESC'
     
     # Get paginated results
@@ -119,7 +119,7 @@ async def search_vehicles(
             v.brand,
             v.car_model,
             v.price,
-            v.mileage_str,
+            to_char(v.mileage, 'FM9,999,999') || ' mi.' as mileage_str,
             v.fuel_type,
             v.transmission,
             v.exterior_color,
