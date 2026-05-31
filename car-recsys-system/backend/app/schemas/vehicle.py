@@ -39,8 +39,8 @@ class VehicleBase(BaseModel):
     # URLs
     vehicle_url: Optional[str] = None
     
-    # Additional
-    accidents_damage: Optional[str] = None
+    # Additional — sourced from gold.vehicles has_accidents/is_one_owner/image_count
+    accidents_damage: Optional[bool] = None
     one_owner: Optional[bool] = None
     total_images: Optional[int] = None
     
