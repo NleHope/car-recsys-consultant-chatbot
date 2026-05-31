@@ -59,6 +59,56 @@
     --shadow-soft: 0 4px 24px -8px hsl(215 45% 35% / 0.12);
     --shadow-elegant: 0 20px 40px -12px hsl(215 45% 35% / 0.18);
   }
+
+  /* Dark theme — premium black/blue, default (see App.tsx). */
+  .dark {
+    --background: 222 32% 9%;
+    --foreground: 210 20% 92%;
+
+    --card: 222 28% 13%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 222 28% 13%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 217 85% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 22% 18%;
+    --secondary-foreground: 210 20% 92%;
+
+    --muted: 222 18% 18%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 210 80% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --champagne: 210 75% 58%;
+    --champagne-light: 208 80% 70%;
+    --champagne-dark: 215 68% 48%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 40 20% 98%;
+
+    --border: 222 20% 22%;
+    --input: 222 20% 22%;
+    --ring: 217 85% 60%;
+
+    --sidebar-background: 222 30% 11%;
+    --sidebar-foreground: 210 20% 92%;
+    --sidebar-primary: 217 85% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 22% 18%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 222 20% 22%;
+    --sidebar-ring: 217 85% 60%;
+
+    --gradient-subtle: linear-gradient(180deg, hsl(222 32% 9%), hsl(222 28% 13%));
+    --gradient-card: linear-gradient(145deg, hsl(222 28% 13%), hsl(222 25% 15%));
+
+    --shadow-soft: 0 4px 24px -8px hsl(0 0% 0% / 0.5);
+    --shadow-elegant: 0 20px 40px -12px hsl(0 0% 0% / 0.6);
+  }
 }
 
 @layer base {
@@ -78,6 +128,14 @@
       radial-gradient(circle at 85% 10%, hsl(215 100% 84% / 0.45), transparent 46%),
       linear-gradient(180deg, hsl(208 100% 98%), hsl(210 60% 95%));
     background-attachment: fixed;
+  }
+
+  /* Dark mode: replace the light radial-gradient wash with a dark one. */
+  .dark body {
+    background-image:
+      radial-gradient(circle at 15% 20%, hsl(217 60% 20% / 0.5), transparent 42%),
+      radial-gradient(circle at 85% 10%, hsl(215 55% 18% / 0.45), transparent 46%),
+      linear-gradient(180deg, hsl(222 32% 9%), hsl(222 30% 7%));
   }
 
   h1, h2, h3, h4, h5, h6 {
