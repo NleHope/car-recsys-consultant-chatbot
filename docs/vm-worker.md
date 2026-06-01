@@ -1,9 +1,9 @@
 # Pipeline Worker trên GCE VM + Temporal Cloud
 
 Chạy `pipeline-worker` (Transform + ML) trên một **GCE VM** thay vì local, kết nối
-**Temporal Cloud** (namespace `car-recsys.islko`) và **Cloud SQL**.
+**Temporal Cloud** (namespace `car-recsys.islko`) và **AlloyDB**.
 
-> Kiến trúc: VM (Docker) chạy worker → poll task từ Temporal Cloud → ghi Cloud SQL.
+> Kiến trúc: VM (Docker) chạy worker → poll task từ Temporal Cloud → ghi AlloyDB.
 > Crawler vẫn chạy host (cần Chrome). Đây CHỈ là worker pipeline (no Chrome).
 
 ```
@@ -11,7 +11,7 @@ Temporal Cloud (car-recsys.islko.tmprl.cloud:7233, API key)
       ▲ poll task queue car-pipeline-tq
       │
 GCE VM (e2-standard-2, us-central1-a)
-  docker run pipeline-worker  ──► Cloud SQL (34.66.189.61, sslmode=require)
+  docker run pipeline-worker  ──► AlloyDB (104.155.166.86, sslmode=require)
                               ──► GCS bucket (service account scope)
 ```
 
@@ -25,7 +25,7 @@ GCE VM (e2-standard-2, us-central1-a)
 - ✅ Artifact Registry repo: `us-central1-docker.pkg.dev/cobalt-bond-494609-a6/car-recsys`
 - ✅ Image đã push: `.../car-recsys/pipeline-worker:latest`
 - ✅ VM `temporal-worker` chạy worker → **Connected** Temporal Cloud (poll `car-pipeline-tq`)
-- ✅ VM IP đã trong Cloud SQL authorized network (connect tới được, chỉ cần đúng password)
+- ✅ AlloyDB mở 0.0.0.0/0 → VM connect được luôn (chỉ cần sslmode=require + đúng password)
 
 ---
 
@@ -59,17 +59,12 @@ gcloud compute instances describe temporal-worker \
   --format="value(networkInterfaces[0].accessConfigs[0].natIP)"
 ```
 
-## 3. Cho VM connect Cloud SQL
+## 3. Cho VM connect AlloyDB
 
-Thêm **public IP của VM** vào authorized networks của Cloud SQL (GHI ĐÈ — phải
-liệt kê cả IP nhà bạn nếu vẫn muốn connect từ local):
-```bash
-gcloud sql instances patch free-trial-first-project \
-  --authorized-networks=<VM_IP>/32,171.253.158.82/32 \
-  --project=cobalt-bond-494609-a6
-```
-
-> VM ephemeral IP đổi khi restart → phải patch lại. Muốn cố định: reserve static IP.
+AlloyDB mở **authorized network `0.0.0.0/0`** (xem [alloydb.md](alloydb.md)) → VM
+connect được luôn, **không cần patch IP**. Chỉ cần `worker.env` có host
+`104.155.166.86` + `sslmode=require`. (Trước đây Cloud SQL phải add từng IP VM —
+AlloyDB không cần nữa.)
 
 ## 4. SSH vào VM + cài Docker
 
@@ -96,8 +91,8 @@ TEMPORAL_ADDRESS=car-recsys.islko.tmprl.cloud:7233
 TEMPORAL_NAMESPACE=car-recsys.islko
 TEMPORAL_API_KEY=<dán API key tmprl từ Temporal Cloud>
 
-WAREHOUSE_DSN=postgresql://admin:<PASS>@34.66.189.61:5432/car_recsys?sslmode=require
-DBT_PG_HOST=34.66.189.61
+WAREHOUSE_DSN=postgresql://admin:<PASS>@104.155.166.86:5432/car_recsys?sslmode=require
+DBT_PG_HOST=104.155.166.86
 DBT_PG_PORT=5432
 DBT_PG_USER=admin
 DBT_PG_PASSWORD=<PASS>
@@ -152,7 +147,7 @@ cd crawler
 TEMPORAL_ADDRESS=car-recsys.islko.tmprl.cloud:7233 \
 TEMPORAL_NAMESPACE=car-recsys.islko \
 TEMPORAL_API_KEY=tmprl_... \
-WAREHOUSE_DSN=postgresql://admin:<PASS>@34.66.189.61:5432/car_recsys?sslmode=require \
+WAREHOUSE_DSN=postgresql://admin:<PASS>@104.155.166.86:5432/car_recsys?sslmode=require \
   PYTHONPATH=. .venv/bin/python -m temporal_app.scripts.trigger_once transform
 ```
 
@@ -213,7 +208,7 @@ gcloud compute instances delete temporal-worker --zone=us-central1-a --project=c
 ## ⚠️ Lưu ý
 
 1. **Secret**: `worker.env` chứa API key + DB password — KHÔNG commit, chỉ ở VM.
-2. **VM IP đổi** khi restart → patch lại Cloud SQL authorized network.
+2. **AlloyDB** mở `0.0.0.0/0` → VM IP đổi vẫn connect được (không cần patch network).
 3. **GCS 403 trên VM**: grant service account của VM quyền đọc bucket:
    `gsutil iam ch serviceAccount:<VM_SA>:roles/storage.objectViewer gs://incremental_raw`
 4. **Cập nhật image**: build + push lại từ local, rồi VM `docker pull` + recreate:

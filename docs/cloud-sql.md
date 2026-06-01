@@ -1,5 +1,9 @@
 # Cloud SQL (GCP) — Setup & Operations
 
+> ⚠️ **DEPRECATED (2026-06-01).** Prod DB đã migrate sang **AlloyDB** và Cloud SQL
+> instance `free-trial-first-project` đã **xóa** (cắt phí). Doc hiện hành:
+> [alloydb.md](alloydb.md). Giữ file này làm lịch sử/tham khảo.
+
 Doc theo dõi mọi thứ liên quan đến PostgreSQL trên Cloud SQL: thông số instance,
 cách connect, init schema, chuyển môi trường local↔cloud, và các thao tác vận hành.
 

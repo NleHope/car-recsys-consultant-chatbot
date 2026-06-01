@@ -92,9 +92,11 @@ listings, recommendations, chat, feedback, reviews, interactions). Reads `gold.*
 
 ## Cloud (GCP)
 
-- **Cloud SQL** (`free-trial-first-project`, PG18, public IP) holds prod data
-  (initial 5318 vehicles already backfilled). Use `.env.cloud` to point at it.
-  SSL required (`sslmode=require`). See [docs/cloud-sql.md](docs/cloud-sql.md).
+- **AlloyDB** (`free-trial-cluster`/`primary`, PG17, public IP `104.155.166.86`)
+  holds prod data (migrated from Cloud SQL 2026-06-01; gold.vehicles=5337). Public
+  IP + `0.0.0.0/0` + SSL (`sslmode=require`). Backend connects by IP (no
+  `--add-cloudsql-instances`). Use `.env.cloud` / Secret `database-url`. See
+  [docs/alloydb.md](docs/alloydb.md). (Cloud SQL deleted; [cloud-sql.md] is history.)
 - **GCE VM** `temporal-worker` runs the pipeline-worker → **Temporal Cloud**
   (namespace `car-recsys.islko`, API-key auth). See [docs/vm-worker.md](docs/vm-worker.md).
 - Image: `us-central1-docker.pkg.dev/cobalt-bond-494609-a6/car-recsys/pipeline-worker`.
@@ -108,9 +110,10 @@ listings, recommendations, chat, feedback, reviews, interactions). Reads `gold.*
 - **dbt model edits affect both local + cloud** — run `dbt parse` to validate; a
   large dataset can expose dedup bugs absent on small local data (e.g. add
   `DISTINCT ON` in staging).
-- **Cloud SQL ownership**: init runs as `postgres`; `ensure_partition` (run as
-  `admin`) needs table OWNERSHIP, not just GRANT. Init SQL re-owns objects to
-  admin (`DO $reown$` block).
+- **DB ownership (AlloyDB/Cloud SQL)**: `ensure_partition` (run as `admin`) needs
+  table OWNERSHIP, not just GRANT — re-own objects to admin (`DO $reown$` block).
+  On AlloyDB `postgres` isn't superuser: `GRANT admin TO postgres` first; schema
+  `public` is locked (create funcs as `postgres`). See [docs/alloydb.md](docs/alloydb.md).
 - **Cloud SQL connect timeout** usually = your public IP changed; re-add to
   authorized networks (`gcloud sql instances patch ... --authorized-networks`).
 - **`workflow.now()` not `datetime.now()`** inside @workflow.run (determinism).
