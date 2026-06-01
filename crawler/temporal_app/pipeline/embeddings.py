@@ -155,13 +155,22 @@ def embed_vehicles(
         reviews_by_model: dict[str, list[str]] = {}
         if model_slugs:
             with conn.cursor() as rcur:
+                # Top-10 most-recent reviews per model (review_sk tiebreaker →
+                # deterministic re-embeds; bounds memory regardless of how many
+                # reviews a popular model has — the 600-char doc cap dominates).
                 rcur.execute(
                     """
-                    SELECT car_model, review_title, review_text
-                    FROM gold.reviews
-                    WHERE car_model = ANY(%s)
-                      AND (review_text IS NOT NULL OR review_title IS NOT NULL)
-                    ORDER BY review_date DESC NULLS LAST
+                    SELECT car_model, review_title, review_text FROM (
+                        SELECT car_model, review_title, review_text,
+                               row_number() OVER (
+                                   PARTITION BY car_model
+                                   ORDER BY review_date DESC NULLS LAST, review_sk
+                               ) AS rn
+                        FROM gold.reviews
+                        WHERE car_model = ANY(%s)
+                          AND (review_text IS NOT NULL OR review_title IS NOT NULL)
+                    ) s
+                    WHERE rn <= 10
                     """,
                     (model_slugs,),
                 )
