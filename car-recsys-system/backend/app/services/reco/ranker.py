@@ -22,15 +22,23 @@ class WeightedLinearRanker:
     def __init__(self, config: RecoConfig):
         self.weights = config.ranker_weights
 
-    def score(self, candidates: Iterable[Candidate]) -> list[Candidate]:
-        """Assign rank_score to each candidate and return them sorted desc."""
+    def score(self, candidates: Iterable[Candidate], cf_scale: float = 1.0) -> list[Candidate]:
+        """Assign rank_score to each candidate and return them sorted desc.
+
+        ``cf_scale`` (0..1) scales ONLY the collaborative-filtering weight, so a
+        cold user (no interactions) gets cf_scale=0 and CF contributes nothing,
+        while a user with history ramps CF up toward its full configured weight.
+        """
         scored: list[Candidate] = []
         for c in candidates:
             feats = c.feature_dict()
-            c.rank_score = sum(
-                self.weights.get(name, 0.0) * value
-                for name, value in feats.items()
-            )
+            total = 0.0
+            for name, value in feats.items():
+                w = self.weights.get(name, 0.0)
+                if name == "cf_score":
+                    w *= cf_scale
+                total += w * value
+            c.rank_score = total
             scored.append(c)
         scored.sort(key=lambda c: c.rank_score, reverse=True)
         return scored
