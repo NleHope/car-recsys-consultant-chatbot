@@ -77,18 +77,18 @@ exists and make it provably run on AlloyDB + the new Qdrant.
 6. **MMR diversity** confirmed (no 10 near-identical results) — cap per brand/segment.
 
 ### Part B — item-CF auto-activates with data
-5. Confirm `compute_item_similarity` writes `gold.item_similarity` when interactions are
+7. Confirm `compute_item_similarity` writes `gold.item_similarity` when interactions are
    sufficient (n_items ≥ 2). CollaborativeRecaller reads it; verify it fail-soft when empty.
-6. **No code change needed** if the above holds — this part is verification + a guard if a
+8. **No code change needed** if the above holds — this part is verification + a guard if a
    gap is found.
 
 ### Part C — Demo seed + offline eval (for the report)
-7. **`scripts/seed_demo_interactions.py`** (new, backend or crawler scripts dir): inserts
+9. **`scripts/seed_demo_interactions.py`** (new, backend or crawler scripts dir): inserts
    synthetic interactions for N synthetic users across realistic vehicle co-views (e.g. users
    who view a Camry also view Accord/Sonata) into `gold.user_interactions`, clearly marked
    (e.g. `user_id` prefix `demo-`) so it's distinguishable/removable. Running the ML
    `compute_item_similarity` after this populates `item_similarity` → item-CF demonstrable.
-8. **`scripts/eval_reco.py`** (new): offline metrics on the engine's output —
+10. **`scripts/eval_reco.py`** (new): offline metrics on the engine's output —
    **Coverage** (% of catalog recommendable), **Diversity** (intra-list brand/segment
    spread), and **Precision@K / NDCG@K** using a held-out slice of (seeded or real)
    interactions as ground truth. The script PRINTS the numbers AND a prominent caveat (also to
