@@ -40,3 +40,6 @@ dist/
 .DS_Store
 .idea/
 *.swp
+
+# Visual companion brainstorm mockups (local only)
+.superpowers/
