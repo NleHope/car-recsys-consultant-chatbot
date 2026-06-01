@@ -225,20 +225,31 @@ class PopularityRecaller:
         self.db = db
         self.cfg = config
 
-    def recall(self) -> dict[str, float]:
+    def recall(self, brand: Optional[str] = None) -> dict[str, float]:
         limit = self.cfg.candidates.popularity_limit
+        base_sql = """
+            SELECT vehicle_id,
+                   COALESCE(pop_score_30d, 0) + COALESCE(car_rating, 0) AS score
+            FROM gold.mv_popular_vehicles
+            {where}
+            ORDER BY score DESC
+            LIMIT :limit
+        """
         try:
-            rows = self.db.execute(
-                text("""
-                    SELECT vehicle_id,
-                           COALESCE(pop_score_30d, 0)
-                             + COALESCE(car_rating, 0) AS score
-                    FROM gold.mv_popular_vehicles
-                    ORDER BY score DESC
-                    LIMIT :limit
-                """),
-                {"limit": limit},
-            ).fetchall()
+            scores: dict[str, float] = {}
+            if brand:
+                brand_rows = self.db.execute(
+                    text(base_sql.format(where="WHERE brand = :brand")),
+                    {"limit": limit, "brand": brand},
+                ).fetchall()
+                scores.update({r[0]: float(r[1]) for r in brand_rows})
+            if len(scores) < limit:
+                global_rows = self.db.execute(
+                    text(base_sql.format(where="")),
+                    {"limit": limit},
+                ).fetchall()
+                for r in global_rows:
+                    scores.setdefault(r[0], float(r[1]))
         except Exception as exc:  # noqa: BLE001
             log.warning("mv_popular_vehicles unavailable (%s) — car_rating fallback.", exc)
             rows = self.db.execute(
@@ -251,4 +262,5 @@ class PopularityRecaller:
                 """),
                 {"limit": limit},
             ).fetchall()
-        return normalize({r[0]: float(r[1]) for r in rows})
+            scores = {r[0]: float(r[1]) for r in rows}
+        return normalize(scores)

@@ -88,9 +88,11 @@ class RecommendationEngine:
             outputs["content"] = self._content.recall(seed_ids)
         if cc.vector_enabled:
             outputs["vector"] = self._vector.recall(seed_ids)
+        seed_brand = self._seed_brand(seed_ids)
         if cc.popularity_enabled:
-            outputs["popularity"] = self._popularity.recall()
-        return self._pipeline(outputs, budget, top_k, filters, exclude=set(seed_ids))
+            outputs["popularity"] = self._popularity.recall(brand=seed_brand)
+        return self._pipeline(outputs, budget, top_k, filters,
+                              exclude=set(seed_ids), cf_scale=self._cf_scale(len(seeds)))
 
     def similar_to_vehicle(
         self,
@@ -111,7 +113,11 @@ class RecommendationEngine:
         if cc.vector_enabled:
             outputs["vector"] = self._vector.recall([vehicle_id])
         budget = self._vehicle_price(vehicle_id)
-        return self._pipeline(outputs, budget, top_k, filters, exclude={vehicle_id})
+        seed_brand = self._seed_brand([vehicle_id])
+        if cc.popularity_enabled:
+            outputs["popularity"] = self._popularity.recall(brand=seed_brand)
+        return self._pipeline(outputs, budget, top_k, filters,
+                              exclude={vehicle_id}, cf_scale=self._cf_scale(len(seeds)))
 
     def popular(
         self,
@@ -123,6 +129,23 @@ class RecommendationEngine:
         outputs = {"popularity": self._popularity.recall()}
         return self._pipeline(outputs, None, top_k, filters, exclude=set())
 
+    # ---- pipeline helpers -------------------------------------------------
+
+    def _cf_scale(self, n_interactions: int) -> float:
+        """0 at no history, ramps to 1.0 at cf_warmup_threshold interactions."""
+        thr = max(1, self.cfg.cf_warmup_threshold)
+        return min(1.0, n_interactions / thr)
+
+    def _seed_brand(self, seed_ids: list[str]) -> Optional[str]:
+        """Brand of the first seed vehicle, for brand-aware popularity fallback."""
+        if not seed_ids:
+            return None
+        row = self.db.execute(
+            text("SELECT brand FROM gold.vehicles WHERE vehicle_id = :id LIMIT 1"),
+            {"id": seed_ids[0]},
+        ).fetchone()
+        return row[0] if row and row[0] else None
+
     # ---- pipeline ---------------------------------------------------------
 
     def _pipeline(
@@ -132,13 +155,14 @@ class RecommendationEngine:
         top_k: int,
         filters: Optional[dict[str, Any]],
         exclude: set[str],
+        cf_scale: float = 1.0,
     ) -> list[Recommendation]:
         candidates = self._assembler.assemble(
             outputs, budget, self.cfg.candidate_pool_size)
         candidates = [c for c in candidates if c.vehicle_id not in exclude]
         if filters:
             candidates = self._apply_filters(candidates, filters)
-        ranked = self._ranker.score(candidates)
+        ranked = self._ranker.score(candidates, cf_scale=cf_scale)
         final = self._reranker.rerank(ranked, top_k)
         return [self._to_reco(c) for c in final]
 
