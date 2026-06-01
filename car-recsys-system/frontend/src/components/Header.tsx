@@ -1,11 +1,25 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
+import { User as UserIcon, Heart, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
-import { isAuthenticated } from "@/lib/api";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { isAuthenticated, getCurrentUser, authApi } from "@/lib/api";
 
 const Header = () => {
+  const navigate = useNavigate();
   const loggedIn = isAuthenticated();
+  const user = loggedIn ? getCurrentUser() : null;
+  const initial = (user?.username?.[0] ?? "?").toUpperCase();
+
+  const handleLogout = () => {
+    authApi.logout();
+    // Full reload so the header re-reads auth state from the cleared localStorage.
+    window.location.assign("/");
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
@@ -43,9 +57,33 @@ const Header = () => {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {loggedIn ? (
-              <Button asChild size="sm" className="rounded-lg">
-                <Link to="/search">Explore</Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button aria-label="Account menu" className="rounded-full outline-none focus:ring-2 focus:ring-primary">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                        {initial}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="truncate">
+                    {user?.full_name || user?.username || "Account"}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <UserIcon className="mr-2 h-4 w-4" /> Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/favorites")}>
+                    <Heart className="mr-2 h-4 w-4" /> Favorites
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link
                 to="/login"
@@ -56,7 +94,7 @@ const Header = () => {
               </Link>
             )}
           </div>
-          
+
         </div>
       </div>
     </header>
