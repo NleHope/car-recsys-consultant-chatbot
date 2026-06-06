@@ -26,7 +26,7 @@ EMBED_DIM = int(os.getenv("OPENAI_EMBEDDING_DIM", "3072"))
 
 CHUNK_SIZE = 250
 CHUNK_OVERLAP = 30
-BATCH_SIZE = 256
+BATCH_SIZE = 64
 
 
 def _load_rows():
@@ -108,15 +108,25 @@ def main():
     chunks = splitter.split_documents(docs)
     print(f"split into {len(chunks)} chunks")
 
-    client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None)
+    client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None, timeout=120)
     _ensure_collection(client)
     embeddings = OpenAIEmbeddings(model=EMBED_MODEL)
     store = QdrantVectorStore(client=client, collection_name=COLLECTION_NAME, embedding=embeddings)
 
+    import time
     total = len(chunks)
     for i in range(0, total, BATCH_SIZE):
         batch = chunks[i:i + BATCH_SIZE]
-        store.add_documents(documents=batch, ids=[str(uuid4()) for _ in batch])
+        ids = [str(uuid4()) for _ in batch]
+        for attempt in range(3):
+            try:
+                store.add_documents(documents=batch, ids=ids)
+                break
+            except Exception as exc:  # noqa: BLE001 — Qdrant/network timeouts; retry the batch
+                if attempt == 2:
+                    raise
+                print(f"  batch {i} failed ({exc}); retry {attempt + 1}/2 ...")
+                time.sleep(3 * (attempt + 1))
         print(f"added {min(i + BATCH_SIZE, total)}/{total}")
     print("ingest complete")
 
