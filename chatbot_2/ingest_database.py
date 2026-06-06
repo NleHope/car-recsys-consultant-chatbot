@@ -1,159 +1,125 @@
+"""Ingest gold.vehicles (+ features) from AlloyDB into a Qdrant collection for the
+chatbot_2 agentic retriever. Chatbot-2-style chunked documents (page_content +
+metadata), embedded with text-embedding-3-large, written to Qdrant `car_vectorize`.
+"""
 import os
+from collections import defaultdict
 from uuid import uuid4
+
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-from langchain_core.documents import Document # Quan trọng để tạo object Document
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai.embeddings import OpenAIEmbeddings
-from langchain_chroma import Chroma
-from collections import defaultdict
+from langchain_openai import OpenAIEmbeddings
+from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams
 
-# Load envs
-load_dotenv() 
+load_dotenv()
 
-# chroma director
-CHROMA_PATH = r"chroma_db"
+WAREHOUSE_DSN = os.getenv("WAREHOUSE_DSN") or os.getenv("DATABASE_URL")
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+COLLECTION_NAME = os.getenv("CHATBOT_QDRANT_COLLECTION", "car_vectorize")
+EMBED_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large")
+EMBED_DIM = int(os.getenv("OPENAI_EMBEDDING_DIM", "3072"))
 
-# SSMS load
-DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
-# SQL - View
-TABLE_OR_VIEW_NAME = "[dbo].[view_post_info]" 
-
-CHROMA_PATH = "chroma_db"
-COLLECTION_NAME = "car_vectorize"
-
-BATCH_SIZE = 1000   # an toàn cho Chroma
 CHUNK_SIZE = 250
 CHUNK_OVERLAP = 30
-
-def from_sql_to_json():
-    print(f"🔄 Đang kết nối đến SQL Server...")
-    engine = create_engine(DB_CONNECTION_STRING)
-    try:
-        with engine.connect() as con:
-            result = con.execute(text(f"SELECT * FROM {TABLE_OR_VIEW_NAME}"))
-            rows = result.mappings().all()
-            
-            first_row = rows[0]
-            all_cols = list(first_row.keys())
-
-            key_list = all_cols[:-2]
-            
-            cars = {}  
-
-            for row in rows:
-                VIN = row["VIN"]
-                if VIN not in cars:
-                    base_info = {col: row[col] for col in key_list}
-                    base_info["features"] = defaultdict(list)
-                    cars[VIN] = base_info
-                    
-                car = cars[VIN]
-
-                feature_type = row["feature_type"]   
-                feature_name = row["feature_name"]  
-
-                if feature_name and feature_name not in car["features"][feature_type]:
-                    car["features"][feature_type].append(feature_name)
-
-            output = []
-            for car in cars.values():
-                car["features"] = dict(car["features"])
-                output.append(car)
-
-            return output
-    except Exception as e:
-        print(f"❌ Lỗi kết nối SQL: {e}")
-        return []
-        
+BATCH_SIZE = 256
 
 
-# Load database to document
-def load_documents_from_sql():
-    documents = []
-    rows = from_sql_to_json()
-    for row_dict in rows:
-        # Select column to vectorize
-        page_content = f"""status: {row_dict.get('status', '')}. title: {row_dict.get('title', '')}
-        .brand: {row_dict.get('brand', '')}. interior_color: {row_dict.get('interior_color', '')}
-        . exterior_color: {row_dict.get('exterior_color', '')}. drivetrain: {row_dict.get('drivetrain', '')} . fuel_type: {row_dict.get('fuel_type', '')}.
-        transmission: {row_dict.get('transmission', '')}.  engine: {row_dict.get('engine', '')}. features : {row_dict.get('features', '')}
-        """
-        
-        # 2. Tạo metadata (Dùng để lọc: Giá, Năm, Người bán...)
-        metadata = {
-            "VIN" : row_dict.get('VIN'),
-            "Price": row_dict.get('price'),
-            "Monthly Payment": row_dict.get('monthly_payment'),
-            "Mileage" : row_dict.get('mileage'),
-            "Miles Per Gallon" : row_dict.get('mpg'),
-            "Post Link" : row_dict.get('post_link'),
-            "Status" : row_dict.get('status', ''),
-            "Title" : row_dict.get('title', ''),
-            "Brand" : row_dict.get('brand', ''),
-            "Interior Color": row_dict.get('interior_color', ''),
-            "Exterior Color" : row_dict.get('exterior_color', ''),
-            "Drivetrain": row_dict.get('drivetrain', ''),
-            "Fuel Type" : row_dict.get('fuel_type', ''),
-            "Transmission" : row_dict.get('transmission', ''),
-            "Engine": row_dict.get('engine', '')
-        }
-
-        # Tạo Document object của LangChain
-        doc = Document(page_content=page_content, metadata=metadata)
-        documents.append(doc)
-                
-    print(f"✅ Đã tải xong {len(documents)} dòng từ Database.")
-    return documents
+def _load_rows():
+    """One dict per vehicle, with features grouped by category (mirrors the old
+    feature_type -> [feature_name] shape)."""
+    engine = create_engine(WAREHOUSE_DSN)
+    with engine.connect() as con:
+        vehicles = con.execute(text("""
+            SELECT vin, new_used AS status, title, brand, car_name, car_model,
+                   price, monthly_payment, mileage, mpg,
+                   exterior_color, interior_color, drivetrain, fuel_type,
+                   transmission, engine, vehicle_url
+            FROM gold.vehicles
+            WHERE title IS NOT NULL
+        """)).mappings().all()
+        feats = con.execute(text("""
+            SELECT vehicle_id, feature_category, feature_name
+            FROM gold.vehicle_features
+            WHERE feature_name IS NOT NULL
+        """)).all()
+    by_vin = defaultdict(lambda: defaultdict(list))
+    for vid, cat, name in feats:
+        if name not in by_vin[vid][cat or "Other"]:
+            by_vin[vid][cat or "Other"].append(name)
+    out = []
+    for v in vehicles:
+        d = dict(v)
+        d["features"] = {k: list(vs) for k, vs in by_vin.get(d["vin"], {}).items()}
+        out.append(d)
+    return out
 
 
-# =====================================================
-# CHROMA BATCH ADD
-# =====================================================
-def add_documents_in_batches(vector_store, documents, batch_size=BATCH_SIZE):
-    total = len(documents)
-    for i in range(0, total, batch_size):
-        batch_docs = documents[i:i + batch_size]
-        batch_ids = [str(uuid4()) for _ in batch_docs]
+def _to_document(d: dict) -> Document:
+    page_content = (
+        f"status: {d.get('status', '')}. title: {d.get('title', '')}"
+        f". brand: {d.get('brand', '')}. interior_color: {d.get('interior_color', '')}"
+        f". exterior_color: {d.get('exterior_color', '')}. drivetrain: {d.get('drivetrain', '')}"
+        f". fuel_type: {d.get('fuel_type', '')}. transmission: {d.get('transmission', '')}"
+        f". engine: {d.get('engine', '')}. features: {d.get('features', '')}"
+    )
+    metadata = {
+        "VIN": d.get("vin"),
+        "Price": float(d["price"]) if d.get("price") is not None else None,
+        "Monthly Payment": float(d["monthly_payment"]) if d.get("monthly_payment") is not None else None,
+        "Mileage": int(d["mileage"]) if d.get("mileage") is not None else None,
+        "Miles Per Gallon": d.get("mpg"),
+        "Post Link": d.get("vehicle_url"),
+        "Status": d.get("status", ""),
+        "Title": d.get("title", ""),
+        "Brand": d.get("brand", ""),
+        "Interior Color": d.get("interior_color", ""),
+        "Exterior Color": d.get("exterior_color", ""),
+        "Drivetrain": d.get("drivetrain", ""),
+        "Fuel Type": d.get("fuel_type", ""),
+        "Transmission": d.get("transmission", ""),
+        "Engine": d.get("engine", ""),
+    }
+    return Document(page_content=page_content, metadata=metadata)
 
-        vector_store.add_documents(
-            documents=batch_docs,
-            ids=batch_ids
+
+def _ensure_collection(client: QdrantClient):
+    existing = {c.name for c in client.get_collections().collections}
+    if COLLECTION_NAME not in existing:
+        client.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(size=EMBED_DIM, distance=Distance.COSINE),
         )
+        print(f"created Qdrant collection {COLLECTION_NAME}")
 
-        print(f"💾 Added {min(i + batch_size, total)}/{total}")
 
-# =====================================================
-# MAIN
-# =====================================================
 def main():
-    print("🚀 Starting SQL → Chroma ingest...")
+    if not (WAREHOUSE_DSN and QDRANT_URL):
+        raise SystemExit("WAREHOUSE_DSN and QDRANT_URL are required")
+    print("loading rows from gold.vehicles ...")
+    rows = _load_rows()
+    print(f"loaded {len(rows)} vehicles")
+    docs = [_to_document(d) for d in rows]
+    splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    chunks = splitter.split_documents(docs)
+    print(f"split into {len(chunks)} chunks")
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+    client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None)
+    _ensure_collection(client)
+    embeddings = OpenAIEmbeddings(model=EMBED_MODEL)
+    store = QdrantVectorStore(client=client, collection_name=COLLECTION_NAME, embedding=embeddings)
 
-    vector_store = Chroma(
-        collection_name=COLLECTION_NAME,
-        embedding_function=embeddings,
-        persist_directory=CHROMA_PATH,
-    )
+    total = len(chunks)
+    for i in range(0, total, BATCH_SIZE):
+        batch = chunks[i:i + BATCH_SIZE]
+        store.add_documents(documents=batch, ids=[str(uuid4()) for _ in batch])
+        print(f"added {min(i + BATCH_SIZE, total)}/{total}")
+    print("ingest complete")
 
-    documents = load_documents_from_sql()
-
-    if not documents:
-        print("⚠️ No data found. Exit.")
-        return
-
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP
-    )
-
-    chunks = splitter.split_documents(documents)
-    print(f"✂️ Split into {len(chunks)} chunks")
-
-    add_documents_in_batches(vector_store, chunks)
-
-    print("✅ Ingest completed successfully!")
 
 if __name__ == "__main__":
     main()
