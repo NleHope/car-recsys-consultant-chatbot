@@ -1,6 +1,12 @@
 """Re-ingest gold.vehicles (+ features) into the chatbot's Qdrant collection
 (`car_vectorize`) as chatbot_2-style chunked documents. Pure function called by
 the embed_chatbot_vehicles activity and (optionally) the standalone script.
+
+This is a FULL re-ingest (reads all of gold.vehicles every run), so by default
+it drops and recreates the collection first (`recreate=True`). That keeps the
+weekly run idempotent — no duplicate chunks accumulate and stale/sold vehicles
+are dropped. Pass `recreate=False` for append-only behaviour (e.g. a one-shot
+backfill that adds to an existing collection).
 """
 from __future__ import annotations
 
@@ -20,6 +26,7 @@ def embed_chatbot_vehicles(
     chunk_size: int = 250,
     chunk_overlap: int = 30,
     batch_size: int = 128,
+    recreate: bool = True,
 ) -> dict[str, int]:
     from sqlalchemy import create_engine, text
     from langchain_core.documents import Document
@@ -82,6 +89,11 @@ def embed_chatbot_vehicles(
 
     client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key or None, timeout=120)
     existing = {c.name for c in client.get_collections().collections}
+    if recreate and collection in existing:
+        # Full re-ingest: drop the old collection so a weekly run never piles up
+        # duplicate chunks (the uuid4 ids below are not stable across runs).
+        client.delete_collection(collection_name=collection)
+        existing.discard(collection)
     if collection not in existing:
         client.create_collection(
             collection_name=collection,
