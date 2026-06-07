@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     # Vector Database
     QDRANT_URL: str = os.getenv("QDRANT_URL", "http://localhost:6333")
     QDRANT_COLLECTION: str = os.getenv("QDRANT_COLLECTION", "car_chatbot_vectors")
+    # chatbot_2 agentic graph reads its own chunked collection (separate from reco's)
+    CHATBOT_QDRANT_COLLECTION: str = os.getenv("CHATBOT_QDRANT_COLLECTION", "car_vectorize")
     QDRANT_API_KEY: str = os.getenv("QDRANT_API_KEY", "")
     
     # OpenAI

@@ -10,6 +10,7 @@ workflows/activities layer.
 """
 
 from .bronze import BronzeLoaderConfig, load_bronze
+from .chatbot_embeddings import embed_chatbot_vehicles
 from .embeddings import embed_vehicles
 from .similarity import compute_item_similarity
 
@@ -18,4 +19,5 @@ __all__ = [
     "load_bronze",
     "compute_item_similarity",
     "embed_vehicles",
+    "embed_chatbot_vehicles",
 ]

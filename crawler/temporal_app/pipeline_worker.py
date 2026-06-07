@@ -1,7 +1,8 @@
 """Pipeline worker — runs in Docker (no Chrome needed).
 
 Serves Transform + ML on PIPELINE_TASK_QUEUE: load_bronze / dbt_build /
-refresh_matviews / compute_item_similarity / embed_vehicles.
+refresh_matviews / compute_item_similarity / embed_vehicles /
+embed_chatbot_vehicles.
 
 Connection (no TLS for local self-host):
   TEMPORAL_ADDRESS    default localhost:7233 (set to temporal:7233 in Docker)
@@ -18,6 +19,7 @@ from temporalio.worker import Worker
 from temporal_app.activities import (
     compute_item_similarity_activity,
     dbt_build_activity,
+    embed_chatbot_vehicles_activity,
     embed_vehicles_activity,
     ensure_partition_activity,
     load_bronze_activity,
@@ -56,6 +58,7 @@ async def main() -> None:
                 refresh_matviews_activity,
                 compute_item_similarity_activity,
                 embed_vehicles_activity,
+                embed_chatbot_vehicles_activity,
             ],
             activity_executor=executor,
         )

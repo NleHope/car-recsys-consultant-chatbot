@@ -144,6 +144,13 @@ class EmbedResult:
     skipped: bool = False
 
 
+@dataclass
+class ChatbotEmbedResult:
+    chunks: int
+    vehicles: int
+    skipped: bool = False
+
+
 @activity.defn(name="load_bronze")
 def load_bronze_activity(crawl_date: str) -> LoadBronzeResult:
     """GCS dt=<crawl_date> slice → bronze.raw_listings (append-only, idempotent)."""
@@ -268,3 +275,27 @@ def embed_vehicles_activity(crawl_date: str = "") -> EmbedResult:
     )
     activity.logger.info("embed_vehicles(since_date=%s): %s", crawl_date, result)
     return EmbedResult(embedded=result.get("embedded", 0))
+
+
+@activity.defn(name="embed_chatbot_vehicles")
+def embed_chatbot_vehicles_activity() -> ChatbotEmbedResult:
+    """Re-ingest gold.vehicles -> Qdrant `car_vectorize` (chatbot v2 collection)."""
+    from temporal_app.pipeline import embed_chatbot_vehicles
+
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    qdrant_url = os.environ.get("QDRANT_URL", "")
+    if not api_key or not qdrant_url:
+        activity.logger.warning("OPENAI_API_KEY / QDRANT_URL unset — skipping chatbot embed")
+        return ChatbotEmbedResult(chunks=0, vehicles=0, skipped=True)
+
+    result = embed_chatbot_vehicles(
+        warehouse_dsn=_require_env("WAREHOUSE_DSN"),
+        qdrant_url=qdrant_url,
+        qdrant_api_key=os.environ.get("QDRANT_API_KEY") or None,
+        openai_api_key=api_key,
+        collection=os.environ.get("CHATBOT_QDRANT_COLLECTION", "car_vectorize"),
+        embedding_model=os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large"),
+        embedding_dim=int(os.environ.get("OPENAI_EMBEDDING_DIM", "3072")),
+    )
+    activity.logger.info("embed_chatbot_vehicles: %s", result)
+    return ChatbotEmbedResult(chunks=result["chunks"], vehicles=result["vehicles"])

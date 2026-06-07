@@ -17,7 +17,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.graph import END, StateGraph
 
-from chatbot_2.user_profile import (
+from .user_profile import (
     ProfileUpdate,
     UserProfile,
     load_profile,

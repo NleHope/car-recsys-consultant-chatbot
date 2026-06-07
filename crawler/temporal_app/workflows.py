@@ -23,6 +23,7 @@ with workflow.unsafe.imports_passed_through():
 
 with workflow.unsafe.imports_passed_through():
     from temporal_app.activities import (
+        ChatbotEmbedResult,
         CrawlInput,
         CrawlLinksResult,
         EmbedResult,
@@ -33,6 +34,7 @@ with workflow.unsafe.imports_passed_through():
         compute_item_similarity_activity,
         crawl_links_activity,
         dbt_build_activity,
+        embed_chatbot_vehicles_activity,
         embed_vehicles_activity,
         ensure_partition_activity,
         load_bronze_activity,
@@ -188,6 +190,7 @@ class MLResult:
     similarity_items: int
     similarity_pairs: int
     embedded: int
+    chatbot_chunks: int = 0
 
 
 @workflow.defn(name="ML")
@@ -217,14 +220,22 @@ class MLWorkflow:
             retry_policy=RetryPolicy(maximum_attempts=3),
         )
 
+        chatbot_task = workflow.execute_activity(
+            embed_chatbot_vehicles_activity,
+            start_to_close_timeout=timedelta(hours=1),
+            retry_policy=RetryPolicy(maximum_attempts=3),
+        )
+
         sim: SimilarityResult
         embed: EmbedResult
-        sim, embed = await asyncio.gather(sim_task, embed_task)
+        chatbot: ChatbotEmbedResult
+        sim, embed, chatbot = await asyncio.gather(sim_task, embed_task, chatbot_task)
 
         return MLResult(
             similarity_items=sim.items,
             similarity_pairs=sim.pairs,
             embedded=embed.embedded,
+            chatbot_chunks=chatbot.chunks,
         )
 
 

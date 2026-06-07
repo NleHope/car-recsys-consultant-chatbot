@@ -1,15 +1,13 @@
-"""RAG chatbot — hybrid retrieval (vector + SQL, RRF-fused) + grounded generation.
+"""Agentic car-shopping chatbot (chatbot_2 LangGraph), integrated into the backend.
 
-Public API:
-    from app.services.chatbot import Chatbot, initialize_chatbot
+Exposes:
+    initialize_resources() -> (llm, vector_store)   # build once, cache in the route
+    generate_response(llm, vector_store, history, user_input, session_id)
+        -> (answer, updated_history)
 
-    bot = initialize_chatbot()
-    result = bot.chat(user_input, session_id=..., user_id=...)
-    # -> {session_id, response, vehicles, constraints}
+Vector store: Qdrant `car_vectorize` (env CHATBOT_QDRANT_COLLECTION).
+SQL: gold.* on AlloyDB (env WAREHOUSE_DSN / DATABASE_URL).
 """
+from .generate_response import generate_response, initialize_resources
 
-from .config import CHATBOT_CONFIG
-from .core import Chatbot, initialize_chatbot
-from .ingest import VehicleEmbeddingIngestor
-
-__all__ = ["Chatbot", "initialize_chatbot", "VehicleEmbeddingIngestor", "CHATBOT_CONFIG"]
+__all__ = ["generate_response", "initialize_resources"]
