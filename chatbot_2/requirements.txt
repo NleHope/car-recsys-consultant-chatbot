@@ -7,17 +7,12 @@ langchain-text-splitters==1.1.2
 langgraph==1.2.2
 openai==2.40.0
 
-# Vector store (Qdrant) — unpinned so it resolves against langchain-core 1.4.x;
-# qdrant-client is pulled in transitively.
 langchain-qdrant
 
-# Backend / data
 fastapi==0.136.3
 anyio
 pydantic
 SQLAlchemy==2.0.50
 
-# >=2.9.10 ships wheels for Python 3.13 (2.9.9 fails: undefined symbol
-# _PyInterpreterState_Get on 3.13).
 psycopg2-binary>=2.9.10
 python-dotenv
