@@ -1,6 +1,7 @@
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import carHomePageImage from "@/images/car_home_page.jpg";
 
 const Hero = () => {
   return (
@@ -8,15 +9,12 @@ const Hero = () => {
       {/* Background image with parallax effect */}
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&h=1080&fit=crop&q=80"
+          src={carHomePageImage}
           alt="Luxury sports car on scenic road"
           className="w-full h-full object-cover scale-105 brightness-125 contrast-105"
         />
-        {/* Light beige overlay for warm, bright appearance */}
-        <div
-          className="absolute inset-0 mix-blend-overlay"
-          style={{ backgroundColor: "hsl(35 40% 85% / 0.25)" }}
-        />
+        {/* Deep blue overlay for a cooler tone */}
+        <div className="absolute inset-0 bg-[#A87601]/18" />
         {/* Minimal darkening layer for text readability */}
         <div className="absolute inset-0 bg-black/2" />
         {/* Very subtle vertical vignette */}
@@ -29,75 +27,44 @@ const Hero = () => {
       <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-accent/3 rounded-full blur-3xl" />
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 pt-24">
-        <div className="max-w-2xl">
+      <div className="relative z-10 container mx-auto flex min-h-screen flex-col justify-between px-4 pb-16 pt-14">
+        <div className="mx-auto max-w-3xl text-center pt-3 md:pt-6 lg:pt-10">
           {/* Main heading */}
           <h1
-            className="font-heading font-sansita text-6xl md:text-7xl lg:text-7xl font-medium text-foreground leading-[1.05] mb-8 animate-fade-in whitespace-nowrap"
+            className="font-body text-5xl md:text-6xl lg:text-7xl font-semibold text-white leading-tight mb-6 animate-fade-in tracking-tight"
             style={{ animationDelay: "0.2s" }}
           >
-            <span className="text-white">Find Your</span> <span className="text-gradient-champagne">Dream Car</span>
+            Find Your <span className="text-[#A87601]">Dream Car</span>
           </h1>
 
           {/* Subtitle */}
           <p
-            className="text-lg text-white max-w-lg mb-12 leading-relaxed animate-fade-in"
+            className="font-body text-lg md:text-xl text-slate-100/90 max-w-2xl mx-auto leading-relaxed animate-fade-in"
             style={{ animationDelay: "0.4s" }}
           >
             Explore our curated collection of luxury vehicles, supercars, and
             exotic automobiles from trusted sellers worldwide.
           </p>
+        </div>
 
-          {/* CTA buttons */}
-          <div
-            className="flex flex-col sm:flex-row gap-4 animate-fade-in"
-            style={{ animationDelay: "0.6s" }}
-          >
+        {/* CTA buttons */}
+        <div className="flex justify-center animate-fade-in pb-1" style={{ animationDelay: "0.6s" }}>
+          <div className="flex justify-center">
             <Link to="/search">
               <Button
                 size="lg"
-                className="group bg-[#0E317D] hover:bg-[#0E317D]/90 text-white font-body tracking-wide px-8 h-14 rounded-lg shadow-soft hover:shadow-elegant transition-all duration-500"
+                variant="link"
+                className="group h-auto px-0 py-0 text-lg md:text-xl font-body font-medium tracking-wide text-[#A87601] no-underline hover:no-underline transition-all duration-500"
               >
                 Browse Inventory
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
-            <Link to="/sell">
-              <Button
-                size="lg"
-                variant="outline"
-                className="font-body tracking-wide px-8 h-14 rounded-lg border-border/50 hover:bg-secondary/50 hover:border-accent/30 transition-all duration-500"
-              >
-                <Play className="mr-2 h-4 w-4" />
-                Sell Your Car
-              </Button>
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div
-            className="grid grid-cols-3 gap-10 mt-20 pt-10 border-t border-border/20 animate-fade-in"
-            style={{ animationDelay: "0.8s" }}
-          >
-            {[
-              { value: "15K+", label: "Vehicles Listed" },
-              { value: "8.5K", label: "Happy Buyers" },
-              { value: "99%", label: "Satisfaction" },
-            ].map((stat, index) => (
-              <div key={index} className="text-center sm:text-left">
-                <p className="font-poppins text-2xl md:text-3xl font-bold text-gradient-champagne">
-                  {stat.value}
-                </p>
-                <p className="text-xs tracking-wide text-white mt-1 uppercase">{stat.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-fade-in" style={{ animationDelay: "1s" }}>
-        <span className="text-[10px] text-white uppercase tracking-[0.2em]">Scroll</span>
         <div className="w-px h-10 bg-gradient-to-b from-accent/60 to-transparent" />
       </div>
     </section>

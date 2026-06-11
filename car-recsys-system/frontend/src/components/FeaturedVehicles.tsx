@@ -178,7 +178,7 @@ const FeaturedVehicles = () => {
           <Link to="/search">
             <Button
               size="lg"
-              className="bg-[#0E317D] hover:bg-[#0E317D]/90 text-white font-body tracking-wide px-8 h-14 rounded-sm shadow-soft hover:shadow-elegant transition-all duration-500"
+              className="bg-[#A87601] hover:bg-[#A87601]/90 text-white font-body tracking-wide px-8 h-14 rounded-sm shadow-soft hover:shadow-elegant transition-all duration-500"
             >
               Search Our Full Inventory
               <ArrowRight className="ml-2 h-4 w-4" />

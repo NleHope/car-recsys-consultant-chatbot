@@ -75,7 +75,7 @@ const LoginPage = () => {
         {/* Back to Home */}
         <Link
           to="/"
-          className="absolute top-4 left-8 inline-flex items-center gap-1.5 text-sm font-medium text-slate-800 transition-all duration-200 hover:text-[#0E317D] hover:underline hover:scale-105 z-10"
+          className="absolute top-4 left-8 inline-flex items-center gap-1.5 text-sm font-medium text-slate-800 transition-all duration-200 hover:text-[#A87601] hover:underline hover:scale-105 z-10"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home page
@@ -85,8 +85,8 @@ const LoginPage = () => {
         <div className="w-full max-w-md space-y-8 mt-12">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2 group">
-            <span className="font-sansita text-4xl font-extrabold text-slate-900">
-              Car<span className="text-[#0E317D]">Market</span>
+            <span className="font-body text-4xl font-semibold tracking-tight text-foreground">
+              Car<span className="text-[#A87601]">Market</span>
             </span>
           </Link>
 
@@ -191,7 +191,7 @@ const LoginPage = () => {
 
             <Button 
               type="submit"
-              className="w-full h-12 rounded-xl bg-[#0E317D] hover:bg-[#0E317D]/85 hover:shadow-lg text-white font-medium text-base transition-all duration-200"
+              className="w-full h-12 rounded-xl bg-[#A87601] hover:bg-[#A87601]/85 hover:shadow-lg text-white font-medium text-base transition-all duration-200"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -242,7 +242,7 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-[#0E317D] font-medium hover:underline"
+              className="text-[#A87601] font-medium hover:underline"
             >
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
@@ -263,7 +263,7 @@ const LoginPage = () => {
         {/* Content overlay */}
         <div className="absolute bottom-16 left-16 right-16">
           <h2 className="font-poppins text-4xl font-semibold text-foreground mb-4">
-            Discover Your <span className="text-[#0E317D]">Dream Car</span>
+            Discover Your <span className="text-[#A87601]">Dream Car</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-md">
             Join thousands of satisfied buyers and sellers in our premium automotive marketplace.

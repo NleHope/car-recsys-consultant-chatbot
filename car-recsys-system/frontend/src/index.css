@@ -6,55 +6,55 @@
 
 @layer base {
   :root {
-    --background: 208 100% 98%;
-    --foreground: 221 39% 17%;
+    --background: 36 30% 97%;
+    --foreground: 30 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 221 39% 17%;
+    --card-foreground: 30 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 221 39% 17%;
+    --popover-foreground: 30 15% 15%;
 
-    --primary: 217 91% 45%;
+    --primary: 42 99% 33%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 60% 96%;
-    --secondary-foreground: 221 39% 17%;
+    --secondary: 36 20% 94%;
+    --secondary-foreground: 30 15% 15%;
 
-    --muted: 210 40% 94%;
-    --muted-foreground: 221 20% 35%;
+    --muted: 36 15% 92%;
+    --muted-foreground: 30 8% 42%;
 
-    --accent: 210 85% 56%;
+    --accent: 42 99% 33%;
     --accent-foreground: 0 0% 100%;
 
-    --champagne: 210 75% 52%;
-    --champagne-light: 208 80% 66%;
-    --champagne-dark: 215 68% 42%;
+    --champagne: 42 99% 33%;
+    --champagne-light: 42 100% 48%;
+    --champagne-dark: 42 95% 25%;
 
     --destructive: 0 65% 50%;
     --destructive-foreground: 40 20% 98%;
 
-    --border: 214 32% 88%;
-    --input: 214 32% 88%;
-    --ring: 210 85% 56%;
+    --border: 36 15% 86%;
+    --input: 36 15% 86%;
+    --ring: 42 99% 33%;
 
     --radius: 0.375rem;
 
-    --sidebar-background: 210 71% 98%;
-    --sidebar-foreground: 221 39% 17%;
-    --sidebar-primary: 217 91% 45%;
+    --sidebar-background: 36 25% 97%;
+    --sidebar-foreground: 30 15% 15%;
+    --sidebar-primary: 42 99% 33%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 60% 95%;
-    --sidebar-accent-foreground: 221 39% 17%;
-    --sidebar-border: 214 32% 88%;
-    --sidebar-ring: 210 85% 56%;
+    --sidebar-accent: 42 100% 95%;
+    --sidebar-accent-foreground: 30 15% 15%;
+    --sidebar-border: 36 15% 86%;
+    --sidebar-ring: 42 99% 33%;
 
     --font-heading: 'Cormorant Garamond', serif;
     --font-body: 'Jost', sans-serif;
 
-    --gradient-champagne: linear-gradient(135deg, hsl(210 75% 52%), hsl(208 80% 66%));
-    --gradient-subtle: linear-gradient(180deg, hsl(208 100% 98%), hsl(210 60% 96%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 97%));
+    --gradient-champagne: linear-gradient(135deg, hsl(42 99% 33%), hsl(42 95% 48%));
+    --gradient-subtle: linear-gradient(180deg, hsl(36 30% 97%), hsl(36 20% 94%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(36 15% 97%));
 
     --shadow-soft: 0 4px 24px -8px hsl(215 45% 35% / 0.12);
     --shadow-elegant: 0 20px 40px -12px hsl(215 45% 35% / 0.18);
@@ -71,7 +71,7 @@
     --popover: 222 28% 13%;
     --popover-foreground: 210 20% 92%;
 
-    --primary: 217 85% 60%;
+    --primary: 42 95% 48%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 222 22% 18%;
@@ -80,28 +80,28 @@
     --muted: 222 18% 18%;
     --muted-foreground: 215 16% 65%;
 
-    --accent: 210 80% 60%;
+    --accent: 42 95% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --champagne: 210 75% 58%;
-    --champagne-light: 208 80% 70%;
-    --champagne-dark: 215 68% 48%;
+    --champagne: 42 95% 48%;
+    --champagne-light: 42 100% 58%;
+    --champagne-dark: 42 90% 40%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 40 20% 98%;
 
     --border: 222 20% 22%;
     --input: 222 20% 22%;
-    --ring: 217 85% 60%;
+    --ring: 42 95% 48%;
 
     --sidebar-background: 222 30% 11%;
     --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 217 85% 60%;
+    --sidebar-primary: 42 95% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 22% 18%;
+    --sidebar-accent: 42 40% 20%;
     --sidebar-accent-foreground: 210 20% 92%;
     --sidebar-border: 222 20% 22%;
-    --sidebar-ring: 217 85% 60%;
+    --sidebar-ring: 42 95% 48%;
 
     --gradient-subtle: linear-gradient(180deg, hsl(222 32% 9%), hsl(222 28% 13%));
     --gradient-card: linear-gradient(145deg, hsl(222 28% 13%), hsl(222 25% 15%));
@@ -124,9 +124,9 @@
     @apply bg-background text-foreground font-body antialiased;
     letter-spacing: 0.01em;
     background-image:
-      radial-gradient(circle at 15% 20%, hsl(205 100% 88% / 0.55), transparent 42%),
-      radial-gradient(circle at 85% 10%, hsl(215 100% 84% / 0.45), transparent 46%),
-      linear-gradient(180deg, hsl(208 100% 98%), hsl(210 60% 95%));
+      radial-gradient(circle at 15% 20%, hsl(42 60% 92% / 0.55), transparent 42%),
+      radial-gradient(circle at 85% 10%, hsl(36 50% 90% / 0.45), transparent 46%),
+      linear-gradient(180deg, hsl(36 30% 97%), hsl(36 20% 95%));
     background-attachment: fixed;
   }
 

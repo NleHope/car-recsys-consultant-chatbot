@@ -52,37 +52,37 @@ const SellPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ backgroundColor: "#1a5cf5" }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ backgroundColor: "#CFCFCF" }}>
       {/* Large circle top-left (cut off) */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "520px", height: "520px", top: "-180px", left: "-160px", backgroundColor: "#0e2d8f", opacity: 0.85 }} />
+        style={{ width: "520px", height: "520px", top: "-180px", left: "-160px", backgroundColor: "#757575", opacity: 0.85 }} />
       {/* Medium circle top-right (cut off) */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "300px", height: "300px", top: "-80px", right: "-60px", backgroundColor: "#0c2580", opacity: 0.7 }} />
+        style={{ width: "300px", height: "300px", top: "-80px", right: "-60px", backgroundColor: "#757575", opacity: 0.7 }} />
       {/* Large semicircle bottom-right */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "680px", height: "680px", bottom: "-280px", right: "-180px", backgroundColor: "#1035a8", opacity: 0.85 }} />
+        style={{ width: "680px", height: "680px", bottom: "-280px", right: "-180px", backgroundColor: "#757575", opacity: 0.85 }} />
       {/* Medium circle bottom-left (cut off) */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "360px", height: "360px", bottom: "-120px", left: "-100px", backgroundColor: "#0c2a9e", opacity: 0.65 }} />
+        style={{ width: "360px", height: "360px", bottom: "-120px", left: "-100px", backgroundColor: "#757575", opacity: 0.65 }} />
       {/* Medium circle left-center */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "200px", height: "200px", top: "42%", left: "-70px", backgroundColor: "#0e2d8f", opacity: 0.55 }} />
+        style={{ width: "200px", height: "200px", top: "42%", left: "-70px", backgroundColor: "#757575", opacity: 0.55 }} />
       {/* Small dot top-center */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "52px", height: "52px", top: "60px", left: "44%", backgroundColor: "#0e2470", opacity: 0.9 }} />
+        style={{ width: "52px", height: "52px", top: "60px", left: "44%", backgroundColor: "#6E6E6E", opacity: 0.9 }} />
       {/* Small dot right-center */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "36px", height: "36px", top: "38%", right: "12%", backgroundColor: "#0a1f6e", opacity: 0.75 }} />
+        style={{ width: "36px", height: "36px", top: "38%", right: "12%", backgroundColor: "#6E6E6E", opacity: 0.75 }} />
       {/* Tiny dot top-left area */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "22px", height: "22px", top: "22%", left: "18%", backgroundColor: "#0a1f6e", opacity: 0.6 }} />
+        style={{ width: "22px", height: "22px", top: "22%", left: "18%", backgroundColor: "#6E6E6E", opacity: 0.6 }} />
       {/* Tiny dot bottom-center */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "18px", height: "18px", bottom: "18%", left: "52%", backgroundColor: "#0c2580", opacity: 0.65 }} />
+        style={{ width: "18px", height: "18px", bottom: "18%", left: "52%", backgroundColor: "#6E6E6E", opacity: 0.65 }} />
       {/* Small circle mid-right */}
       <div className="pointer-events-none absolute rounded-full"
-        style={{ width: "110px", height: "110px", top: "55%", right: "-30px", backgroundColor: "#0e2d8f", opacity: 0.6 }} />
+        style={{ width: "110px", height: "110px", top: "55%", right: "-30px", backgroundColor: "#757575", opacity: 0.6 }} />
 
       <Header />
       <main className="flex-1 pt-28 pb-16 relative z-10">
@@ -92,7 +92,7 @@ const SellPage = () => {
             <h1 className="font-poppins text-3xl md:text-4xl font-semibold text-white mb-3">
               Sell Your Car
             </h1>
-            <p className="text-blue-100 text-lg">
+            <p className="text-black-100 text-lg">
               Fill in the details about your car to find a buyer quickly
             </p>
           </div>
@@ -270,7 +270,7 @@ const SellPage = () => {
             <div className="pt-4">
               <Button
                 type="submit"
-                className="w-full h-14 rounded-xl text-base bg-[#0E317D] hover:bg-[#0C2868] hover:shadow-lg text-white font-semibold transition-all duration-200"
+                className="w-full h-14 rounded-xl text-base bg-[#A87601] hover:bg-[#A87601]/85 hover:shadow-lg text-white font-semibold transition-all duration-200"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

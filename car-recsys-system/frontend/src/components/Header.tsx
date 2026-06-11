@@ -27,28 +27,28 @@ const Header = () => {
         <div className="flex h-20 items-center justify-between">
 
           <div className="flex items-center gap-8">
-            <Link to="/" className="text-2xl font-extrabold text-foreground font-sansita">
-              Car<span className="text-primary">Market</span>
+            <Link to="/" className="font-body text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
+              Car<span className="text-[#A87601]">Market</span>
             </Link>
           </div>
 
           <nav className="hidden items-center gap-6 md:flex">
             <NavLink
               to="/"
-              className="text-base font-semibold text-foreground/70 transition-all hover:bg-secondary hover:text-foreground hover:scale-105 rounded-md px-3 py-2"
+              className="text-base font-semibold text-foreground/70 transition-all hover:bg-[#A87601]/10 hover:text-[#A87601] hover:scale-105 rounded-md px-3 py-2"
               end
             >
               Home
             </NavLink>
             <NavLink
               to="/search"
-              className="text-base font-semibold text-foreground/70 transition-all hover:bg-secondary hover:text-foreground hover:scale-105 rounded-md px-3 py-2"
+              className="text-base font-semibold text-foreground/70 transition-all hover:bg-[#A87601]/10 hover:text-[#A87601] hover:scale-105 rounded-md px-3 py-2"
             >
               Browse
             </NavLink>
             <NavLink
               to="/sell"
-              className="text-base font-semibold text-foreground/70 transition-all hover:bg-secondary hover:text-foreground hover:scale-105 rounded-md px-3 py-2"
+              className="text-base font-semibold text-foreground/70 transition-all hover:bg-[#A87601]/10 hover:text-[#A87601] hover:scale-105 rounded-md px-3 py-2"
             >
               Sell
             </NavLink>
@@ -87,10 +87,10 @@ const Header = () => {
             ) : (
               <Link
                 to="/login"
-                className="relative text-base font-semibold text-foreground/70 transition-all duration-200 hover:text-primary hover:scale-105 group px-1"
+                className="relative text-base font-semibold text-foreground/70 transition-all duration-200 hover:text-[#A87601] hover:scale-105 group px-1"
               >
                 Login
-                <span className="absolute left-0 -bottom-0.5 h-[2px] w-0 bg-primary transition-all duration-200 group-hover:w-full rounded-full" />
+                <span className="absolute left-0 -bottom-0.5 h-[2px] w-0 bg-[#A87601] transition-all duration-200 group-hover:w-full rounded-full" />
               </Link>
             )}
           </div>

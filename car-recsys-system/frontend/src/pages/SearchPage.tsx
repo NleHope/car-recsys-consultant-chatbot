@@ -461,12 +461,11 @@ const SearchPage = () => {
 
   const hasActiveFilters = searchQuery || selectedBrand || selectedFuel || selectedTransmission || priceMin || priceMax || mileageMax;
 
-  // whiteLabels: true = sidebar (blue bg), false = mobile sheet (white bg)
-  const FilterContent = ({ whiteLabels = false }: { whiteLabels?: boolean }) => (
+  const FilterContent = () => (
     <div className="space-y-6">
       {/* Brand */}
       <div>
-        <Label className={`text-sm font-medium mb-2 block ${whiteLabels ? "text-white" : ""}`}>
+        <Label className="text-sm font-medium mb-2 block text-black">
           Make / Brand
         </Label>
         <Select value={selectedBrand} onValueChange={(val) => { setSelectedBrand(val); setPage(1); }}>
@@ -484,7 +483,7 @@ const SearchPage = () => {
 
       {/* Price Range */}
       <div>
-        <Label className={`text-sm font-medium mb-2 block ${whiteLabels ? "text-white" : ""}`}>
+        <Label className="text-sm font-medium mb-2 block text-black">
           Price Range
         </Label>
         <div className="grid grid-cols-2 gap-3">
@@ -507,7 +506,7 @@ const SearchPage = () => {
 
       {/* Mileage */}
       <div>
-        <Label className={`text-sm font-medium mb-2 block ${whiteLabels ? "text-white" : ""}`}>
+        <Label className="text-sm font-medium mb-2 block text-black">
           Maximum Mileage
         </Label>
         <Select value={mileageMax} onValueChange={(val) => { setMileageMax(val); setPage(1); }}>
@@ -527,7 +526,7 @@ const SearchPage = () => {
 
       {/* Fuel Type */}
       <div>
-        <Label className={`text-sm font-medium mb-2 block ${whiteLabels ? "text-white" : ""}`}>
+        <Label className="text-sm font-medium mb-2 block text-black">
           Fuel Type
         </Label>
         <Select value={selectedFuel} onValueChange={(val) => { setSelectedFuel(val); setPage(1); }}>
@@ -545,7 +544,7 @@ const SearchPage = () => {
 
       {/* Transmission */}
       <div>
-        <Label className={`text-sm font-medium mb-2 block ${whiteLabels ? "text-white" : ""}`}>
+        <Label className="text-sm font-medium mb-2 block text-black">
           Transmission
         </Label>
         <Select value={selectedTransmission} onValueChange={(val) => { setSelectedTransmission(val); setPage(1); }}>
@@ -630,7 +629,7 @@ const SearchPage = () => {
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
-                  <FilterContent whiteLabels={false} />
+                    <FilterContent />
                 </div>
               </SheetContent>
             </Sheet>
@@ -639,11 +638,11 @@ const SearchPage = () => {
           <div className="flex gap-8">
             {/* Desktop Sidebar Filters */}
             <aside className="hidden md:block w-72 shrink-0">
-              <div className="sticky top-28 bg-[#0E317D] rounded-2xl p-6">
-                <h3 className="font-poppins text-2xl font-semibold mb-6 text-white text-center">
+              <div className="sticky top-28 bg-[#E6E6E6] rounded-2xl p-6 border border-[#A87601]">
+                <h3 className="font-poppins text-2xl font-semibold mb-6 text-black text-center">
                   Filters
                 </h3>
-                <FilterContent whiteLabels={true} />
+                <FilterContent />
               </div>
             </aside>
 

@@ -31,9 +31,9 @@ const PopularCategories = () => {
               <Link
                 key={name}
                 to={`/search?category=${encodeURIComponent(name)}`}
-                className="px-5 py-3 rounded-sm text-base font-semibold text-foreground bg-secondary/50 border border-border/50 transition-all duration-300 text-center hover:bg-[#0E317D] hover:text-white hover:border-[#0E317D] flex flex-col items-center gap-2"
+                className="flex min-h-28 w-full flex-col items-center justify-center gap-3 rounded-lg border border-border/50 bg-[#E6E6E6] px-6 py-5 text-lg text-black transition-all duration-300 text-center hover:bg-[#A87601] hover:text-white hover:border-[#A87601]"
               >
-                <Icon className="w-6 h-6" />
+                <Icon className="w-7 h-7" />
                 {name}
               </Link>
             ))}

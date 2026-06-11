@@ -432,7 +432,7 @@ const VehicleDetailPage = () => {
                                     key={star} 
                                     className={`h-4 w-4 ${
                                       star <= Math.round(seller.seller_rating!) 
-                                        ? 'text-purple-500 fill-purple-500' 
+                                        ? 'text-[#A87601] fill-[#A87601]' 
                                         : 'text-muted-foreground'
                                     }`} 
                                   />
@@ -535,7 +535,7 @@ const VehicleDetailPage = () => {
                             key={star} 
                             className={`h-5 w-5 ${
                               star <= review.overall_rating! 
-                                ? 'text-purple-500 fill-purple-500' 
+                                ? 'text-[#A87601] fill-[#A87601]' 
                                 : 'text-muted-foreground'
                             }`} 
                           />

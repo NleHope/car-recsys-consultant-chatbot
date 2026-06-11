@@ -16,6 +16,8 @@ import FavoritesPage from "./pages/FavoritesPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import ChatPopup from "./components/ChatPopup";
+import ScrollToTop from "./components/ScrollToTop";
+import ScrollUpButton from "./components/ScrollUpButton";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/search" element={<SearchPage />} />
@@ -42,6 +45,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <ChatPopup />
+            <ScrollUpButton />
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
