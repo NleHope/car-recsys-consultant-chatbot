@@ -76,8 +76,11 @@ export default function ChatPage() {
   };
 
   const startNewConversation = () => {
-    // Clear the server-side session (history + profile) for a fresh start.
-    if (sessionId) {
+    // For guests, reset clears the in-memory server session. For logged-in users
+    // we must NOT call reset on a saved session (the logged-in backend path has
+    // no reset handling — it would persist a junk "reset" turn). New chat = just
+    // drop the session_id; the saved conversation stays intact in history.
+    if (sessionId && !loggedIn) {
       chatApi.reset(sessionId).catch(() => { /* ignore — local reset is enough */ });
     }
     setSessionId(null);
