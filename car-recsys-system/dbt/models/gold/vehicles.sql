@@ -32,6 +32,11 @@ feat_agg as (
 body_type_map as (
     select brand_model_base, body_type
     from {{ ref('car_model_body_type') }}
+),
+
+-- raw exterior color name -> one of ~12 basic groups (for the color-swatch filter).
+color_map as (
+    select raw_color, color_group from {{ ref('color_map') }}
 )
 
 select
@@ -48,6 +53,67 @@ select
     fl.monthly_payment,
     fl.mileage,
     fl.exterior_color,
+    nullif((regexp_match(fl.car_model_slug, '-((19|20)[0-9][0-9])$'))[1], '')::int as year,
+    coalesce(
+        cm_color.color_group,
+        case
+            when lower(fl.exterior_color) like '%black%'
+              or lower(fl.exterior_color) like '%ebony%'
+              or lower(fl.exterior_color) like '%caviar%'
+              or lower(fl.exterior_color) like '%onyx%'
+              or lower(fl.exterior_color) like '%midnight%'
+              or lower(fl.exterior_color) like '%nightfall%' then 'Black'
+            when lower(fl.exterior_color) like '%white%'
+              or lower(fl.exterior_color) like '%pearl%'
+              or lower(fl.exterior_color) like '%ice%'
+              or lower(fl.exterior_color) like '%blizzard%'
+              or lower(fl.exterior_color) like '%snow%'
+              or lower(fl.exterior_color) like '%frost%'
+              or lower(fl.exterior_color) like '%ivory%' then 'White'
+            when lower(fl.exterior_color) like '%silver%'
+              or lower(fl.exterior_color) like '%sterling%'
+              or lower(fl.exterior_color) like '%platinum%'
+              or lower(fl.exterior_color) like '%aluminum%' then 'Silver'
+            when lower(fl.exterior_color) like '%gray%' or lower(fl.exterior_color) like '%grey%'
+              or lower(fl.exterior_color) like '%steel%'
+              or lower(fl.exterior_color) like '%graphite%'
+              or lower(fl.exterior_color) like '%granite%'
+              or lower(fl.exterior_color) like '%gunmetal%' or lower(fl.exterior_color) like '%gun metal%' or lower(fl.exterior_color) like '%gun metallic%'
+              or lower(fl.exterior_color) like '%iridium%'
+              or lower(fl.exterior_color) like '%magnetic%'
+              or lower(fl.exterior_color) like '%cement%'
+              or lower(fl.exterior_color) like '%charcoal%'
+              or lower(fl.exterior_color) like '%slate%'
+              or lower(fl.exterior_color) like '%ash%'
+              or lower(fl.exterior_color) like '%shadow%' then 'Gray'
+            when lower(fl.exterior_color) like '%red%'
+              or lower(fl.exterior_color) like '%scarlet%'
+              or lower(fl.exterior_color) like '%ruby%'
+              or lower(fl.exterior_color) like '%crimson%'
+              or lower(fl.exterior_color) like '%cherry%'
+              or lower(fl.exterior_color) like '%burgundy%' then 'Red'
+            when lower(fl.exterior_color) like '%blue%'
+              or lower(fl.exterior_color) like '%navy%'
+              or lower(fl.exterior_color) like '%indigo%'
+              or lower(fl.exterior_color) like '%azure%' then 'Blue'
+            when lower(fl.exterior_color) like '%green%'
+              or lower(fl.exterior_color) like '%moss%'
+              or lower(fl.exterior_color) like '%emerald%'
+              or lower(fl.exterior_color) like '%olive%' then 'Green'
+            when lower(fl.exterior_color) like '%brown%'
+              or lower(fl.exterior_color) like '%bronze%'
+              or lower(fl.exterior_color) like '%mocha%'
+              or lower(fl.exterior_color) like '%copper%'
+              or lower(fl.exterior_color) like '%mahogany%' then 'Brown'
+            when lower(fl.exterior_color) like '%beige%' or lower(fl.exterior_color) like '%tan%'
+              or lower(fl.exterior_color) like '%sand%'
+              or lower(fl.exterior_color) like '%champagne%'
+              or lower(fl.exterior_color) like '%cream%' then 'Beige'
+            when lower(fl.exterior_color) like '%gold%' or lower(fl.exterior_color) like '%yellow%' then 'Yellow'
+            when lower(fl.exterior_color) like '%orange%' then 'Orange'
+            else 'Other'
+        end
+    ) as color_group,
     fl.interior_color,
     fl.fuel_type,
     bt.body_type,
@@ -107,6 +173,8 @@ left join img_agg  img  on fl.listing_sk = img.listing_sk
 left join feat_agg feat on fl.listing_sk = feat.listing_sk
 left join body_type_map bt
     on regexp_replace(fl.car_model_slug, '-(19|20)[0-9][0-9]$', '') = bt.brand_model_base
+left join color_map cm_color
+    on lower(cm_color.raw_color) = lower(fl.exterior_color)
 {% if is_incremental() %}
 where fl.last_updated_date >= (select coalesce(max(last_updated_date), '1900-01-01') from {{ this }})
 {% endif %}
