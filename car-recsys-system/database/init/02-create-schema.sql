@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS gold.users (
     hashed_password TEXT NOT NULL,
     full_name       TEXT,
     phone           TEXT,
+    avatar_url      TEXT,
     is_active       BOOLEAN DEFAULT TRUE,
     is_verified     BOOLEAN DEFAULT FALSE,
     created_at      TIMESTAMP DEFAULT NOW(),
