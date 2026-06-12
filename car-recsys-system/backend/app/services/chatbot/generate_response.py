@@ -284,7 +284,7 @@ def sql_search_cars(brand=None, model=None, constraints=None, exclude_brands=Non
             vin AS "VIN", new_used AS status, title, brand,
             exterior_color, interior_color, drivetrain, fuel_type,
             transmission, engine, price, monthly_payment, mileage, mpg,
-            vehicle_url AS post_link
+            vehicle_url AS post_link, primary_image_url
         FROM gold.vehicles
         WHERE {' AND '.join(conditions)}
         ORDER BY price ASC
@@ -378,6 +378,7 @@ class AgenticState(TypedDict):
     model: Optional[str]
     session_id: str
     profile: dict
+    vehicles: list
 
 
 class IntentDecision(BaseModel):
@@ -556,6 +557,17 @@ def _build_agentic_app(llm, vector_store):
             brand=brand, model=model, constraints=constraints,
             exclude_brands=excluded, limit=6,
         )
+        cards = [
+            {
+                "vin": r.get("VIN"),
+                "title": r.get("title"),
+                "brand": r.get("brand"),
+                "price": float(r["price"]) if r.get("price") is not None else None,
+                "image_url": r.get("primary_image_url"),
+            }
+            for r in rows
+            if r.get("VIN")
+        ]
         sql_ctx = format_sql_cars(rows)
 
         vec_results = vector_store.similarity_search_with_score(soft_query, k=5)
@@ -572,7 +584,7 @@ def _build_agentic_app(llm, vector_store):
         profile_obj = log_viewed(UserProfile(**profile), [r.get("title") for r in rows])
         print(f"[HYBRID] sql_rows={len(rows)} vector_hits={len(vec_results)} soft_query={soft_query!r}")
         print(f"[HYBRID CONTEXT]\n{context}")
-        return {"context": context, "profile": profile_obj.model_dump(), "messages": []}
+        return {"context": context, "profile": profile_obj.model_dump(), "messages": [], "vehicles": cards}
 
     def consult(state: AgenticState):
         system_prompt = """You are an expert car sales consultant.
@@ -1210,5 +1222,6 @@ def generate_response(llm, vector_store, chat_history_buffer, user_input, sessio
 
     # Limit memory
     chat_history_buffer = chat_history_buffer[-10:]
-   
-    return final_answer, chat_history_buffer
+
+    vehicles = graph_state.get("vehicles", []) or []
+    return final_answer, chat_history_buffer, vehicles
