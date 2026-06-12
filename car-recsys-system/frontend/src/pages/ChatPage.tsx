@@ -12,8 +12,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   chatApi, Vehicle,
-  formatPrice, formatMileage, getCurrentUser
+  formatPrice, formatMileage, getCurrentUser, isAuthenticated
 } from '@/lib/api';
+import { useChatSessions, useChatSessionMessages, useDeleteChatSession } from '@/hooks/useApi';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
@@ -34,6 +35,22 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = getCurrentUser();
+  const loggedIn = isAuthenticated();
+  const { data: sessions, refetch: refetchSessions } = useChatSessions(loggedIn);
+  const deleteSession = useDeleteChatSession();
+  const { data: sessionMessages } = useChatSessionMessages(loggedIn ? sessionId : null);
+
+  // When a past session's messages load, render them.
+  useEffect(() => {
+    if (sessionMessages && sessionMessages.length > 0) {
+      setMessages(sessionMessages.map((m, i) => ({
+        id: `db-${i}`,
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.content,
+        timestamp: m.created_at ? new Date(m.created_at) : new Date(),
+      })));
+    }
+  }, [sessionMessages]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -53,6 +70,10 @@ export default function ChatPage() {
       }]);
     }
   }, [messages.length, sessionId]);
+
+  const openSession = (id: string) => {
+    setSessionId(id);   // triggers useChatSessionMessages(id) → effect loads messages
+  };
 
   const startNewConversation = () => {
     // Clear the server-side session (history + profile) for a fresh start.
@@ -83,6 +104,7 @@ export default function ChatPage() {
       // Server assigns a session_id on the first turn; reuse it for context.
       if (response.session_id) {
         setSessionId(response.session_id);
+        if (loggedIn) refetchSessions();
       }
 
       const assistantMessage: Message = {
@@ -104,7 +126,7 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, sessionId]);
+  }, [input, isLoading, sessionId, loggedIn, refetchSessions]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -126,6 +148,36 @@ export default function ChatPage() {
       <Header />
       
       <div className="flex-1 flex overflow-hidden">
+        {/* History Sidebar (logged-in only) */}
+        {loggedIn && (
+          <aside className="hidden lg:flex lg:flex-col w-64 border-r border-border bg-card/40 p-3 gap-2">
+            <button
+              onClick={startNewConversation}
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent/10"
+            >
+              + New chat
+            </button>
+            <div className="flex-1 overflow-y-auto space-y-1">
+              {(sessions ?? []).map((s) => (
+                <div
+                  key={s.id}
+                  className={`group flex items-center gap-1 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-accent/10 ${sessionId === s.id ? "bg-accent/10" : ""}`}
+                  onClick={() => openSession(s.id)}
+                >
+                  <span className="flex-1 truncate">{s.title || "New conversation"}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteSession.mutate(s.id, { onSuccess: () => { if (sessionId === s.id) startNewConversation(); } }); }}
+                    className="opacity-0 group-hover:opacity-100 text-destructive text-xs"
+                    title="Delete"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </aside>
+        )}
+
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
