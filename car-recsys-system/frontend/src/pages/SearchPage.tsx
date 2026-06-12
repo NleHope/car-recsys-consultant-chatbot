@@ -374,6 +374,7 @@ import VehicleCard from "@/components/VehicleCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -388,13 +389,38 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useVehicleSearch } from "@/hooks/useApi";
+import { useVehicleSearch, useColorGroups, useFeatureOptions } from "@/hooks/useApi";
 import { SearchParams } from "@/lib/api";
 
 // Available filter options (can be fetched from API later)
 const brands = ["Audi", "BMW", "Buick", "Chevrolet", "Dodge", "Ford", "GMC", "Honda", "Hyundai", "Jeep", "Kia", "Lexus", "Lincoln", "Mazda", "Mercedes-Benz", "Mitsubishi", "Nissan", "RAM", "Subaru", "Toyota", "Volkswagen", "Volvo"];
 const fuelTypes = ["Gasoline", "Diesel", "Electric", "Hybrid"];
 const transmissions = ["Automatic", "Manual", "CVT"];
+const bodyTypes = ["SUV", "Sedan", "Pickup Truck", "Coupe", "Hatchback", "Wagon", "Convertible", "Minivan"];
+const drivetrains = [
+  { value: "All-wheel Drive", label: "AWD" },
+  { value: "Four-wheel Drive", label: "4WD" },
+  { value: "Front-wheel Drive", label: "FWD" },
+  { value: "Rear-wheel Drive", label: "RWD" },
+];
+// Registration-year dropdown options (newest first), matching gold.vehicles.year range.
+const years = Array.from({ length: 2027 - 2000 + 1 }, (_, i) => 2027 - i);
+
+// color_group -> swatch hex (the 12 basic groups from the dbt color_map).
+const COLOR_SWATCHES: { group: string; hex: string }[] = [
+  { group: "Black", hex: "#111111" },
+  { group: "White", hex: "#f5f5f5" },
+  { group: "Gray", hex: "#808080" },
+  { group: "Silver", hex: "#c0c0c0" },
+  { group: "Red", hex: "#c62828" },
+  { group: "Blue", hex: "#1565c0" },
+  { group: "Green", hex: "#2e7d32" },
+  { group: "Brown", hex: "#5d4037" },
+  { group: "Beige", hex: "#d9c9a3" },
+  { group: "Yellow", hex: "#f9c80e" },
+  { group: "Orange", hex: "#ef6c00" },
+  { group: "Other", hex: "#9e9e9e" },
+];
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -407,10 +433,32 @@ const SearchPage = () => {
   const [priceMin, setPriceMin] = useState(searchParams.get("price_min") || "");
   const [priceMax, setPriceMax] = useState(searchParams.get("price_max") || "");
   const [mileageMax, setMileageMax] = useState(searchParams.get("mileage_max") || "");
+  const [yearMin, setYearMin] = useState(searchParams.get("year_min") || "");
+  const [yearMax, setYearMax] = useState(searchParams.get("year_max") || "");
+  const [selectedDrivetrain, setSelectedDrivetrain] = useState(searchParams.get("drivetrain") || "");
+  const [selectedBody, setSelectedBody] = useState(searchParams.get("body") || "");
+  const [selectedColor, setSelectedColor] = useState(searchParams.get("color") || "");
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(
+    (searchParams.get("features") || "").split(",").map((f) => f.trim()).filter(Boolean)
+  );
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "created_at");
   const [sortOrder, setSortOrder] = useState(searchParams.get("order") || "desc");
   const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"));
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Lookup data for the swatch + feature-checkbox filters.
+  const { data: colorGroups } = useColorGroups();
+  const { data: featureOptions } = useFeatureOptions(15);
+
+  const toggleFeature = (name: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name]
+    );
+    setPage(1);
+  };
+
+  // Only render swatches for color groups that actually have listings.
+  const availableColorGroups = new Set((colorGroups ?? []).map((c) => c.color_group));
 
   // "Popular Categories" on the home page link to /search?category=<Name>.
   // Resolve that into the right backend filter: fuel categories map to
@@ -425,8 +473,13 @@ const SearchPage = () => {
     query: searchQuery || undefined,
     brand: selectedBrand && selectedBrand !== "all" ? selectedBrand : undefined,
     fuel_type: (selectedFuel && selectedFuel !== "all" ? selectedFuel : undefined) ?? categoryFuel,
-    body_type: categoryBody,
     transmission: selectedTransmission && selectedTransmission !== "all" ? selectedTransmission : undefined,
+    drivetrain: selectedDrivetrain && selectedDrivetrain !== "all" ? selectedDrivetrain : undefined,
+    body_type: (selectedBody && selectedBody !== "all" ? selectedBody : undefined) ?? categoryBody,
+    color: selectedColor && selectedColor !== "all" ? selectedColor : undefined,
+    features: selectedFeatures.length ? selectedFeatures.join(",") : undefined,
+    year_min: yearMin ? parseInt(yearMin) : undefined,
+    year_max: yearMax ? parseInt(yearMax) : undefined,
     price_min: priceMin ? parseFloat(priceMin.replace(/\D/g, "")) : undefined,
     price_max: priceMax ? parseFloat(priceMax.replace(/\D/g, "")) : undefined,
     mileage_max: mileageMax && mileageMax !== "all" ? parseFloat(mileageMax) : undefined,
@@ -447,6 +500,12 @@ const SearchPage = () => {
     if (selectedBrand && selectedBrand !== "all") params.set("brand", selectedBrand);
     if (selectedFuel && selectedFuel !== "all") params.set("fuel", selectedFuel);
     if (selectedTransmission && selectedTransmission !== "all") params.set("transmission", selectedTransmission);
+    if (selectedDrivetrain && selectedDrivetrain !== "all") params.set("drivetrain", selectedDrivetrain);
+    if (selectedBody && selectedBody !== "all") params.set("body", selectedBody);
+    if (selectedColor && selectedColor !== "all") params.set("color", selectedColor);
+    if (selectedFeatures.length) params.set("features", selectedFeatures.join(","));
+    if (yearMin) params.set("year_min", yearMin);
+    if (yearMax) params.set("year_max", yearMax);
     if (priceMin) params.set("price_min", priceMin);
     if (priceMax) params.set("price_max", priceMax);
     if (mileageMax && mileageMax !== "all") params.set("mileage_max", mileageMax);
@@ -455,7 +514,7 @@ const SearchPage = () => {
     if (page > 1) params.set("page", page.toString());
 
     setSearchParams(params, { replace: true });
-  }, [category, searchQuery, selectedBrand, selectedFuel, selectedTransmission, priceMin, priceMax, mileageMax, sortBy, sortOrder, page]);
+  }, [category, searchQuery, selectedBrand, selectedFuel, selectedTransmission, selectedDrivetrain, selectedBody, selectedColor, selectedFeatures, yearMin, yearMax, priceMin, priceMax, mileageMax, sortBy, sortOrder, page]);
 
   const clearCategory = () => {
     const params = new URLSearchParams(searchParams);
@@ -468,6 +527,12 @@ const SearchPage = () => {
     setSelectedBrand("");
     setSelectedFuel("");
     setSelectedTransmission("");
+    setSelectedDrivetrain("");
+    setSelectedBody("");
+    setSelectedColor("");
+    setSelectedFeatures([]);
+    setYearMin("");
+    setYearMax("");
     setPriceMin("");
     setPriceMax("");
     setMileageMax("");
@@ -477,7 +542,7 @@ const SearchPage = () => {
     clearCategory();
   };
 
-  const hasActiveFilters = searchQuery || selectedBrand || selectedFuel || selectedTransmission || priceMin || priceMax || mileageMax || category;
+  const hasActiveFilters = searchQuery || selectedBrand || selectedFuel || selectedTransmission || selectedDrivetrain || selectedBody || selectedColor || selectedFeatures.length > 0 || yearMin || yearMax || priceMin || priceMax || mileageMax || category;
 
   const FilterContent = () => (
     <div className="space-y-6">
@@ -497,6 +562,37 @@ const SearchPage = () => {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Registration Year */}
+      <div>
+        <Label className="text-sm font-medium mb-2 block text-black">
+          Registration Year
+        </Label>
+        <div className="grid grid-cols-2 gap-3">
+          <Select value={yearMin || "all"} onValueChange={(val) => { setYearMin(val === "all" ? "" : val); setPage(1); }}>
+            <SelectTrigger className="h-10 bg-white text-black border-white/20">
+              <SelectValue placeholder="From" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">From</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={yearMax || "all"} onValueChange={(val) => { setYearMax(val === "all" ? "" : val); setPage(1); }}>
+            <SelectTrigger className="h-10 bg-white text-black border-white/20">
+              <SelectValue placeholder="To" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">To</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Price Range */}
@@ -577,6 +673,94 @@ const SearchPage = () => {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Drivetrain */}
+      <div>
+        <Label className="text-sm font-medium mb-2 block text-black">
+          Drivetrain
+        </Label>
+        <Select value={selectedDrivetrain} onValueChange={(val) => { setSelectedDrivetrain(val); setPage(1); }}>
+          <SelectTrigger className="h-10 bg-white text-black border-white/20">
+            <SelectValue placeholder="All drivetrains" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All drivetrains</SelectItem>
+            {drivetrains.map((dt) => (
+              <SelectItem key={dt.value} value={dt.value}>{dt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Body Type */}
+      <div>
+        <Label className="text-sm font-medium mb-2 block text-black">
+          Body Type
+        </Label>
+        <Select value={selectedBody} onValueChange={(val) => { setSelectedBody(val); setPage(1); }}>
+          <SelectTrigger className="h-10 bg-white text-black border-white/20">
+            <SelectValue placeholder="All body types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All body types</SelectItem>
+            {bodyTypes.map((bt) => (
+              <SelectItem key={bt} value={bt}>{bt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Exterior Color */}
+      <div>
+        <Label className="text-sm font-medium mb-2 block text-black">
+          Exterior Color
+        </Label>
+        <div className="grid grid-cols-6 gap-2">
+          {COLOR_SWATCHES.filter((c) => availableColorGroups.size === 0 || availableColorGroups.has(c.group)).map((c) => {
+            const active = selectedColor === c.group;
+            return (
+              <button
+                key={c.group}
+                type="button"
+                title={c.group}
+                aria-label={c.group}
+                onClick={() => { setSelectedColor(active ? "" : c.group); setPage(1); }}
+                className={`h-8 w-8 rounded-full border transition-all ${
+                  active ? "ring-2 ring-offset-2 ring-[#A87601] border-[#A87601]" : "border-black/20 hover:border-black/50"
+                }`}
+                style={{ backgroundColor: c.hex }}
+              />
+            );
+          })}
+        </div>
+        {selectedColor && (
+          <p className="mt-2 text-xs text-black/70">Selected: {selectedColor}</p>
+        )}
+      </div>
+
+      {/* Features */}
+      {featureOptions && featureOptions.length > 0 && (
+        <div>
+          <Label className="text-sm font-medium mb-2 block text-black">
+            Features
+          </Label>
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            {featureOptions.map((f) => (
+              <label
+                key={f.feature_name}
+                className="flex items-center gap-2 text-sm text-black cursor-pointer"
+              >
+                <Checkbox
+                  checked={selectedFeatures.includes(f.feature_name)}
+                  onCheckedChange={() => toggleFeature(f.feature_name)}
+                  className="bg-white border-black/30 data-[state=checked]:bg-[#A87601] data-[state=checked]:border-[#A87601]"
+                />
+                <span>{f.feature_name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Reset Button */}
       {hasActiveFilters && (
