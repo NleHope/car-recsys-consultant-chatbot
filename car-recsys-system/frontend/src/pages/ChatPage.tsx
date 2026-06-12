@@ -203,15 +203,19 @@ export default function ChatPage() {
               <h2 className="font-semibold">Car Shopping Assistant</h2>
               <p className="text-xs text-muted-foreground">Powered by AI</p>
             </div>
-            <Button
-              onClick={startNewConversation}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              New Chat
-            </Button>
+            {/* Guests have no sidebar — keep a New Chat button here for them only.
+                Logged-in users use the sidebar's "+ New chat". */}
+            {!loggedIn && (
+              <Button
+                onClick={startNewConversation}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
+              </Button>
+            )}
           </div>
 
           {/* Messages */}
