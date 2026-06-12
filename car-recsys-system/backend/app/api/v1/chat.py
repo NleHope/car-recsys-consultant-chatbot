@@ -6,6 +6,7 @@ session stays on one instance). Logged-in users persist history to gold.chat_*.
 """
 from __future__ import annotations
 
+import json
 import logging
 import threading
 import uuid
@@ -75,6 +76,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     answer: str
+    vehicles: list = []
 
 
 class ChatSessionSummary(BaseModel):
@@ -87,6 +89,7 @@ class ChatMessageOut(BaseModel):
     role: str
     content: str
     created_at: Optional[str] = None
+    vehicles: list = []
 
 
 @router.post("", response_model=ChatResponse)
@@ -116,7 +119,7 @@ async def chat(
             history = list(_histories.get(session_id, []))
         try:
             from app.services.chatbot import generate_response
-            answer, updated_history = await anyio.to_thread.run_sync(
+            answer, updated_history, vehicles = await anyio.to_thread.run_sync(
                 generate_response, llm, vector_store, history, req.message, session_id,
             )
         except Exception as exc:  # noqa: BLE001
@@ -125,7 +128,7 @@ async def chat(
                                 detail=f"Failed to process message: {exc}")
         with _hist_lock:
             _histories[session_id] = updated_history
-        return ChatResponse(session_id=session_id, answer=answer)
+        return ChatResponse(session_id=session_id, answer=answer, vehicles=vehicles)
 
     # ---- Logged-in path: persist to gold.chat_* ----
     session_id = req.session_id
@@ -143,7 +146,7 @@ async def chat(
     history = _load_db_history(db, session_id)
     try:
         from app.services.chatbot import generate_response
-        answer, _updated = await anyio.to_thread.run_sync(
+        answer, _updated, vehicles = await anyio.to_thread.run_sync(
             generate_response, llm, vector_store, history, req.message, session_id,
         )
     except Exception as exc:  # noqa: BLE001
@@ -153,12 +156,16 @@ async def chat(
 
     db.execute(text("""
         INSERT INTO gold.chat_messages (session_id, role, content, created_at)
-        VALUES (:sid, 'user', :c, now()), (:sid, 'assistant', :a, now())
-    """), {"sid": session_id, "c": req.message, "a": answer})
+        VALUES (:sid, 'user', :c, now())
+    """), {"sid": session_id, "c": req.message})
+    db.execute(text("""
+        INSERT INTO gold.chat_messages (session_id, role, content, vehicles, created_at)
+        VALUES (:sid, 'assistant', :a, CAST(:veh AS jsonb), now())
+    """), {"sid": session_id, "a": answer, "veh": json.dumps(vehicles)})
     db.execute(text("UPDATE gold.chat_sessions SET updated_at = now() WHERE id = :sid"),
                {"sid": session_id})
     db.commit()
-    return ChatResponse(session_id=session_id, answer=answer)
+    return ChatResponse(session_id=session_id, answer=answer, vehicles=vehicles)
 
 
 @router.get("/sessions", response_model=list[ChatSessionSummary])
@@ -185,11 +192,21 @@ async def get_chat_session_messages(
     if not _owned_session(db, session_id, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
     rows = db.execute(text("""
-        SELECT role, content, created_at FROM gold.chat_messages
+        SELECT role, content, created_at, vehicles FROM gold.chat_messages
         WHERE session_id = :sid ORDER BY created_at ASC, id ASC
     """), {"sid": session_id}).fetchall()
-    return [ChatMessageOut(role=r[0], content=r[1] or "",
-                           created_at=str(r[2]) if r[2] else None) for r in rows]
+    out = []
+    for r in rows:
+        veh = r[3]
+        if isinstance(veh, str):
+            try:
+                veh = json.loads(veh)
+            except Exception:
+                veh = []
+        out.append(ChatMessageOut(role=r[0], content=r[1] or "",
+                                  created_at=str(r[2]) if r[2] else None,
+                                  vehicles=veh or []))
+    return out
 
 
 @router.delete("/sessions/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
