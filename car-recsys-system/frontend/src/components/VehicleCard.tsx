@@ -302,14 +302,9 @@ export default function VehicleCard({ vehicle, onFavoriteToggle }: VehicleCardPr
         </p>
         
         {/* Title */}
-        <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1 group-hover:text-accent transition-colors">
-          {vehicle.car_model || vehicle.title || 'Vehicle'}
+        <h3 className="font-display font-bold tracking-tight text-lg text-foreground mb-1 line-clamp-1 group-hover:text-accent transition-colors">
+          {vehicle.title || vehicle.car_name || vehicle.car_model || 'Vehicle'}
         </h3>
-        
-        {/* Full title as subtitle */}
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
-          {vehicle.title}
-        </p>
 
         {/* Price */}
         <p className="text-xl font-bold text-foreground mb-4">

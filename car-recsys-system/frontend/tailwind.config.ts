@@ -23,6 +23,8 @@ export default {
         body: ["Jost", "sans-serif"],
         sansita: ["Sansita One", "sans-serif"],
         poppins: ["Poppins", "sans-serif"],
+        // cars.com-style bold geometric sans, used for vehicle names.
+        display: ["Montserrat", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

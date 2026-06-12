@@ -156,8 +156,8 @@ const VehicleDetailPage = () => {
                     <p className="text-sm font-medium text-accent uppercase tracking-wider mb-1">
                       {vehicle.brand || 'Vehicle'}
                     </p>
-                    <h1 className="font-heading text-3xl md:text-4xl font-semibold text-foreground">
-                      {vehicle.car_model || vehicle.title}
+                    <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+                      {vehicle.title || vehicle.car_name || vehicle.car_model}
                     </h1>
                   </div>
                   <div className="flex gap-2 shrink-0">
@@ -184,7 +184,6 @@ const VehicleDetailPage = () => {
                     </Button>
                   </div>
                 </div>
-                <p className="text-muted-foreground">{vehicle.title}</p>
               </div>
 
               <p className="font-heading text-4xl font-bold text-foreground">
