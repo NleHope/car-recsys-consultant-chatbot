@@ -67,6 +67,26 @@ def _row_to_user_review(r) -> UserReview:
     )
 
 
+class ReviewCard(BaseModel):
+    user_name: Optional[str] = None
+    reviewer_from: Optional[str] = None
+    overall_rating: Optional[float] = None
+    review_date: Optional[str] = None
+    review_title: Optional[str] = None
+    review_text: Optional[str] = None
+    car_name: Optional[str] = None
+    brand: Optional[str] = None
+    model_image_url: Optional[str] = None
+
+
+class ReviewsListResponse(BaseModel):
+    items: List[ReviewCard]
+    total: int
+    avg_rating: Optional[float] = None
+    page: int
+    page_size: int
+
+
 @router.get("/reviews/user/{vehicle_id}", response_model=List[UserReview])
 async def get_user_reviews(
     vehicle_id: str,
@@ -168,6 +188,76 @@ class SellerResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+@router.get("/reviews/brands", response_model=List[str])
+async def get_review_brands(db: Session = Depends(get_db)):
+    """Distinct brands that have reviews, most-reviewed first (for the filter dropdown)."""
+    rows = db.execute(text("""
+        SELECT brand FROM gold.reviews
+        WHERE brand IS NOT NULL AND review_text IS NOT NULL
+        GROUP BY brand
+        ORDER BY COUNT(*) DESC
+    """)).fetchall()
+    return [r[0] for r in rows]
+
+
+@router.get("/reviews", response_model=ReviewsListResponse)
+async def list_reviews(
+    brand: Optional[str] = Query(None),
+    sort: str = Query("recent"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(12, ge=1, le=48),
+    db: Session = Depends(get_db),
+):
+    """Global review feed for the /reviews page: header aggregate + paginated cards."""
+    order_map = {
+        "recent": "r.review_date DESC NULLS LAST",
+        "rating_high": "r.overall_rating DESC NULLS LAST, r.review_date DESC NULLS LAST",
+        "rating_low": "r.overall_rating ASC NULLS LAST, r.review_date DESC NULLS LAST",
+    }
+    order_by = order_map.get(sort, order_map["recent"])
+    where = "r.review_text IS NOT NULL"
+    params: dict = {}
+    if brand:
+        where += " AND r.brand = :brand"
+        params["brand"] = brand
+
+    agg = db.execute(
+        text(f"SELECT COUNT(*), ROUND(AVG(r.overall_rating), 2) FROM gold.reviews r WHERE {where}"),
+        params,
+    ).fetchone()
+    total = int(agg[0]) if agg and agg[0] is not None else 0
+    avg_rating = float(agg[1]) if agg and agg[1] is not None else None
+
+    params_page = dict(params, limit=page_size, offset=(page - 1) * page_size)
+    rows = db.execute(
+        text(f"""
+            SELECT r.user_name, r.reviewer_from, r.overall_rating, r.review_date,
+                   r.review_title, r.review_text, r.car_name, r.brand,
+                   (SELECT v.primary_image_url FROM gold.vehicles v
+                    WHERE v.car_model = r.car_model AND v.primary_image_url IS NOT NULL
+                    LIMIT 1) AS model_image_url
+            FROM gold.reviews r
+            WHERE {where}
+            ORDER BY {order_by}
+            LIMIT :limit OFFSET :offset
+        """),
+        params_page,
+    ).fetchall()
+
+    items = [
+        ReviewCard(
+            user_name=row[0], reviewer_from=row[1],
+            overall_rating=float(row[2]) if row[2] is not None else None,
+            review_date=str(row[3]) if row[3] is not None else None,
+            review_title=row[4], review_text=row[5], car_name=row[6],
+            brand=row[7], model_image_url=row[8],
+        )
+        for row in rows
+    ]
+    return ReviewsListResponse(items=items, total=total, avg_rating=avg_rating,
+                               page=page, page_size=page_size)
 
 
 @router.get("/reviews/{vehicle_id}", response_model=List[ReviewResponse])
