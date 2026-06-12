@@ -3,9 +3,18 @@
 // per session_id (the server keeps history + profile), so the client only sends
 // {session_id?, message, reset?} and gets back {session_id, answer}. There is no
 // server-side conversation list / message history endpoint anymore.
+export interface ChatVehicle {
+  vin: string;
+  title?: string | null;
+  brand?: string | null;
+  price?: number | null;
+  image_url?: string | null;
+}
+
 export interface ChatResponse {
   session_id: string;
   answer: string;
+  vehicles?: ChatVehicle[];
 }
 
 export interface ChatSessionSummary {
@@ -18,6 +27,7 @@ export interface ChatMessageOut {
   role: string;
   content: string;
   created_at?: string | null;
+  vehicles?: ChatVehicle[];
 }
 
 export const chatApi = {
