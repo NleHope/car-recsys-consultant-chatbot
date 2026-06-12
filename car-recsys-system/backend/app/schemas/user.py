@@ -24,6 +24,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
     phone: Optional[str] = None
     is_active: bool
     created_at: datetime

@@ -69,6 +69,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             username=user.username,
             email=user.email,
             full_name=user.full_name,
+            avatar_url=user.avatar_url,
             phone=user.phone,
             is_active=user.is_active,
             created_at=user.created_at
@@ -111,6 +112,7 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
             username=user.username,
             email=user.email,
             full_name=user.full_name,
+            avatar_url=user.avatar_url,
             phone=user.phone,
             is_active=user.is_active,
             created_at=user.created_at
@@ -137,6 +139,7 @@ async def get_current_user(
         username=user.username,
         email=user.email,
         full_name=user.full_name,
+        avatar_url=user.avatar_url,
         phone=user.phone,
         is_active=user.is_active,
         created_at=user.created_at
@@ -148,6 +151,7 @@ async def social_login(social_data: SocialLoginInput, db: Session = Depends(get_
     """Log in or sign up a user via Google (verifies the OAuth access token)."""
     email = social_data.email
     full_name = social_data.full_name
+    avatar = None
 
     # A social login MUST carry a provider token we can verify server-side.
     # Without it we cannot prove the caller owns the email — issuing a session
@@ -196,6 +200,7 @@ async def social_login(social_data: SocialLoginInput, db: Session = Depends(get_
             user_info = user_info_resp.json()
             email = user_info.get("email")
             full_name = user_info.get("name") or full_name
+            avatar = user_info.get("picture")
 
             if not email:
                 raise HTTPException(
@@ -234,6 +239,7 @@ async def social_login(social_data: SocialLoginInput, db: Session = Depends(get_
             email=email,
             hashed_password=get_password_hash(random_password),
             full_name=full_name,
+            avatar_url=avatar,
             is_active=True,
             is_verified=True  # Social accounts are pre-verified by the provider
         )
@@ -247,7 +253,12 @@ async def social_login(social_data: SocialLoginInput, db: Session = Depends(get_
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user account"
         )
-        
+
+    if avatar and user.avatar_url != avatar:
+        user.avatar_url = avatar
+        db.commit()
+        db.refresh(user)
+
     # Generate app access token
     access_token = create_access_token(
         data={"sub": str(user.id)},
@@ -262,6 +273,7 @@ async def social_login(social_data: SocialLoginInput, db: Session = Depends(get_
             username=user.username,
             email=user.email,
             full_name=user.full_name,
+            avatar_url=user.avatar_url,
             phone=user.phone,
             is_active=user.is_active,
             created_at=user.created_at
