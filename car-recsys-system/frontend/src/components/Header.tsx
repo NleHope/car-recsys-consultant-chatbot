@@ -27,8 +27,9 @@ const Header = () => {
         <div className="flex h-20 items-center justify-between">
 
           <div className="flex items-center gap-8">
-            <Link to="/" className="font-body text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
-              Car<span className="text-[#A87601]">Market</span>
+            <Link to="/" className="flex items-center gap-2.5 font-body text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
+              <img src="/carmarket-mark.svg" alt="CarMarket" className="h-9 w-9 md:h-10 md:w-10" />
+              <span>Car<span className="text-[#A87601]">Market</span></span>
             </Link>
           </div>
 
