@@ -28,7 +28,9 @@ async def search_vehicles(
     body_type: Optional[str] = Query(None, description="Body type: SUV, Sedan, Pickup Truck, Coupe, Hatchback, Wagon, Convertible"),
     transmission: Optional[str] = Query(None),
     drivetrain: Optional[str] = Query(None),
-    exterior_color: Optional[str] = Query(None),
+    exterior_color: Optional[str] = Query(None, description="Raw exterior color name (substring match)"),
+    color: Optional[str] = Query(None, description="Basic color group: Black, White, Gray, Silver, Red, Blue, Green, Brown, Beige, Yellow, Orange, Other"),
+    features: Optional[str] = Query(None, description="Comma-separated feature names; a car must have ALL of them"),
     min_rating: Optional[float] = Query(None),
     sort_by: str = Query("created_at", description="Sort field: price, mileage, car_rating, created_at"),
     sort_order: str = Query("desc", description="Sort order: asc, desc"),
@@ -59,6 +61,14 @@ async def search_vehicles(
         conditions.append("condition ILIKE :condition")
         params['condition'] = f"%{condition}%"
     
+    if year_min:
+        conditions.append("year >= :year_min")
+        params['year_min'] = year_min
+
+    if year_max:
+        conditions.append("year <= :year_max")
+        params['year_max'] = year_max
+
     if price_min:
         conditions.append("price >= :price_min")
         params['price_min'] = price_min
@@ -91,7 +101,26 @@ async def search_vehicles(
     if exterior_color:
         conditions.append("exterior_color ILIKE :exterior_color")
         params['exterior_color'] = f"%{exterior_color}%"
-    
+
+    if color:
+        conditions.append("color_group ILIKE :color")
+        params['color'] = color
+
+    if features:
+        # AND semantics: a car must have EVERY selected feature. Count distinct
+        # matched feature_name per vehicle and require it to equal the request count.
+        feature_list = [f.strip() for f in features.split(",") if f.strip()]
+        if feature_list:
+            conditions.append(
+                "vehicle_id IN ("
+                "SELECT vehicle_id FROM gold.vehicle_features "
+                "WHERE feature_name = ANY(:feature_list) "
+                "GROUP BY vehicle_id HAVING count(DISTINCT feature_name) = :feature_count"
+                ")"
+            )
+            params['feature_list'] = feature_list
+            params['feature_count'] = len(feature_list)
+
     if min_rating:
         conditions.append("car_rating >= :min_rating")
         params['min_rating'] = min_rating
@@ -173,3 +202,35 @@ async def search_vehicles(
         page_size=page_size,
         total_pages=total_pages
     )
+
+
+@router.get("/search/colors")
+async def get_color_groups(db: Session = Depends(get_db)):
+    """Distinct color groups (for the swatch filter), ordered by listing count."""
+    sql = """
+        SELECT color_group, COUNT(*) AS count
+        FROM gold.vehicles
+        WHERE color_group IS NOT NULL AND title IS NOT NULL
+        GROUP BY color_group
+        ORDER BY count DESC
+    """
+    rows = db.execute(text(sql)).fetchall()
+    return {"colors": [{"color_group": r[0], "count": r[1]} for r in rows]}
+
+
+@router.get("/search/features")
+async def get_feature_options(
+    limit: int = Query(15, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    """Most common vehicle features (for the checkbox filter), ordered by count."""
+    sql = """
+        SELECT feature_name, COUNT(DISTINCT vehicle_id) AS count
+        FROM gold.vehicle_features
+        WHERE feature_name IS NOT NULL AND feature_name <> ''
+        GROUP BY feature_name
+        ORDER BY count DESC
+        LIMIT :limit
+    """
+    rows = db.execute(text(sql), {"limit": limit}).fetchall()
+    return {"features": [{"feature_name": r[0], "count": r[1]} for r in rows]}
