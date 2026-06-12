@@ -207,6 +207,47 @@ export function formatPrice(price?: number | null): string {
   }).format(price);
 }
 
+// cars.com consumer reviews (model-level) + seller info. These types + the
+// vehiclesApi.getReviews/getSeller methods were accidentally dropped in a
+// frontend merge while useApi.ts still called them — which silently broke
+// review/seller loading site-wide (every car showed "No reviews yet").
+export interface Review {
+  vehicle_id: string;
+  title?: string;
+  overall_rating?: number;
+  review_time?: string;
+  user_name?: string;
+  user_location?: string;
+  review_text?: string;
+  comfort_rating?: number;
+  interior_rating?: number;
+  performance_rating?: number;
+  value_rating?: number;
+  exterior_rating?: number;
+  reliability_rating?: number;
+}
+
+export interface Seller {
+  seller_key: string;
+  seller_name?: string;
+  seller_address?: string;
+  seller_city?: string;
+  seller_state?: string;
+  seller_zip?: string;
+  seller_phone?: string;
+  seller_website?: string;
+  seller_rating?: number;
+  seller_rating_count?: number;
+  description?: string;
+  hours_monday?: string;
+  hours_tuesday?: string;
+  hours_wednesday?: string;
+  hours_thursday?: string;
+  hours_friday?: string;
+  hours_saturday?: string;
+  hours_sunday?: string;
+}
+
 export const vehiclesApi = {
   async search(params: SearchParams): Promise<SearchResponse> {
     const response = await api.get<SearchResponse>("/search", { params });
@@ -222,6 +263,18 @@ export const vehiclesApi = {
     const response = await api.get<Vehicle[]>("/listings", {
       params: { limit, offset },
     });
+    return response.data;
+  },
+
+  async getReviews(vehicleId: string, limit = 10): Promise<Review[]> {
+    const response = await api.get<Review[]>(`/reviews/${vehicleId}`, {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  async getSeller(vehicleId: string): Promise<Seller | null> {
+    const response = await api.get<Seller | null>(`/seller/${vehicleId}`);
     return response.data;
   },
 };
