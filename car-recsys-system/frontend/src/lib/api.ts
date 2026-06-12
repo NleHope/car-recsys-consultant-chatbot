@@ -433,6 +433,33 @@ export interface UserReviewInput {
   review_text?: string;
 }
 
+export interface ReviewCard {
+  user_name?: string | null;
+  reviewer_from?: string | null;
+  overall_rating?: number | null;
+  review_date?: string | null;
+  review_title?: string | null;
+  review_text?: string | null;
+  car_name?: string | null;
+  brand?: string | null;
+  model_image_url?: string | null;
+}
+
+export interface ReviewsListResponse {
+  items: ReviewCard[];
+  total: number;
+  avg_rating?: number | null;
+  page: number;
+  page_size: number;
+}
+
+export interface ReviewsListParams {
+  brand?: string;
+  sort?: "recent" | "rating_high" | "rating_low";
+  page?: number;
+  page_size?: number;
+}
+
 export const reviewsApi = {
   async getUserReviews(vehicleId: string): Promise<UserReview[]> {
     const res = await api.get<UserReview[]>(`/reviews/user/${vehicleId}`);
@@ -448,5 +475,13 @@ export const reviewsApi = {
   },
   async deleteMyReview(vehicleId: string): Promise<void> {
     await api.delete(`/reviews/user/${vehicleId}`);
+  },
+  async getAllReviews(params: ReviewsListParams): Promise<ReviewsListResponse> {
+    const res = await api.get<ReviewsListResponse>("/reviews", { params });
+    return res.data;
+  },
+  async getReviewBrands(): Promise<string[]> {
+    const res = await api.get<string[]>("/reviews/brands");
+    return res.data;
   },
 };
