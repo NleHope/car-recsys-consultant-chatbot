@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -10,62 +9,43 @@ import {
   Gauge,
   Settings2,
   Palette,
-  ChevronLeft,
   ChevronRight,
   Star,
-  Shield,
   Car,
   Loader2,
   AlertCircle,
-  ImageOff,
   GitCompare,
-  MapPin,
-  Clock,
   User,
   Quote,
-  ExternalLink,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VehicleCard from "@/components/VehicleCard";
 import UserReviewSection from "@/components/UserReviewSection";
+import FeatureGroups from "@/components/detail/FeatureGroups";
+import VehicleHistory from "@/components/detail/VehicleHistory";
+import ImageGallery from "@/components/detail/ImageGallery";
+import SellerCard from "@/components/detail/SellerCard";
+import PaymentCalculator from "@/components/detail/PaymentCalculator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useVehicleDetail, useSimilarVehicles, useAddFavorite, useRemoveFavorite, useFavorites, useVehicleReviews, useVehicleSeller } from "@/hooks/useApi";
-import { formatPrice, isAuthenticated, trackVehicleView } from "@/lib/api";
+import { formatPrice, isAuthenticated } from "@/lib/api";
 
 const VehicleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
-  
+
   const { data: vehicle, isLoading, error } = useVehicleDetail(id);
   const { data: similarData, isLoading: loadingSimilar } = useSimilarVehicles(id, 6);
-  const { data: reviews, isLoading: loadingReviews } = useVehicleReviews(id, 10);
-  const { data: seller, isLoading: loadingSeller } = useVehicleSeller(id);
+  const { data: reviews } = useVehicleReviews(id, 10);
+  const { data: seller } = useVehicleSeller(id);
   const { data: favorites } = useFavorites();
   const addFavorite = useAddFavorite();
   const removeFavorite = useRemoveFavorite();
   
   const isFavorite = favorites?.some(f => f.vehicle_id === id) ?? false;
-
-  // Placeholder image
-  const placeholderImage = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&q=80';
-  
-  // Handle image error
-  const handleImageError = (index: number) => {
-    setImageError(prev => ({ ...prev, [index]: true }));
-  };
-
-  // Get image source with fallback
-  const getImageSrc = (url: string, index: number) => {
-    if (imageError[index]) {
-      return placeholderImage;
-    }
-    return url;
-  };
 
   // Loading state
   if (isLoading) {
@@ -105,26 +85,12 @@ const VehicleDetailPage = () => {
     );
   }
 
-  // Get placeholder images
-  const getPlaceholderImages = () => {
-    const images = [
+  const images = vehicle.images?.length > 0 ? vehicle.images :
+    (vehicle.image_url ? [vehicle.image_url] : [
       'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop&q=80',
       'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&q=80',
       'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop&q=80',
-    ];
-    return images;
-  };
-
-  const images = vehicle.images?.length > 0 ? vehicle.images : 
-    (vehicle.image_url ? [vehicle.image_url] : getPlaceholderImages());
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+    ]);
 
   const handleFavoriteClick = async () => {
     if (!isAuthenticated()) {
@@ -176,86 +142,8 @@ const VehicleDetailPage = () => {
           </Link>
 
           <div className="grid lg:grid-cols-2 gap-10">
-            {/* Image Gallery */}
-            <div className="space-y-4">
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-secondary">
-                {imageError[currentImageIndex] ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-secondary">
-                    <ImageOff className="h-16 w-16 mb-3 opacity-50" />
-                    <p className="text-sm">Image not available</p>
-                  </div>
-                ) : (
-                  <img
-                    src={images[currentImageIndex]}
-                    alt={vehicle.title || 'Vehicle'}
-                    className="w-full h-full object-cover"
-                    onError={() => handleImageError(currentImageIndex)}
-                  />
-                )}
-                {images.length > 1 && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background rounded-full"
-                      onClick={prevImage}
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background rounded-full"
-                      onClick={nextImage}
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </Button>
-                  </>
-                )}
-
-                {/* Image counter */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-background/80 backdrop-blur-sm rounded-full text-xs font-medium">
-                  {currentImageIndex + 1} / {images.length}
-                </div>
-
-                {/* Condition badge */}
-                {vehicle.condition && (
-                  <Badge className="absolute top-3 left-3 capitalize">
-                    {vehicle.condition}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Thumbnails */}
-              {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {images.slice(0, 6).map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex 
-                          ? "border-accent ring-2 ring-accent/20" 
-                          : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      {imageError[index] ? (
-                        <div className="w-full h-full flex items-center justify-center bg-secondary">
-                          <ImageOff className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      ) : (
-                        <img 
-                          src={img} 
-                          alt="" 
-                          className="w-full h-full object-cover"
-                          onError={() => handleImageError(index)}
-                        />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+              {/* Image Gallery */}
+              <ImageGallery images={images} title={vehicle.title} />
 
             {/* Details */}
             <div className="space-y-6">
@@ -348,36 +236,15 @@ const VehicleDetailPage = () => {
                 </>
               )}
 
-              {/* Vehicle History */}
-              {(vehicle.accidents_damage || vehicle.one_owner !== null) && (
-                <>
-                  <Separator />
-                  <div>
-                    <h3 className="font-heading text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-accent" />
-                      Vehicle History
-                    </h3>
-                    <div className="space-y-2">
-                      {vehicle.accidents_damage && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-muted-foreground">Accidents:</span>
-                          <span className={vehicle.accidents_damage.toLowerCase().includes('none') ? 'text-green-500' : 'text-yellow-500'}>
-                            {vehicle.accidents_damage}
-                          </span>
-                        </div>
-                      )}
-                      {vehicle.one_owner !== null && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-muted-foreground">Ownership:</span>
-                          <span className={vehicle.one_owner ? 'text-green-500' : ''}>
-                            {vehicle.one_owner ? 'Single Owner' : 'Multiple Owners'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
+          <VehicleHistory
+            clean_title={vehicle.clean_title}
+            one_owner={vehicle.one_owner}
+            accidents_damage={vehicle.accidents_damage}
+            has_open_recall={vehicle.has_open_recall}
+            is_personal_use={vehicle.is_personal_use}
+          />
+          <FeatureGroups grouped={vehicle.features_grouped} flat={vehicle.features} />
+          {vehicle.price != null && <PaymentCalculator price={vehicle.price} />}
 
               <Separator />
 
@@ -415,85 +282,7 @@ const VehicleDetailPage = () => {
                       <User className="h-5 w-5 text-accent" />
                       Dealer Information
                     </h3>
-                    <div className="bg-card border border-border rounded-xl overflow-hidden">
-                      {/* Dealer Image Placeholder */}
-                      <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                        <Car className="h-12 w-12 text-muted-foreground/50" />
-                      </div>
-                      
-                      <div className="p-4 space-y-3">
-                        {/* Dealer Name & Rating */}
-                        <div>
-                          <p className="font-semibold text-foreground text-lg">{seller.seller_name}</p>
-                          {seller.seller_rating && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="flex items-center gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star 
-                                    key={star} 
-                                    className={`h-4 w-4 ${
-                                      star <= Math.round(seller.seller_rating!) 
-                                        ? 'text-[#A87601] fill-[#A87601]' 
-                                        : 'text-muted-foreground'
-                                    }`} 
-                                  />
-                                ))}
-                              </div>
-                              <span className="font-medium text-sm">{seller.seller_rating.toFixed(1)}</span>
-                              {seller.seller_rating_count && (
-                                <span className="text-muted-foreground text-sm">
-                                  · {seller.seller_rating_count.toLocaleString()} reviews
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Business Hours Status */}
-                        {seller.hours_monday && (
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-red-500 border-red-500">Closed</Badge>
-                            <span className="text-sm text-muted-foreground">Opens 8:30am</span>
-                          </div>
-                        )}
-                        
-                        {/* Address */}
-                        {(seller.seller_address || seller.seller_city) && (
-                          <div className="flex items-start gap-2 text-sm pt-2 border-t border-border">
-                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                            <span className="text-muted-foreground">
-                              {seller.seller_address && `${seller.seller_address}, `}
-                              {seller.seller_city && `${seller.seller_city}, `}
-                              {seller.seller_state} {seller.seller_zip}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {/* Website */}
-                        {seller.seller_website && (
-                          <a 
-                            href={seller.seller_website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-sm text-accent hover:underline"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            Visit dealership website
-                          </a>
-                        )}
-                        
-                        {/* Phone */}
-                        {seller.seller_phone && (
-                          <a 
-                            href={`tel:${seller.seller_phone}`}
-                            className="flex items-center gap-2 text-sm text-foreground hover:text-accent"
-                          >
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            {seller.seller_phone}
-                          </a>
-                        )}
-                      </div>
-                    </div>
+                    <SellerCard seller={seller} />
                   </div>
                 </>
               )}
