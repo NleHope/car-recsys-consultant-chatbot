@@ -2,14 +2,14 @@
  * Chat Popup Component - Floating chat bubble with expandable chat window
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, Loader2, Car, ChevronDown, Maximize2, Trash2 } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Car, Maximize2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MarkdownMessage from '@/components/MarkdownMessage';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { chatApi, Vehicle, formatPrice, isAuthenticated } from '@/lib/api';
+import { chatApi, ChatVehicle, isAuthenticated } from '@/lib/api';
+import ChatVehicleCards from '@/components/ChatVehicleCards';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +17,7 @@ interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  vehicles?: Vehicle[];
+  vehicles?: ChatVehicle[];
   timestamp: Date;
 }
 
@@ -27,7 +27,6 @@ export default function ChatPopup() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [showVehicles, setShowVehicles] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -83,6 +82,7 @@ export default function ChatPopup() {
         id: `${Date.now()}-a`,
         role: 'assistant',
         content: response.answer,
+        vehicles: response.vehicles,
         timestamp: new Date()
       };
 
@@ -114,10 +114,6 @@ export default function ChatPopup() {
     }
     setMessages([]);
     setSessionId(null);
-  };
-
-  const toggleVehicles = (messageId: string) => {
-    setShowVehicles(prev => prev === messageId ? null : messageId);
   };
 
   return (
@@ -219,57 +215,8 @@ export default function ChatPopup() {
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       )}
 
-                      {/* Vehicle suggestions */}
-                      {message.vehicles && message.vehicles.length > 0 && (
-                        <div className="mt-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleVehicles(message.id)}
-                            className="h-auto p-1 text-xs gap-1"
-                          >
-                            <Car className="h-3 w-3" />
-                            {message.vehicles.length} vehicle{message.vehicles.length > 1 ? 's' : ''} found
-                            <ChevronDown className={cn(
-                              "h-3 w-3 transition-transform",
-                              showVehicles === message.id && "rotate-180"
-                            )} />
-                          </Button>
-                          
-                          {showVehicles === message.id && (
-                            <div className="mt-2 space-y-2">
-                              {message.vehicles.slice(0, 3).map((vehicle) => (
-                                <Link
-                                  key={vehicle.id}
-                                  to={`/vehicles/${vehicle.id}`}
-                                  className="block p-2 rounded bg-background border hover:bg-accent transition-colors"
-                                  onClick={() => setIsOpen(false)}
-                                >
-                                  <div className="flex gap-2">
-                                    {vehicle.image_url && (
-                                      <img
-                                        src={vehicle.image_url}
-                                        alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                                        className="w-16 h-12 object-cover rounded"
-                                        onError={(e) => {
-                                          (e.target as HTMLImageElement).src = '/placeholder.svg';
-                                        }}
-                                      />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-medium truncate">
-                                        {vehicle.year} {vehicle.make} {vehicle.model}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {formatPrice(vehicle.price)}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                      {message.role === 'assistant' && message.vehicles && message.vehicles.length > 0 && (
+                        <ChatVehicleCards vehicles={message.vehicles} />
                       )}
                     </div>
                   </div>

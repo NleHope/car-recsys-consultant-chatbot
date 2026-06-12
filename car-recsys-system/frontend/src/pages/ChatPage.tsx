@@ -4,18 +4,18 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Send, Loader2, Car, Plus, ExternalLink
+  Send, Loader2, Car, Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-  chatApi, Vehicle,
-  formatPrice, formatMileage, getCurrentUser, isAuthenticated
+  chatApi, ChatVehicle,
+  getCurrentUser, isAuthenticated
 } from '@/lib/api';
+import ChatVehicleCards from '@/components/ChatVehicleCards';
 import { useChatSessions, useChatSessionMessages, useDeleteChatSession } from '@/hooks/useApi';
-import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import MarkdownMessage from '@/components/MarkdownMessage';
@@ -24,7 +24,7 @@ interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  vehicles?: Vehicle[];
+  vehicles?: ChatVehicle[];
   timestamp: Date;
 }
 
@@ -53,6 +53,7 @@ export default function ChatPage() {
         id: `db-${i}`,
         role: m.role === "assistant" ? "assistant" : "user",
         content: m.content,
+        vehicles: m.vehicles,
         timestamp: m.created_at ? new Date(m.created_at) : new Date(),
       })));
     }
@@ -122,6 +123,7 @@ export default function ChatPage() {
         id: `${Date.now()}-a`,
         role: 'assistant',
         content: response.answer,
+        vehicles: response.vehicles,
         timestamp: new Date()
       };
 
@@ -252,58 +254,16 @@ export default function ChatPage() {
                         : "bg-muted"
                     )}>
                       {message.role === 'assistant' ? (
-                        <div className="text-left"><MarkdownMessage content={message.content} /></div>
+                        <div className="text-left">
+                          <MarkdownMessage content={message.content} />
+                          {message.vehicles && message.vehicles.length > 0 && (
+                            <ChatVehicleCards vehicles={message.vehicles} />
+                          )}
+                        </div>
                       ) : (
                         <p className="whitespace-pre-wrap text-left">{message.content}</p>
                       )}
                     </div>
-                    
-                    {/* Vehicle Cards */}
-                    {message.vehicles && message.vehicles.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                        {message.vehicles.slice(0, 4).map((vehicle) => (
-                          <Link
-                            key={vehicle.id}
-                            to={`/vehicles/${vehicle.id}`}
-                            className="block p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left"
-                          >
-                            <div className="flex gap-3">
-                              {vehicle.image_url ? (
-                                <img
-                                  src={vehicle.image_url}
-                                  alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                                  className="w-24 h-18 object-cover rounded"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-24 h-18 bg-muted rounded flex items-center justify-center">
-                                  <Car className="h-8 w-8 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm">
-                                  {vehicle.year} {vehicle.make} {vehicle.model}
-                                </p>
-                                {vehicle.trim && (
-                                  <p className="text-xs text-muted-foreground">{vehicle.trim}</p>
-                                )}
-                                <p className="text-sm font-semibold text-primary mt-1">
-                                  {formatPrice(vehicle.price)}
-                                </p>
-                                {vehicle.mileage && (
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatMileage(vehicle.mileage)}
-                                  </p>
-                                )}
-                              </div>
-                              <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
                     
                     <p className="text-xs text-muted-foreground">
                       {message.timestamp.toLocaleTimeString()}
