@@ -360,3 +360,40 @@ export function trackVehicleView(vehicleId: string): void {
 export function trackVehicleClick(vehicleId: string): void {
   trackInteractionSafe(vehicleId, "click", 2);
 }
+
+// --- User reviews (site users, distinct from cars.com model reviews) ---
+export interface UserReview {
+  id: number;
+  vehicle_id: string;
+  user_id: string;
+  user_name?: string | null;
+  rating: number;
+  title?: string | null;
+  review_text?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface UserReviewInput {
+  rating: number;
+  title?: string;
+  review_text?: string;
+}
+
+export const reviewsApi = {
+  async getUserReviews(vehicleId: string): Promise<UserReview[]> {
+    const res = await api.get<UserReview[]>(`/reviews/user/${vehicleId}`);
+    return res.data;
+  },
+  async getMyReview(vehicleId: string): Promise<UserReview | null> {
+    const res = await api.get<UserReview | null>(`/reviews/user/${vehicleId}/me`);
+    return res.data;
+  },
+  async submitUserReview(vehicleId: string, input: UserReviewInput): Promise<UserReview> {
+    const res = await api.post<UserReview>(`/reviews/user/${vehicleId}`, input);
+    return res.data;
+  },
+  async deleteMyReview(vehicleId: string): Promise<void> {
+    await api.delete(`/reviews/user/${vehicleId}`);
+  },
+};

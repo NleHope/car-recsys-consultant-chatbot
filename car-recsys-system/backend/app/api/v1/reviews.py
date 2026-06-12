@@ -8,14 +8,16 @@ Repointed to the gold marts:
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.security import get_current_user_id
 
 router = APIRouter()
 
@@ -37,6 +39,115 @@ class ReviewResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserReviewInput(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    title: Optional[str] = None
+    review_text: Optional[str] = None
+
+
+class UserReview(BaseModel):
+    id: int
+    vehicle_id: str
+    user_id: str
+    user_name: Optional[str] = None
+    rating: int
+    title: Optional[str] = None
+    review_text: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+def _row_to_user_review(r) -> UserReview:
+    return UserReview(
+        id=r[0], vehicle_id=r[1], user_id=str(r[2]), user_name=r[3],
+        rating=r[4], title=r[5], review_text=r[6],
+        created_at=r[7], updated_at=r[8],
+    )
+
+
+@router.get("/reviews/user/{vehicle_id}", response_model=List[UserReview])
+async def get_user_reviews(
+    vehicle_id: str,
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    """Reviews written by the site's own users for a vehicle (newest first)."""
+    rows = db.execute(text("""
+        SELECT ur.id, ur.vehicle_id, ur.user_id, u.username,
+               ur.rating, ur.title, ur.review_text, ur.created_at, ur.updated_at
+        FROM gold.user_reviews ur
+        JOIN gold.users u ON u.id = ur.user_id
+        WHERE ur.vehicle_id = :vid
+        ORDER BY COALESCE(ur.updated_at, ur.created_at) DESC
+        LIMIT :limit
+    """), {"vid": vehicle_id, "limit": limit}).fetchall()
+    return [_row_to_user_review(r) for r in rows]
+
+
+@router.get("/reviews/user/{vehicle_id}/me", response_model=Optional[UserReview])
+async def get_my_review(
+    vehicle_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """The current user's own review for this vehicle (null if none)."""
+    r = db.execute(text("""
+        SELECT ur.id, ur.vehicle_id, ur.user_id, u.username,
+               ur.rating, ur.title, ur.review_text, ur.created_at, ur.updated_at
+        FROM gold.user_reviews ur
+        JOIN gold.users u ON u.id = ur.user_id
+        WHERE ur.vehicle_id = :vid AND ur.user_id = :uid
+    """), {"vid": vehicle_id, "uid": user_id}).fetchone()
+    return _row_to_user_review(r) if r else None
+
+
+@router.post("/reviews/user/{vehicle_id}", response_model=UserReview)
+async def upsert_user_review(
+    vehicle_id: str,
+    payload: UserReviewInput,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """Create or update (upsert) the current user's review for this vehicle."""
+    r = db.execute(text("""
+        INSERT INTO gold.user_reviews (user_id, vehicle_id, rating, title, review_text)
+        VALUES (:uid, :vid, :rating, :title, :text)
+        ON CONFLICT (user_id, vehicle_id) DO UPDATE
+          SET rating = EXCLUDED.rating,
+              title = EXCLUDED.title,
+              review_text = EXCLUDED.review_text,
+              updated_at = now()
+        RETURNING id, vehicle_id, user_id, rating, title, review_text, created_at, updated_at
+    """), {
+        "uid": user_id, "vid": vehicle_id, "rating": payload.rating,
+        "title": payload.title, "text": payload.review_text,
+    }).fetchone()
+    db.commit()
+    name = db.execute(
+        text("SELECT username FROM gold.users WHERE id = :uid"), {"uid": user_id}
+    ).scalar()
+    return UserReview(
+        id=r[0], vehicle_id=r[1], user_id=str(r[2]), user_name=name,
+        rating=r[3], title=r[4], review_text=r[5], created_at=r[6], updated_at=r[7],
+    )
+
+
+@router.delete("/reviews/user/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_review(
+    vehicle_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """Delete the current user's own review for this vehicle."""
+    res = db.execute(text("""
+        DELETE FROM gold.user_reviews
+        WHERE vehicle_id = :vid AND user_id = :uid
+    """), {"vid": vehicle_id, "uid": user_id})
+    db.commit()
+    if res.rowcount == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
 
 
 class SellerResponse(BaseModel):

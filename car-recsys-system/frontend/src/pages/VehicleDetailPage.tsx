@@ -28,6 +28,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VehicleCard from "@/components/VehicleCard";
+import UserReviewSection from "@/components/UserReviewSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -499,13 +500,18 @@ const VehicleDetailPage = () => {
             </div>
           </div>
 
-          {/* Customer Reviews Section */}
+          {/* User reviews (site users) + write form + combined empty state */}
+          {id && (
+            <UserReviewSection vehicleId={id} carsReviewCount={reviews?.length ?? 0} />
+          )}
+
+          {/* cars.com consumer reviews (model-level) */}
           {reviews && reviews.length > 0 && (
-            <div className="mt-16">
-              <h2 className="font-heading text-2xl md:text-3xl font-semibold text-foreground mb-8 flex items-center gap-3">
-                <Quote className="h-6 w-6 text-accent" />
-                Customer Reviews ({reviews.length})
-              </h2>
+            <div className="mt-10">
+              <h3 className="font-heading text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+                <Quote className="h-5 w-5 text-accent" />
+                Consumer reviews from cars.com
+              </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {reviews.map((review, index) => (
                   <div key={index} className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-shadow">

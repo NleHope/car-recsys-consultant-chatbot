@@ -7,6 +7,9 @@ import {
   recommendationsApi,
   interactionsApi,
   authApi,
+  reviewsApi,
+  UserReview,
+  UserReviewInput,
   SearchParams,
   SearchResponse,
   Vehicle,
@@ -115,6 +118,58 @@ export function useVehicleSeller(vehicleId: string | undefined) {
     queryFn: () => vehiclesApi.getSeller(vehicleId!),
     enabled: !!vehicleId,
     staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+// ============== USER REVIEW HOOKS ==============
+
+const userReviewKeys = {
+  list: (id: string) => ['reviews', 'user', id] as const,
+  mine: (id: string) => ['reviews', 'user', id, 'me'] as const,
+};
+
+/** Reviews written by site users for a vehicle. */
+export function useUserReviews(vehicleId: string | undefined) {
+  return useQuery<UserReview[]>({
+    queryKey: userReviewKeys.list(vehicleId ?? ''),
+    queryFn: () => reviewsApi.getUserReviews(vehicleId!),
+    enabled: !!vehicleId,
+    staleTime: 1000 * 60,
+  });
+}
+
+/** The current user's own review for a vehicle (null if none / not logged in). */
+export function useMyReview(vehicleId: string | undefined, enabled = true) {
+  return useQuery<UserReview | null>({
+    queryKey: userReviewKeys.mine(vehicleId ?? ''),
+    queryFn: () => reviewsApi.getMyReview(vehicleId!),
+    enabled: !!vehicleId && enabled,
+    staleTime: 1000 * 60,
+    retry: false,
+  });
+}
+
+/** Create/update the current user's review (upsert). */
+export function useSubmitReview(vehicleId: string) {
+  const qc = useQueryClient();
+  return useMutation<UserReview, Error, UserReviewInput>({
+    mutationFn: (input) => reviewsApi.submitUserReview(vehicleId, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userReviewKeys.list(vehicleId) });
+      qc.invalidateQueries({ queryKey: userReviewKeys.mine(vehicleId) });
+    },
+  });
+}
+
+/** Delete the current user's review. */
+export function useDeleteReview(vehicleId: string) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, void>({
+    mutationFn: () => reviewsApi.deleteMyReview(vehicleId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userReviewKeys.list(vehicleId) });
+      qc.invalidateQueries({ queryKey: userReviewKeys.mine(vehicleId) });
+    },
   });
 }
 

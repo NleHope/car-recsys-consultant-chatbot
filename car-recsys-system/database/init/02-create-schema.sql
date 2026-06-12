@@ -100,6 +100,23 @@ CREATE TABLE IF NOT EXISTS gold.user_searches (
     created_at    TIMESTAMP DEFAULT NOW()
 );
 
+-- Reviews written by the site's own users (distinct from cars.com gold.reviews,
+-- which are model-level consumer reviews). One review per (user, vehicle); a
+-- re-submit upserts. vehicle_id is a VIN with no hard FK (gold.vehicles is
+-- dbt-rebuilt), same as user_favorites.
+CREATE TABLE IF NOT EXISTS gold.user_reviews (
+    id          SERIAL PRIMARY KEY,
+    user_id     UUID NOT NULL REFERENCES gold.users(id) ON DELETE CASCADE,
+    vehicle_id  TEXT NOT NULL,
+    rating      INT  NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    title       TEXT,
+    review_text TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ,
+    UNIQUE (user_id, vehicle_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_reviews_vehicle ON gold.user_reviews (vehicle_id);
+
 -- Chatbot persistence — proper tables (was created on-the-fly in chat.py before).
 CREATE TABLE IF NOT EXISTS gold.chat_sessions (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
