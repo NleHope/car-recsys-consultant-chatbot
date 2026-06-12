@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MarkdownMessage from '@/components/MarkdownMessage';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { chatApi, ChatVehicle, isAuthenticated } from '@/lib/api';
 import ChatVehicleCards from '@/components/ChatVehicleCards';
 import { Link } from 'react-router-dom';
@@ -149,10 +149,9 @@ export default function ChatPopup() {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-muted/50 rounded-t-lg">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 bg-primary">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  <Car className="h-5 w-5" />
-                </AvatarFallback>
+              <Avatar className="h-10 w-10">
+                <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
+                <AvatarFallback className="bg-primary text-primary-foreground"><Car className="h-5 w-5" /></AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-semibold">Car Assistant</h3>
@@ -195,13 +194,14 @@ export default function ChatPopup() {
                       "h-8 w-8 flex-shrink-0",
                       message.role === 'user' ? "bg-secondary" : "bg-primary"
                     )}>
-                      <AvatarFallback className={cn(
-                        message.role === 'user' 
-                          ? "bg-secondary text-secondary-foreground" 
-                          : "bg-primary text-primary-foreground"
-                      )}>
-                        {message.role === 'user' ? 'U' : <Car className="h-4 w-4" />}
-                      </AvatarFallback>
+                      {message.role === 'user' ? (
+                        <AvatarFallback className="bg-secondary text-secondary-foreground">U</AvatarFallback>
+                      ) : (
+                        <>
+                          <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
+                          <AvatarFallback className="bg-primary text-primary-foreground"><Car className="h-4 w-4" /></AvatarFallback>
+                        </>
+                      )}
                     </Avatar>
                     <div className={cn(
                       "max-w-[80%] rounded-lg px-3 py-2",

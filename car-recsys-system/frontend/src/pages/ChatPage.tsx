@@ -9,7 +9,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import UserAvatar from "@/components/UserAvatar";
 import {
   chatApi, ChatVehicle,
   getCurrentUser, isAuthenticated
@@ -196,10 +197,9 @@ export default function ChatPage() {
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
           <div className="h-14 border-b flex items-center px-4 gap-3">
-            <Avatar className="h-8 w-8 bg-primary">
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                <Car className="h-4 w-4" />
-              </AvatarFallback>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
+              <AvatarFallback className="bg-primary text-primary-foreground"><Car className="h-4 w-4" /></AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <h2 className="font-semibold">Car Shopping Assistant</h2>
@@ -228,20 +228,14 @@ export default function ChatPage() {
                   "flex gap-4",
                   message.role === 'user' ? "flex-row-reverse" : "flex-row"
                 )}>
-                  <Avatar className={cn(
-                    "h-10 w-10 flex-shrink-0",
-                    message.role === 'user' ? "bg-secondary" : "bg-primary"
-                  )}>
-                    <AvatarFallback className={cn(
-                      message.role === 'user' 
-                        ? "bg-secondary text-secondary-foreground" 
-                        : "bg-primary text-primary-foreground"
-                    )}>
-                      {message.role === 'user' 
-                        ? (user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U') 
-                        : <Car className="h-5 w-5" />}
-                    </AvatarFallback>
-                  </Avatar>
+                  {message.role === 'user' ? (
+                    <UserAvatar user={user} className="h-10 w-10 flex-shrink-0" />
+                  ) : (
+                    <Avatar className="h-10 w-10 flex-shrink-0">
+                      <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
+                      <AvatarFallback className="bg-primary text-primary-foreground"><Car className="h-5 w-5" /></AvatarFallback>
+                    </Avatar>
+                  )}
                   
                   <div className={cn(
                     "max-w-[80%] space-y-2",
