@@ -30,11 +30,17 @@ app = FastAPI(title="Car Valuation API - V7 (Full Power)", version="7.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/health")
+def health():
+    """Liveness + model-loaded probe (used to verify a deploy)."""
+    return {"status": "ok", "model_loaded": "meta_model" in globals()}
 
 # =====================================================================
 # 2. LOAD ARTIFACTS (V7)
