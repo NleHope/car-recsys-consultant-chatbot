@@ -1,0 +1,146 @@
+\section{Kết quả và Đánh giá}
+
+\subsection{Tóm tắt Kết quả}
+
+Dự án này đã thực hiện một phân tích toàn diện về bài toán phát hiện tin giả sử dụng nhiều phương pháp học máy và học sâu khác nhau. Bảng tổng hợp kết quả như sau:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Mô hình} & \textbf{Độ chính xác} & \textbf{Precision} & \textbf{Recall} & \textbf{Thời gian huấn luyện} \\
+\hline
+Logistic Regression & 93.80\% & 0.94 & 0.94 & 13.3 phút \\
+LinearSVC (Mặc định) & 92.53\% & 0.93 & 0.93 & 4.6 phút \\
+LinearSVC (Tối ưu) & 92.62\% & 0.93 & 0.93 & 4.7 phút \\
+BERT (Fine-tuned) & 95.59\% & 0.94 & 0.94 & 105+ phút \\
+XLNet (Mặc định) & 94.70\% & 0.95 & 0.95 & 30 phút \\
+XLNet (Tối ưu) & 94.56\% & 0.95 & 0.95 & 30 phút \\
+\hline
+\end{tabular}
+\caption{So sánh hiệu suất của các mô hình}
+\end{table}
+
+\noindent\textbf{Mô hình tốt nhất}: BERT fine-tuned đạt độ chính xác cao nhất 95.59\%, theo sau là XLNet với 94.70\% và Logistic Regression với 93.80\%.
+
+\noindent\textbf{Hiệu quả kỹ thuật đặc trưng}: Việc kết hợp đặc trưng văn bản (TF-IDF) với 30 đặc trưng số (thống kê + danh mục chủ đề) đã cải thiện đáng kể hiệu suất so với chỉ sử dụng văn bản thuần túy.
+
+\noindent\textbf{Chất lượng tập dữ liệu}: Với 68,604 mẫu được cân bằng tốt (50.3\% tin thật, 49.7\% tin giả), tất cả các mô hình đều đạt hiệu suất ổn định và đáng tin cậy.
+
+\subsection{Điểm mạnh của nghiên cứu}
+
+\textbf{1. Phương pháp tiếp cận toàn diện:}
+\begin{itemize}
+    \item Thực hiện so sánh đa dạng từ học máy truyền thống đến các mô hình transformer tiên tiến
+    \item Kết hợp nhiều loại đặc trưng: văn bản, thống kê và phân loại
+    \item Điều chỉnh siêu tham số có hệ thống để tối ưu hóa
+\end{itemize}
+
+\noindent\textbf{2. Xử lý dữ liệu mạnh mẽ:}
+\begin{itemize}
+    \item Quy trình tiền xử lý văn bản toàn diện với xử lý nhiễu
+    \item Tập dữ liệu cân bằng tránh vấn đề mất cân bằng lớp
+    \item Chia tách huấn luyện-kiểm tra hợp lý để tránh rò rỉ dữ liệu
+    \item Kỹ thuật đặc trưng tạo ra các chỉ số thống kê có ý nghĩa
+\end{itemize}
+\newpage
+\noindent\textbf{3. Triển khai thực tế:}
+\begin{itemize}
+    \item Các mô hình được tối ưu hóa cho hiệu quả tính toán
+    \item Có thể áp dụng thực tế với thời gian huấn luyện hợp lý
+    \item Sẵn sàng cho sản xuất với việc lưu và đánh giá mô hình phù hợp
+\end{itemize}
+
+\noindent\textbf{4. Hiệu suất mạnh mẽ:}
+\begin{itemize}
+    \item Tất cả các mô hình đạt độ chính xác > 92\%, phù hợp cho triển khai thực tế
+    \item Precision-recall cân bằng cho cả lớp tin thật và tin giả
+    \item Hiệu suất nhất quán trên các kiến trúc mô hình khác nhau
+\end{itemize}
+
+\subsection{Điểm yếu và hạn chế}
+
+\textbf{1. Ràng buộc tính toán:}
+\begin{itemize}
+    \item Huấn luyện BERT yêu cầu tài nguyên tính toán cao (105+ phút)
+    \item Độ dài chuỗi XLNet bị giới hạn (128 tokens) để phù hợp với ràng buộc thời gian
+    \item Không gian tìm kiếm siêu tham số bị hạn chế do giới hạn thời gian
+\end{itemize}
+
+\noindent\textbf{2. Hạn chế tập dữ liệu:}
+\begin{itemize}
+    \item Tập dữ liệu đơn lĩnh vực có thể không tổng quát hóa tốt cho các loại tin tức khác
+    \item Các danh mục chủ đề có thể thiên vị về một số chủ đề nhất định
+    \item Khía cạnh thời gian không được xem xét (ngày xuất bản tin tức)
+\end{itemize}
+
+\noindent\textbf{3. Khoảng trống trong kỹ thuật đặc trưng:}
+\begin{itemize}
+    \item Chưa khám phá các đặc trưng NLP nâng cao như phân tích cảm xúc, nhận dạng thực thể có tên
+    \item Các chỉ số độ tin cậy nguồn chưa được tích hợp
+    \item Các thước đo độ phức tạp ngôn ngữ có thể được bổ sung
+\end{itemize}
+
+\noindent\textbf{4. Khả năng diễn giải mô hình:}
+\begin{itemize}
+    \item Các mô hình học sâu (BERT, XLNet) thiếu khả năng diễn giải
+    \item Phân tích tầm quan trọng đặc trưng chưa được thực hiện toàn diện
+    \item Khả năng giải thích cho người dùng cuối chưa được giải quyết
+\end{itemize}
+
+\subsection{Đề xuất cải tiến và công việc tương lai}
+
+\textbf{1. Kỹ thuật đặc trưng nâng cao:}
+\begin{itemize}
+    \item \textit{Phân tích cảm xúc}: Tích hợp các chỉ số giai điệu cảm xúc
+    \item \textit{Nhận dạng thực thể có tên}: Trích xuất và phân tích các đề cập về người, tổ chức, địa điểm
+    \item \textit{Chấm điểm độ tin cậy nguồn}: Phát triển các chỉ số độ tin cậy của nhà xuất bản
+    \item \textit{Phân tích mạng}: Phân tích các mẫu chia sẻ và lan truyền mạng xã hội
+    \item \textit{Đặc trưng thời gian}: Bao gồm thời gian xuất bản và phân tích xu hướng
+\end{itemize}
+
+\noindent\textbf{2. Cải tiến kiến trúc mô hình:}
+\begin{itemize}
+    \item \textit{Phương pháp kết hợp}: Kết hợp dự đoán từ nhiều mô hình
+    \item \textit{Học đa phương thức}: Tích hợp hình ảnh, video nếu có
+    \item \textit{Trực quan hóa attention}: Triển khai các cơ chế attention để hiểu các khu vực tập trung
+    \item \textit{Huấn luyện đối kháng}: Cải thiện độ bền vững chống lại tin giả tinh vi
+\end{itemize}
+
+\noindent\textbf{3. Nâng cao tập dữ liệu:}
+\begin{itemize}
+    \item \textit{Mở rộng đa lĩnh vực}: Bao gồm tin tức khoa học, thể thao, giải trí
+    \item \textit{Hỗ trợ đa ngôn ngữ}: Mở rộng để hỗ trợ tiếng Việt và các ngôn ngữ khác
+    \item \textit{Thu thập dữ liệu thời gian thực}: Xây dựng pipeline cho học liên tục
+    \item \textit{Phân tích đa nền tảng}: Bao gồm bài đăng mạng xã hội, bình luận
+\end{itemize}
+
+\noindent\textbf{4. Triển khai sản xuất:}
+\begin{itemize}
+    \item \textit{Phát triển API}: Tạo REST API cho dự đoán thời gian thực
+    \item \textit{Nén mô hình}: Tối ưu hóa mô hình cho triển khai di động
+    \item \textit{Framework kiểm tra A/B}: So sánh hiệu suất mô hình trong sản xuất
+    \item \textit{Giám sát liên tục}: Theo dõi drift mô hình và suy giảm hiệu suất
+\end{itemize}
+
+\noindent\textbf{5. Cân nhắc đạo đức:}
+\begin{itemize}
+    \item \textit{Phát hiện thiên vị}: Phân tích mô hình về thiên vị chính trị hoặc văn hóa
+    \item \textit{Các chỉ số công bằng}: Đảm bảo hiệu suất bằng nhau trên các nhóm dân cư
+    \item \textit{Công cụ minh bạch}: Phát triển các tính năng AI có thể giải thích cho người dùng
+    \item \textit{Con người trong vòng lặp}: Bao gồm xác minh chuyên gia cho các trường hợp biên giới
+\end{itemize}
+
+\subsection{Kết luận}
+
+Dự án này đã chứng minh thành công việc áp dụng nhiều phương pháp học máy cho phát hiện tin giả với kết quả ấn tượng. Mô hình BERT đạt hiệu suất cao nhất (95.59\%) nhưng XLNet cung cấp sự cân bằng tốt giữa độ chính xác (94.70\%) và hiệu quả (30 phút huấn luyện).
+
+\noindent Những điểm chính rút ra:
+\begin{itemize}
+    \item \textbf{Kỹ thuật đặc trưng} đóng vai trò quan trọng trong hiệu suất mô hình
+    \item \textbf{Các mô hình Transformer} vượt trội hơn học máy truyền thống nhưng yêu cầu nhiều tài nguyên hơn
+    \item \textbf{Tiền xử lý dữ liệu phù hợp} là thiết yếu cho kết quả đáng tin cậy
+    \item \textbf{Điều chỉnh siêu tham số} có thể cải thiện khả năng tổng quát hóa
+\end{itemize}
+
+\noindent Với độ chính xác > 94\% cho các mô hình hàng đầu, hệ thống này có tiềm năng cao cho triển khai thực tế trong các ứng dụng thực tế, góp phần vào việc chống lại thông tin sai lệch và thúc đẩy tính toàn vẹn thông tin trong thời đại số.

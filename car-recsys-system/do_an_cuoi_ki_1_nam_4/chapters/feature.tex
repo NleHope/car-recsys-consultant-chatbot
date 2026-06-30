@@ -1,0 +1,27 @@
+\setlength{\parskip}{2pt}
+\linespread{1}
+
+\section{Sử dụng API LLM để trích xuất đặc trưng}
+
+Để tăng cường khả năng phân loại tin thật/giả, chúng tôi sử dụng \textbf{Mistral API} với model 'Pixtral-12B-2409' để tự động phân loại chủ đề của từng bài báo. Việc trích xuất đặc trưng subject\_category này dựa trên giả thuyết rằng tin giả thường xuất hiện nhiều hơn trong một số chủ đề nhất định.\\
+
+\noindent API được cấu hình với \textbf{19 danh mục chủ đề} bao gồm: politics, government, usNews, worldNews, middleEastNews, technology, science, health, business, finance, sports, entertainment, propaganda, socialIssues, environment, education, crime, legal, và other.\\
+
+\noindent Kết quả là mỗi bài báo được gán một nhãn chủ đề, tạo thành đặc trưng categorical quan trọng cho việc phân loại.
+
+\section{Một số đặc trưng thống kê từ text}
+
+Ngoài đặc trưng chủ đề từ LLM, còn trích xuất \textbf{12 đặc trưng thống kê} từ nội dung văn bản:
+
+\noindent\textbf{Đặc trưng cơ bản:}
+\text Tổng số từ trong bài báo, Số từ duy nhất (vocabulary diversity), Độ dài trung bình của từ, Số lượng stopwords (a, the, is, etc.)\\
+
+\noindent\textbf{Đặc trưng cảm xúc và ngôn ngữ:}
+\text Số từ viết hoa (thể hiện cảm xúc mạnh), Số dấu chấm than (!), Số dấu hỏi (?), Tổng số dấu câu\\
+
+\noindent\textbf{Đặc trưng tỷ lệ (ratios):}
+Tỷ lệ stopwords/tổng số từ, Tỷ lệ từ duy nhất/tổng số từ (độ đa dạng từ vựng), Tỷ lệ dấu câu/tổng số từ, Tỷ lệ từ viết hoa/tổng số từ\\
+
+\noindent Các đặc trưng này được thiết kế để \textbf{capture các pattern linguisitic} phân biệt giữa tin thật và tin giả. Ví dụ, tin giả thường có xu hướng sử dụng nhiều từ viết hoa, dấu chấm than để tạo cảm xúc mạnh, hoặc có tỷ lệ từ duy nhất thấp do copy-paste từ nhiều nguồn.\\
+
+\noindent Dataset cuối cùng sau feature engineering chứa \textit{13 đặc trưng mới} (1 categorical + 12 numerical) cùng với các cột gốc, tạo nền tảng vững chắc cho việc huấn luyện các mô hình machine learning.
