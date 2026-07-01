@@ -61,22 +61,22 @@ const RATING_LABELS = {
   comfort: "Comfort",
 };
 
-// ─── Design tokens — mirrors CarMarket index.css dark theme ──────────────────
+// ─── Design tokens — warm charcoal + gold (matches the refined LoginPage) ─────
 const T = {
-  bg:          "hsl(222,32%,9%)",
-  card:        "hsl(222,28%,13%)",
-  cardHover:   "hsl(222,25%,15%)",
-  border:      "hsl(222,20%,22%)",
-  borderHover: "hsl(222,20%,30%)",
-  fg:          "hsl(210,20%,92%)",
-  fgMuted:     "hsl(215,16%,65%)",
-  gold:        "#A87601",
-  goldDark:    "#6B4801",             // ← vàng đậm: màu nền mặc định cho buttons
-  goldLight:   "hsl(42,100%,58%)",
-  goldBg:      "rgba(168,118,1,0.10)",
+  bg:          "#0f0f11",
+  card:        "rgba(255,255,255,0.03)",
+  cardHover:   "rgba(255,255,255,0.05)",
+  border:      "rgba(255,255,255,0.08)",
+  borderHover: "rgba(168,118,1,0.45)",
+  fg:          "#f4f4f5",
+  fgMuted:     "#a1a1aa",
+  gold:        "#E0A82E",              // brighter gold for text/accents on dark
+  goldDark:    "#A87601",             // button fill
+  goldLight:   "#F0B429",
+  goldBg:      "rgba(168,118,1,0.12)",
   goldBorder:  "rgba(168,118,1,0.30)",
-  input:       "hsl(222,22%,18%)",
-  inputBorder: "hsl(222,20%,22%)",
+  input:       "rgba(255,255,255,0.04)",
+  inputBorder: "rgba(255,255,255,0.12)",
 };
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
@@ -89,12 +89,12 @@ const styles = {
     overflow: "hidden",
     backgroundColor: T.bg,
     backgroundImage: `
-      radial-gradient(circle at 15% 20%, hsl(217 60% 20% / 0.5), transparent 42%),
-      radial-gradient(circle at 85% 10%, hsl(215 55% 18% / 0.45), transparent 46%),
-      linear-gradient(180deg, hsl(222 32% 9%), hsl(222 30% 7%))
+      radial-gradient(120% 60% at 20% 0%, rgba(168,118,1,0.14), transparent 55%),
+      radial-gradient(90% 50% at 90% 8%, rgba(168,118,1,0.06), transparent 60%),
+      linear-gradient(180deg, #0f0f11, #0b0b0d)
     `,
     backgroundAttachment: "fixed",
-    fontFamily: "'Jost', 'Inter', sans-serif",
+    fontFamily: "'Poppins', 'Inter', sans-serif",
   },
   circle: () => ({ display: "none" }),
   main: {
@@ -114,28 +114,31 @@ const styles = {
     marginBottom: "40px",
   },
   h1: {
-    fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
-    fontWeight: 600,
+    fontSize: "clamp(2rem, 4vw, 2.8rem)",
+    fontWeight: 700,
     color: T.fg,
     marginBottom: "8px",
     letterSpacing: "-0.02em",
-    fontFamily: "'Cormorant Garamond', serif",
+    fontFamily: "'Poppins', 'Inter', sans-serif",
   },
   h1Accent: {
     color: T.gold,
   },
   subtitle: {
-    color: T.fgMuted,
-    fontSize: "0.95rem",
-    fontWeight: 300,
-    letterSpacing: "0.01em",
+    color: T.gold,
+    fontSize: "0.78rem",
+    fontWeight: 600,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
   },
   card: {
     background: T.card,
-    borderRadius: "6px",
-    padding: "24px",
-    marginBottom: "12px",
+    borderRadius: "18px",
+    padding: "28px",
+    marginBottom: "18px",
     border: `1px solid ${T.border}`,
+    boxShadow: "0 20px 60px -30px rgba(0,0,0,0.7)",
+    backdropFilter: "blur(6px)",
     transition: "border-color 0.3s",
   },
   cardHeader: {
@@ -146,7 +149,7 @@ const styles = {
   },
   iconBox: {
     padding: "10px",
-    borderRadius: "8px",
+    borderRadius: "12px",
     background: T.goldBg,
     border: `1px solid ${T.goldBorder}`,
     display: "flex",
@@ -201,8 +204,8 @@ const styles = {
   },
   input: {
     width: "100%",
-    height: "44px",
-    borderRadius: "6px",
+    height: "46px",
+    borderRadius: "10px",
     border: `1px solid ${T.inputBorder}`,
     padding: "0 14px",
     fontSize: "0.9rem",
@@ -210,12 +213,12 @@ const styles = {
     background: T.input,
     outline: "none",
     boxSizing: "border-box",
-    transition: "border-color 0.2s",
+    transition: "border-color 0.2s, box-shadow 0.2s",
   },
   select: {
     width: "100%",
-    height: "44px",
-    borderRadius: "6px",
+    height: "46px",
+    borderRadius: "10px",
     border: `1px solid ${T.inputBorder}`,
     padding: "0 36px 0 14px",
     fontSize: "0.9rem",
@@ -225,6 +228,7 @@ const styles = {
     appearance: "none",
     cursor: "pointer",
     boxSizing: "border-box",
+    transition: "border-color 0.2s, box-shadow 0.2s",
   },
   selectWrapper: {
     position: "relative",
