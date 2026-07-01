@@ -290,10 +290,12 @@ const LoginPage = () => {
         <img
           src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&h=1600&fit=crop&q=80"
           alt="Luxury car"
-          className="w-full h-full object-cover brightness-75"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+        {/* Light overlays that blend the photo into the form. Kept subtle so the
+            car photo shows through instead of being washed out by the theme. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
 
         {/* Content overlay */}
         <div className="absolute bottom-16 left-16 right-16">
