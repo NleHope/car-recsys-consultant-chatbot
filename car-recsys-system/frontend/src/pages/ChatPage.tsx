@@ -4,7 +4,7 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Send, Loader2, Car, Plus
+  Send, Loader2, Car, Plus, MessageSquare, Trash2, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -165,27 +165,44 @@ export default function ChatPage() {
       <div className="flex-1 flex overflow-hidden pt-20">
         {/* History Sidebar (logged-in only) */}
         {loggedIn && (
-          <aside className="hidden lg:flex lg:flex-col w-64 border-r border-border bg-card/40 p-3 gap-2">
-            <button
-              onClick={startNewConversation}
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent/10"
-            >
-              + New chat
-            </button>
-            <div className="flex-1 overflow-y-auto space-y-1">
+          <aside className="hidden lg:flex lg:flex-col w-72 border-r border-border/60 bg-card/50 backdrop-blur-sm">
+            <div className="p-4">
+              <button
+                onClick={startNewConversation}
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#A87601] px-3 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(168,118,1,0.8)] transition-all duration-200 hover:bg-[#c48c07]"
+              >
+                <Plus className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+                New chat
+              </button>
+            </div>
+            <p className="px-5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Recent
+            </p>
+            <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
+              {(sessions ?? []).length === 0 && (
+                <p className="px-3 py-6 text-center text-xs text-muted-foreground/60">
+                  No conversations yet.
+                </p>
+              )}
               {(sessions ?? []).map((s) => (
                 <div
                   key={s.id}
-                  className={`group flex items-center gap-1 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-accent/10 ${sessionId === s.id ? "bg-accent/10" : ""}`}
+                  className={cn(
+                    "group flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm cursor-pointer transition-colors",
+                    sessionId === s.id
+                      ? "bg-[#A87601]/12 text-[#A87601]"
+                      : "text-foreground/80 hover:bg-accent/40"
+                  )}
                   onClick={() => openSession(s.id)}
                 >
+                  <MessageSquare className={cn("h-4 w-4 flex-shrink-0", sessionId === s.id ? "text-[#A87601]" : "text-muted-foreground/50")} />
                   <span className="flex-1 truncate">{s.title || "New conversation"}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); deleteSession.mutate(s.id, { onSuccess: () => { if (sessionId === s.id) startNewConversation(); } }); }}
-                    className="opacity-0 group-hover:opacity-100 text-destructive text-xs"
+                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-colors"
                     title="Delete"
                   >
-                    ✕
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
@@ -194,26 +211,23 @@ export default function ChatPage() {
         )}
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-gradient-to-b from-background to-muted/20">
           {/* Chat Header */}
-          <div className="h-14 border-b flex items-center px-4 gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
-              <AvatarFallback className="bg-primary text-primary-foreground"><Car className="h-4 w-4" /></AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h2 className="font-semibold">Car Shopping Assistant</h2>
-              <p className="text-xs text-muted-foreground">Powered by AI</p>
+          <div className="h-16 border-b border-border/60 bg-card/40 backdrop-blur-sm flex items-center px-6 gap-3">
+            <div className="relative">
+              <Avatar className="h-9 w-9 ring-2 ring-[#A87601]/25">
+                <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
+                <AvatarFallback className="bg-[#A87601] text-white"><Car className="h-4 w-4" /></AvatarFallback>
+              </Avatar>
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-card" />
             </div>
-            {/* Guests have no sidebar — keep a New Chat button here for them only.
-                Logged-in users use the sidebar's "+ New chat". */}
+            <div className="flex-1">
+              <h2 className="font-poppins font-semibold leading-tight">Car Shopping Assistant</h2>
+              <p className="text-xs text-emerald-600/90 font-medium">● Online · Powered by AI</p>
+            </div>
+            {/* Guests have no sidebar — keep a New Chat button here for them only. */}
             {!loggedIn && (
-              <Button
-                onClick={startNewConversation}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
+              <Button onClick={startNewConversation} variant="outline" size="sm" className="gap-2 rounded-lg">
                 <Plus className="h-4 w-4" />
                 New Chat
               </Button>
@@ -238,14 +252,14 @@ export default function ChatPage() {
                   )}
                   
                   <div className={cn(
-                    "max-w-[80%] space-y-2",
+                    "max-w-[80%] space-y-1.5",
                     message.role === 'user' && "text-right"
                   )}>
                     <div className={cn(
-                      "inline-block rounded-lg px-4 py-3",
-                      message.role === 'user' 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-muted"
+                      "inline-block px-4 py-3 shadow-sm",
+                      message.role === 'user'
+                        ? "rounded-2xl rounded-tr-md bg-[#A87601] text-white"
+                        : "rounded-2xl rounded-tl-md border border-border/60 bg-card"
                     )}>
                       {message.role === 'assistant' ? (
                         <div className="text-left">
@@ -258,25 +272,27 @@ export default function ChatPage() {
                         <p className="whitespace-pre-wrap text-left">{message.content}</p>
                       )}
                     </div>
-                    
-                    <p className="text-xs text-muted-foreground">
-                      {message.timestamp.toLocaleTimeString()}
+
+                    <p className="px-1 text-[11px] text-muted-foreground/70">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               ))}
-              
+
               {isLoading && (
                 <div className="flex gap-4">
-                  <Avatar className="h-10 w-10 bg-primary">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                  <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-[#A87601]/20">
+                    <AvatarImage src="/carmarket-mark.svg" alt="CarMarket" />
+                    <AvatarFallback className="bg-[#A87601] text-white">
                       <Car className="h-5 w-5" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="bg-muted rounded-lg px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm text-muted-foreground">Thinking...</span>
+                  <div className="rounded-2xl rounded-tl-md border border-border/60 bg-card px-5 py-4">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-[#A87601]/70 animate-bounce [animation-delay:-0.3s]" />
+                      <span className="h-2 w-2 rounded-full bg-[#A87601]/70 animate-bounce [animation-delay:-0.15s]" />
+                      <span className="h-2 w-2 rounded-full bg-[#A87601]/70 animate-bounce" />
                     </div>
                   </div>
                 </div>
@@ -284,24 +300,21 @@ export default function ChatPage() {
 
               {/* Suggestions for new conversations */}
               {messages.length <= 1 && !isLoading && (
-                <div className="mt-8">
-                  <p className="text-sm text-muted-foreground text-center mb-4">
-                    Try asking:
+                <div className="mt-10">
+                  <p className="mb-4 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Try asking
                   </p>
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <div className="grid gap-3 sm:grid-cols-2 max-w-2xl mx-auto">
                     {suggestions.map((suggestion, i) => (
-                      <Button
+                      <button
                         key={i}
-                        variant="outline"
-                        size="sm"
-                        className="text-sm"
-                        onClick={() => {
-                          setInput(suggestion);
-                          inputRef.current?.focus();
-                        }}
+                        onClick={() => { setInput(suggestion); inputRef.current?.focus(); }}
+                        className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 text-left text-sm text-foreground/85 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#A87601]/50 hover:shadow-md animate-fade-in opacity-0"
+                        style={{ animationDelay: `${i * 60}ms`, animationFillMode: "forwards" }}
                       >
-                        {suggestion}
-                      </Button>
+                        <Sparkles className="h-4 w-4 flex-shrink-0 text-[#A87601]/70 transition-colors group-hover:text-[#A87601]" />
+                        <span>{suggestion}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -310,26 +323,27 @@ export default function ChatPage() {
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="border-t p-4">
-            <div className="max-w-3xl mx-auto flex gap-3">
+          <div className="border-t border-border/60 bg-card/40 backdrop-blur-sm p-4">
+            <div className="max-w-3xl mx-auto flex items-end gap-3">
               <Input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
+                placeholder="Ask me anything about cars…"
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 h-12 rounded-2xl border-border/70 bg-background px-5 focus-visible:ring-2 focus-visible:ring-[#A87601]/50"
               />
               <Button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="icon"
+                className="h-12 w-12 rounded-2xl bg-[#A87601] text-white shadow-[0_8px_24px_-10px_rgba(168,118,1,0.9)] transition-all hover:bg-[#c48c07] disabled:opacity-40 disabled:shadow-none"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 )}
               </Button>
             </div>

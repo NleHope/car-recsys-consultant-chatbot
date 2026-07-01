@@ -10,7 +10,7 @@ import MarkdownMessage from '@/components/MarkdownMessage';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { chatApi, ChatVehicle, isAuthenticated } from '@/lib/api';
 import ChatVehicleCards from '@/components/ChatVehicleCards';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -22,6 +22,7 @@ interface Message {
 }
 
 export default function ChatPopup() {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -115,6 +116,10 @@ export default function ChatPopup() {
     setMessages([]);
     setSessionId(null);
   };
+
+  // The dedicated /chat page already provides a full chat UI — don't also show
+  // the floating popup there (avoids two overlapping chat windows).
+  if (location.pathname === '/chat') return null;
 
   return (
     <>
