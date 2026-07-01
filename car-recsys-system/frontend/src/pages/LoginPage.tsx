@@ -292,17 +292,15 @@ const LoginPage = () => {
           alt="Luxury car"
           className="w-full h-full object-cover"
         />
-        {/* Left edge blends into the form (page background); the rest is a dark
-            scrim so the car photo stays crisp and the caption reads in white. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/25 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
 
         {/* Content overlay */}
         <div className="absolute bottom-16 left-16 right-16">
-          <h2 className="font-poppins text-4xl font-semibold text-white mb-4 drop-shadow-lg">
-            Discover Your <span className="text-[#F0B429]">Dream Car</span>
+          <h2 className="font-poppins text-4xl font-semibold text-foreground mb-4">
+            Discover Your <span className="text-[#A87601]">Dream Car</span>
           </h2>
-          <p className="text-white/85 text-lg max-w-md drop-shadow-md">
+          <p className="text-muted-foreground text-lg max-w-md">
             Join thousands of satisfied buyers and sellers in our premium automotive marketplace.
           </p>
         </div>
