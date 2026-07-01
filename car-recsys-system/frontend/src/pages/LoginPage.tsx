@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, ArrowRight, Loader2, Plus } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { authApi, storeAuthData } from "@/lib/api";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -104,35 +103,55 @@ const LoginPage = () => {
     }
   };
 
+  // Shared dark input styling (charcoal fill, gold focus ring).
+  const inputCls =
+    "h-12 rounded-xl border-neutral-700 bg-neutral-900/60 text-neutral-100 placeholder:text-neutral-500 " +
+    "focus-visible:ring-2 focus-visible:ring-[#A87601]/60 focus-visible:border-[#A87601]/60 transition-colors";
+
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left side - Form */}
-      <div className="flex-1 relative flex items-center justify-center p-8">
+    <div className="min-h-screen flex bg-[#0f0f11] text-neutral-100 selection:bg-[#A87601]/30">
+      {/* ── Left · form panel (dark, refined) ─────────────────────────── */}
+      <div className="relative flex-1 flex items-center justify-center px-6 py-10 lg:px-16">
+        {/* faint radial glow + grain for atmosphere (no flat color) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(120% 80% at 20% 0%, rgba(168,118,1,0.14), transparent 55%), radial-gradient(90% 60% at 90% 100%, rgba(168,118,1,0.06), transparent 60%)",
+          }}
+        />
 
         {/* Back to Home */}
         <Link
           to="/"
-          className="absolute top-4 left-8 inline-flex items-center gap-1.5 text-sm font-medium text-slate-800 transition-all duration-200 hover:text-[#A87601] hover:underline hover:scale-105 z-10"
+          className="absolute top-6 left-6 lg:left-16 z-10 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors duration-200 hover:text-[#E0A82E]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Home page
+          Back to Home
         </Link>
 
-        {/* Thêm mt-12 để đảm bảo form luôn cách xa nút Back ở phía trên */}
-        <div className="w-full max-w-md space-y-8 mt-12">
+        <div className="relative w-full max-w-sm">
           {/* Logo */}
-          <Link to="/" className="inline-flex items-center gap-2 group">
-            <span className="font-body text-4xl font-semibold tracking-tight text-foreground">
-              Car<span className="text-[#A87601]">Market</span>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 mb-10 animate-fade-in opacity-0"
+            style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+          >
+            <span className="font-poppins text-3xl font-bold tracking-tight text-neutral-50">
+              Car<span className="text-[#E0A82E]">Market</span>
             </span>
           </Link>
 
           {/* Header */}
-          <div>
-            <h1 className="font-poppins text-3xl font-semibold text-foreground mb-2">
+          <div
+            className="mb-8 animate-fade-in opacity-0"
+            style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+          >
+            <h1 className="font-poppins text-[2rem] leading-tight font-semibold text-neutral-50">
               {isLogin ? "Welcome back" : "Create account"}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="mt-2 text-sm text-neutral-400">
               {isLogin
                 ? "Sign in to access your account"
                 : "Start your journey with us today"}
@@ -140,15 +159,19 @@ const LoginPage = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5 animate-fade-in opacity-0"
+            style={{ animationDelay: "200ms", animationFillMode: "forwards" }}
+          >
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="full_name" className="text-xs font-medium uppercase tracking-wide text-neutral-400">Full Name</Label>
                 <Input
                   id="full_name"
                   placeholder="John Doe"
                   required
-                  className="h-12 rounded-xl"
+                  className={inputCls}
                   value={formData.full_name}
                   onChange={handleInputChange}
                 />
@@ -156,48 +179,48 @@ const LoginPage = () => {
             )}
 
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="username" className="text-xs font-medium uppercase tracking-wide text-neutral-400">Username</Label>
                 <Input
                   id="username"
                   placeholder="johndoe"
                   required
-                  className="h-12 rounded-xl"
+                  className={inputCls}
                   value={formData.username}
                   onChange={handleInputChange}
                 />
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">{isLogin ? "Email or Username" : "Email"}</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-xs font-medium uppercase tracking-wide text-neutral-400">{isLogin ? "Email or Username" : "Email"}</Label>
               <Input
                 id="email"
                 type={isLogin ? "text" : "email"}
                 placeholder="you@example.com"
                 required
-                className="h-12 rounded-xl"
+                className={inputCls}
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wide text-neutral-400">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   required
-                  className="h-12 rounded-xl pr-12"
+                  className={`${inputCls} pr-12`}
                   value={formData.password}
                   onChange={handleInputChange}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-[#E0A82E] transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -205,21 +228,21 @@ const LoginPage = () => {
             </div>
 
             {isLogin && (
-              <div className="text-right">
-                <a href="#" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+              <div className="text-right -mt-1">
+                <a href="#" className="text-sm text-neutral-400 hover:text-[#E0A82E] transition-colors">
                   Forgot password?
                 </a>
               </div>
             )}
 
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (optional)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-xs font-medium uppercase tracking-wide text-neutral-400">Phone Number (optional)</Label>
                 <Input
                   id="phone"
                   type="tel"
                   placeholder="+1 555-0123"
-                  className="h-12 rounded-xl"
+                  className={inputCls}
                   value={formData.phone}
                   onChange={handleInputChange}
                 />
@@ -228,7 +251,7 @@ const LoginPage = () => {
 
             <Button
               type="submit"
-              className="w-full h-12 rounded-xl bg-[#A87601] hover:bg-[#A87601]/85 hover:shadow-lg text-white font-medium text-base transition-all duration-200"
+              className="group w-full h-12 rounded-xl bg-[#A87601] text-white font-semibold text-base shadow-[0_8px_30px_-8px_rgba(168,118,1,0.7)] transition-all duration-200 hover:bg-[#c48c07] hover:shadow-[0_10px_36px_-6px_rgba(168,118,1,0.85)]"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -239,45 +262,39 @@ const LoginPage = () => {
               ) : (
                 <>
                   {isLogin ? "Sign In" : "Create Account"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
                 </>
               )}
             </Button>
           </form>
 
           {/* Divider */}
-          <div className="relative">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-4 text-sm text-muted-foreground">
+          <div className="relative my-7">
+            <div className="h-px w-full bg-neutral-800" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0f0f11] px-4 text-xs uppercase tracking-wider text-neutral-500">
               or continue with
             </span>
           </div>
 
           {/* Social Login */}
-          <div className="grid grid-cols-1 gap-4">
-            <Button
-              variant="outline"
-              className="h-12 rounded-xl flex items-center justify-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-all duration-200"
-              type="button"
-              onClick={() => handleGoogleLogin()}
-              disabled={isLoading}
-            >
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="h-5 w-5"
-              />
-              Continue with Google
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            className="w-full h-12 rounded-xl flex items-center justify-center gap-2.5 border-neutral-700 bg-neutral-900/50 text-neutral-200 hover:bg-neutral-800 hover:text-neutral-50 hover:border-neutral-600 transition-all duration-200"
+            type="button"
+            onClick={() => handleGoogleLogin()}
+            disabled={isLoading}
+          >
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="h-5 w-5" />
+            Continue with Google
+          </Button>
 
           {/* Toggle */}
-          <p className="text-center text-muted-foreground">
+          <p className="mt-8 text-center text-sm text-neutral-400">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-[#A87601] font-medium hover:underline"
+              className="text-[#E0A82E] font-semibold hover:underline underline-offset-4"
             >
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
@@ -285,30 +302,39 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right side - Image */}
-      <div className="hidden lg:block flex-1 relative overflow-hidden">
+      {/* ── Right · cinematic image ───────────────────────────────────── */}
+      <div className="hidden lg:block relative flex-1 overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&h=1600&fit=crop&q=80"
+          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1400&h=1800&fit=crop&q=85"
           alt="Luxury car"
-          className="w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover animate-fade-in opacity-0"
+          style={{ animationDelay: "80ms", animationDuration: "900ms", animationFillMode: "forwards" }}
         />
-        {/* Light overlays that blend the photo into the form. Kept subtle so the
-            car photo shows through instead of being washed out by the theme. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/25 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
+        {/* Dark scrims: left edge melts into the charcoal panel (no seam),
+            bottom deepens so the caption reads. Same #0f0f11 as the form. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f11] via-[#0f0f11]/35 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f11] via-transparent to-[#0f0f11]/20" />
+        {/* subtle gold vignette top-right for warmth */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: "radial-gradient(70% 50% at 85% 15%, rgba(168,118,1,0.18), transparent 60%)" }}
+        />
 
-        {/* Content overlay */}
-        <div className="absolute bottom-16 left-16 right-16">
-          <h2 className="font-poppins text-4xl font-semibold text-foreground mb-4">
-            Discover Your <span className="text-[#A87601]">Dream Car</span>
+        {/* Caption */}
+        <div
+          className="absolute bottom-14 left-14 right-14 animate-fade-in opacity-0"
+          style={{ animationDelay: "320ms", animationFillMode: "forwards" }}
+        >
+          <div className="mb-4 h-1 w-12 rounded-full bg-[#E0A82E]" />
+          <h2 className="font-poppins text-4xl font-bold leading-tight text-neutral-50 drop-shadow">
+            Discover Your <span className="text-[#E0A82E]">Dream Car</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-md">
+          <p className="mt-3 max-w-md text-[15px] leading-relaxed text-neutral-300">
             Join thousands of satisfied buyers and sellers in our premium automotive marketplace.
           </p>
         </div>
       </div>
-
-
     </div>
   );
 };
