@@ -1,146 +1,42 @@
 \section{Kết quả và Đánh giá}
 
-\subsection{Tóm tắt Kết quả}
+\subsection{Kết quả xây dựng Giao diện hệ thống}
+Dự án đã phát triển thành công hệ thống website phục vụ nhu cầu tìm kiếm, so sánh và tư vấn mua bán xe ô tô với giao diện thân thiện, trực quan. Các tính năng chính đã được hiện thực hóa bao gồm:
 
-Dự án này đã thực hiện một phân tích toàn diện về bài toán phát hiện tin giả sử dụng nhiều phương pháp học máy và học sâu khác nhau. Bảng tổng hợp kết quả như sau:
+\textbf{1. Giao diện Trang chủ và Tìm kiếm:}
+Trang chủ (\textit{Index Page}) cung cấp cái nhìn tổng quan về các mẫu xe nổi bật. Trang Tìm kiếm (\textit{Search Page}) cho phép người dùng lọc xe dựa trên nhiều tiêu chí như hãng xe, mức giá, năm sản xuất, và kiểu dáng.
 
-\begin{table}[h]
-\centering
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-\textbf{Mô hình} & \textbf{Độ chính xác} & \textbf{Precision} & \textbf{Recall} & \textbf{Thời gian huấn luyện} \\
-\hline
-Logistic Regression & 93.80\% & 0.94 & 0.94 & 13.3 phút \\
-LinearSVC (Mặc định) & 92.53\% & 0.93 & 0.93 & 4.6 phút \\
-LinearSVC (Tối ưu) & 92.62\% & 0.93 & 0.93 & 4.7 phút \\
-BERT (Fine-tuned) & 95.59\% & 0.94 & 0.94 & 105+ phút \\
-XLNet (Mặc định) & 94.70\% & 0.95 & 0.95 & 30 phút \\
-XLNet (Tối ưu) & 94.56\% & 0.95 & 0.95 & 30 phút \\
-\hline
-\end{tabular}
-\caption{So sánh hiệu suất của các mô hình}
-\end{table}
+\textbf{2. Giao diện Chi tiết xe và So sánh:}
+Trang Chi tiết xe (\textit{Vehicle Detail Page}) hiển thị đầy đủ thông số kỹ thuật, hình ảnh, và các bài đánh giá. Đặc biệt, tính năng So sánh xe (\textit{Compare Page}) cho phép người dùng đặt hai hoặc nhiều mẫu xe cạnh nhau để dễ dàng đối chiếu các thông số như động cơ, kích thước, và giá bán.
 
-\noindent\textbf{Mô hình tốt nhất}: BERT fine-tuned đạt độ chính xác cao nhất 95.59\%, theo sau là XLNet với 94.70\% và Logistic Regression với 93.80\%.
+\textbf{3. Giao diện Chatbot Tư vấn:}
+Giao diện Chat (\textit{Chat Page}) được tích hợp trực tiếp vào hệ thống, đóng vai trò như một tư vấn viên ảo. Giao diện này hỗ trợ hiển thị tin nhắn văn bản kết hợp với các thẻ thông tin xe (Vehicle Cards) trực quan ngay trong khung chat, giúp người dùng dễ dàng xem nhanh thông tin xe được đề xuất.
 
-\noindent\textbf{Hiệu quả kỹ thuật đặc trưng}: Việc kết hợp đặc trưng văn bản (TF-IDF) với 30 đặc trưng số (thống kê + danh mục chủ đề) đã cải thiện đáng kể hiệu suất so với chỉ sử dụng văn bản thuần túy.
+\textit{*(Lưu ý cho nhóm: Nhóm hãy chụp ảnh màn hình của các trang này và chèn vào đây bằng lệnh \texttt{\textbackslash includegraphics} để minh họa nhé)*}
 
-\noindent\textbf{Chất lượng tập dữ liệu}: Với 68,604 mẫu được cân bằng tốt (50.3\% tin thật, 49.7\% tin giả), tất cả các mô hình đều đạt hiệu suất ổn định và đáng tin cậy.
+\subsection{Đánh giá Hệ thống Chatbot (Qualitative Evaluation)}
+Do đặc thù của hệ thống Chatbot tư vấn phụ thuộc nhiều vào ngữ cảnh và nhu cầu cá nhân hóa, nhóm tiến hành đánh giá định tính (Qualitative) thông qua các kịch bản sử dụng thực tế. Chatbot sử dụng kiến trúc Agentic LangGraph đã thể hiện khả năng xử lý linh hoạt qua các kịch bản sau:
 
-\subsection{Điểm mạnh của nghiên cứu}
-
-\textbf{1. Phương pháp tiếp cận toàn diện:}
+\textbf{1. Kịch bản tư vấn từ nhu cầu mơ hồ (Slot-filling):}
 \begin{itemize}
-    \item Thực hiện so sánh đa dạng từ học máy truyền thống đến các mô hình transformer tiên tiến
-    \item Kết hợp nhiều loại đặc trưng: văn bản, thống kê và phân loại
-    \item Điều chỉnh siêu tham số có hệ thống để tối ưu hóa
+    \item \textbf{Tình huống:} Người dùng chỉ cung cấp thông tin "Tôi muốn mua xe gia đình tầm 700 triệu".
+    \item \textbf{Kết quả xử lý:} Thay vì đưa ra một danh sách dài, Chatbot tự động nhận diện ý định và cập nhật \textit{UserProfile} (budget\_max: 700 triệu, body\_type: SUV/MPV). Hệ thống nhận thấy còn thiếu thông tin quan trọng (ví dụ: loại nhiên liệu, hãng xe ưu thích) nên đã chủ động đặt câu hỏi dẫn dắt: "Bạn muốn xe chạy xăng hay điện? Bạn có thích hãng xe nào cụ thể không?".
+    \item \textbf{Đánh giá:} Khả năng duy trì ngữ cảnh (multi-turn) và thu thập thông tin (slot-filling) hoạt động tự nhiên, giúp thu hẹp phạm vi tìm kiếm hiệu quả mà không gây quá tải thông tin cho người dùng.
 \end{itemize}
 
-\noindent\textbf{2. Xử lý dữ liệu mạnh mẽ:}
+\textbf{2. Kịch bản so sánh xe phức tạp:}
 \begin{itemize}
-    \item Quy trình tiền xử lý văn bản toàn diện với xử lý nhiễu
-    \item Tập dữ liệu cân bằng tránh vấn đề mất cân bằng lớp
-    \item Chia tách huấn luyện-kiểm tra hợp lý để tránh rò rỉ dữ liệu
-    \item Kỹ thuật đặc trưng tạo ra các chỉ số thống kê có ý nghĩa
-\end{itemize}
-\newpage
-\noindent\textbf{3. Triển khai thực tế:}
-\begin{itemize}
-    \item Các mô hình được tối ưu hóa cho hiệu quả tính toán
-    \item Có thể áp dụng thực tế với thời gian huấn luyện hợp lý
-    \item Sẵn sàng cho sản xuất với việc lưu và đánh giá mô hình phù hợp
+    \item \textbf{Tình huống:} "So sánh giúp tôi Honda CR-V và Mazda CX-5".
+    \item \textbf{Kết quả xử lý:} Bộ định tuyến (Intent Router) điều hướng chính xác vào luồng \texttt{compare\_retrieve}. Chatbot tổng hợp thông số của cả hai dòng xe từ cơ sở dữ liệu và sinh ra câu trả lời so sánh đối chiếu về giá, hiệu suất động cơ, và không gian nội thất, đồng thời đính kèm hai thẻ xe để người dùng click xem chi tiết.
+    \item \textbf{Đánh giá:} Hệ thống giảm tải thời gian tra cứu thủ công cho người dùng, cung cấp câu trả lời khách quan dựa trên dữ liệu thực tế (Grounded Generation).
 \end{itemize}
 
-\noindent\textbf{4. Hiệu suất mạnh mẽ:}
+\subsection{Khả năng truy xuất dữ liệu (Hybrid Retrieval)}
+Hệ thống sử dụng cơ chế Hybrid Retrieval kết hợp giữa SQL Hard-filter và Qdrant Semantic Search. 
 \begin{itemize}
-    \item Tất cả các mô hình đạt độ chính xác > 92\%, phù hợp cho triển khai thực tế
-    \item Precision-recall cân bằng cho cả lớp tin thật và tin giả
-    \item Hiệu suất nhất quán trên các kiến trúc mô hình khác nhau
+    \item \textbf{Tốc độ phản hồi (Latency):} Việc áp dụng SQL để lọc cứng các siêu dữ liệu (Metadata) như giá tiền, hãng xe, năm sản xuất trước khi đưa vào không gian vector (Qdrant) giúp giảm thiểu đáng kể số lượng vector cần tính toán. Nhờ đó, hệ thống đạt tốc độ phản hồi truy vấn rất nhanh, đáp ứng tốt trải nghiệm trò chuyện liên tục của người dùng.
+    \item \textbf{Độ chính xác ngữ nghĩa:} Qdrant đảm nhiệm việc tìm kiếm ngữ nghĩa đối với các yêu cầu không cấu trúc (ví dụ: "xe có cảm giác lái thể thao, cách âm tốt"), mang lại các kết quả đề xuất vượt ra khỏi các bộ lọc từ khóa truyền thống. Qua thử nghiệm thực tế, hệ thống luôn trả về top các kết quả thỏa mãn đồng thời cả ràng buộc cứng (giá, hãng) và ràng buộc mềm (phong cách, cảm giác lái).
 \end{itemize}
 
-\subsection{Điểm yếu và hạn chế}
-
-\textbf{1. Ràng buộc tính toán:}
-\begin{itemize}
-    \item Huấn luyện BERT yêu cầu tài nguyên tính toán cao (105+ phút)
-    \item Độ dài chuỗi XLNet bị giới hạn (128 tokens) để phù hợp với ràng buộc thời gian
-    \item Không gian tìm kiếm siêu tham số bị hạn chế do giới hạn thời gian
-\end{itemize}
-
-\noindent\textbf{2. Hạn chế tập dữ liệu:}
-\begin{itemize}
-    \item Tập dữ liệu đơn lĩnh vực có thể không tổng quát hóa tốt cho các loại tin tức khác
-    \item Các danh mục chủ đề có thể thiên vị về một số chủ đề nhất định
-    \item Khía cạnh thời gian không được xem xét (ngày xuất bản tin tức)
-\end{itemize}
-
-\noindent\textbf{3. Khoảng trống trong kỹ thuật đặc trưng:}
-\begin{itemize}
-    \item Chưa khám phá các đặc trưng NLP nâng cao như phân tích cảm xúc, nhận dạng thực thể có tên
-    \item Các chỉ số độ tin cậy nguồn chưa được tích hợp
-    \item Các thước đo độ phức tạp ngôn ngữ có thể được bổ sung
-\end{itemize}
-
-\noindent\textbf{4. Khả năng diễn giải mô hình:}
-\begin{itemize}
-    \item Các mô hình học sâu (BERT, XLNet) thiếu khả năng diễn giải
-    \item Phân tích tầm quan trọng đặc trưng chưa được thực hiện toàn diện
-    \item Khả năng giải thích cho người dùng cuối chưa được giải quyết
-\end{itemize}
-
-\subsection{Đề xuất cải tiến và công việc tương lai}
-
-\textbf{1. Kỹ thuật đặc trưng nâng cao:}
-\begin{itemize}
-    \item \textit{Phân tích cảm xúc}: Tích hợp các chỉ số giai điệu cảm xúc
-    \item \textit{Nhận dạng thực thể có tên}: Trích xuất và phân tích các đề cập về người, tổ chức, địa điểm
-    \item \textit{Chấm điểm độ tin cậy nguồn}: Phát triển các chỉ số độ tin cậy của nhà xuất bản
-    \item \textit{Phân tích mạng}: Phân tích các mẫu chia sẻ và lan truyền mạng xã hội
-    \item \textit{Đặc trưng thời gian}: Bao gồm thời gian xuất bản và phân tích xu hướng
-\end{itemize}
-
-\noindent\textbf{2. Cải tiến kiến trúc mô hình:}
-\begin{itemize}
-    \item \textit{Phương pháp kết hợp}: Kết hợp dự đoán từ nhiều mô hình
-    \item \textit{Học đa phương thức}: Tích hợp hình ảnh, video nếu có
-    \item \textit{Trực quan hóa attention}: Triển khai các cơ chế attention để hiểu các khu vực tập trung
-    \item \textit{Huấn luyện đối kháng}: Cải thiện độ bền vững chống lại tin giả tinh vi
-\end{itemize}
-
-\noindent\textbf{3. Nâng cao tập dữ liệu:}
-\begin{itemize}
-    \item \textit{Mở rộng đa lĩnh vực}: Bao gồm tin tức khoa học, thể thao, giải trí
-    \item \textit{Hỗ trợ đa ngôn ngữ}: Mở rộng để hỗ trợ tiếng Việt và các ngôn ngữ khác
-    \item \textit{Thu thập dữ liệu thời gian thực}: Xây dựng pipeline cho học liên tục
-    \item \textit{Phân tích đa nền tảng}: Bao gồm bài đăng mạng xã hội, bình luận
-\end{itemize}
-
-\noindent\textbf{4. Triển khai sản xuất:}
-\begin{itemize}
-    \item \textit{Phát triển API}: Tạo REST API cho dự đoán thời gian thực
-    \item \textit{Nén mô hình}: Tối ưu hóa mô hình cho triển khai di động
-    \item \textit{Framework kiểm tra A/B}: So sánh hiệu suất mô hình trong sản xuất
-    \item \textit{Giám sát liên tục}: Theo dõi drift mô hình và suy giảm hiệu suất
-\end{itemize}
-
-\noindent\textbf{5. Cân nhắc đạo đức:}
-\begin{itemize}
-    \item \textit{Phát hiện thiên vị}: Phân tích mô hình về thiên vị chính trị hoặc văn hóa
-    \item \textit{Các chỉ số công bằng}: Đảm bảo hiệu suất bằng nhau trên các nhóm dân cư
-    \item \textit{Công cụ minh bạch}: Phát triển các tính năng AI có thể giải thích cho người dùng
-    \item \textit{Con người trong vòng lặp}: Bao gồm xác minh chuyên gia cho các trường hợp biên giới
-\end{itemize}
-
-\subsection{Kết luận}
-
-Dự án này đã chứng minh thành công việc áp dụng nhiều phương pháp học máy cho phát hiện tin giả với kết quả ấn tượng. Mô hình BERT đạt hiệu suất cao nhất (95.59\%) nhưng XLNet cung cấp sự cân bằng tốt giữa độ chính xác (94.70\%) và hiệu quả (30 phút huấn luyện).
-
-\noindent Những điểm chính rút ra:
-\begin{itemize}
-    \item \textbf{Kỹ thuật đặc trưng} đóng vai trò quan trọng trong hiệu suất mô hình
-    \item \textbf{Các mô hình Transformer} vượt trội hơn học máy truyền thống nhưng yêu cầu nhiều tài nguyên hơn
-    \item \textbf{Tiền xử lý dữ liệu phù hợp} là thiết yếu cho kết quả đáng tin cậy
-    \item \textbf{Điều chỉnh siêu tham số} có thể cải thiện khả năng tổng quát hóa
-\end{itemize}
-
-\noindent Với độ chính xác > 94\% cho các mô hình hàng đầu, hệ thống này có tiềm năng cao cho triển khai thực tế trong các ứng dụng thực tế, góp phần vào việc chống lại thông tin sai lệch và thúc đẩy tính toàn vẹn thông tin trong thời đại số.
+\subsection{Tổng kết}
+Hệ thống tư vấn mua bán xe đã hoàn thiện với khả năng hoạt động ổn định. Giao diện được thiết kế hiện đại, đáp ứng đầy đủ luồng người dùng từ tìm kiếm, so sánh đến tư vấn trực tiếp qua AI. Đặc biệt, luồng Chatbot Agentic đã chứng minh được tính hiệu quả trong việc chủ động thu thập thông tin, cá nhân hóa đề xuất và phản hồi nhanh chóng, giải quyết tốt bài toán tư vấn mua bán xe vốn đòi hỏi tổng hợp nhiều thông tin đa chiều.

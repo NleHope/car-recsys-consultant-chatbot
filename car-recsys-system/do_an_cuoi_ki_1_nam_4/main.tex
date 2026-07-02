@@ -427,6 +427,9 @@
 \begingroup
 \fontsize{12pt}{14pt}\selectfont
 \tableofcontents
+\clearpage
+\listoffigures
+
 \endgroup
 
 %% TODO: Add \chapter{Chapter name} followed by \input{chapters/filename} if you need more chapter or modify them
@@ -435,18 +438,24 @@
 \pagenumbering{arabic}
 \setcounter{page}{1}
 \input{chapters/TongQuan}
-
+\chapter{CƠ SỞ LÝ THUYẾT}
+\input{chapters/cosolythuyet}
 \chapter{QUÁ TRÌNH THU THẬP VÀ XỬ LÝ DỮ LIỆU}
 \input{chapters/ThuThapDuLieu}
+
+
 
 %%\chapter{EDA}
 %%\input{chapters/preprocess}
 
-\chapter{BACKEND VÀ HỆ THỐNG ĐỀ XUẤT}
+\chapter{KIẾN TRÚC HỆ THỐNG, BACKEND VÀ HỆ THỐNG ĐỀ XUẤT}
 \input{chapters/backend}
 
 \chapter{XÂY DỰNG CHATBOT}
 \input{chapters/ChatBot}
+
+\chapter{KẾT QUẢ ĐẠT ĐƯỢC VÀ ĐÁNH GIÁ}
+\input{chapters/result}
 
 \chapter{TỔNG KẾT}
 \input{chapters/sumary}
