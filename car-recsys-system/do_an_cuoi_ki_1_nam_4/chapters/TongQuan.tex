@@ -1,0 +1,120 @@
+%% TODO: Make sure to use \textbf or \textit for highlighting keywords, and \cite{} to cite the corresponding quotations
+% Nhẹ nhàng
+\setlength{\parskip}{2pt}
+\linespread{1}
+
+\section{Sơ lược về dự án}
+
+Trong bối cảnh kỷ nguyên số và xu hướng chuyển đổi số diễn ra mạnh mẽ, mua sắm qua các nền tảng trực tuyến đã trở thành thói quen phổ biến của người dùng tại Việt Nam cũng như trên toàn thế giới. Cùng với đó, thị trường mua bán ô tô đang phát triển sôi động, với số lượng mẫu xe đa dạng và mức giá biến động theo nhiều yếu tố như thương hiệu, phiên bản, tình trạng xe và tính năng đi kèm. Sự phong phú về lựa chọn giúp người mua có nhiều cơ hội tiếp cận sản phẩm phù hợp, nhưng cũng làm tăng khó khăn trong việc so sánh, đánh giá và xác định phương án tối ưu theo nhu cầu và ngân sách.
+
+Xuất phát từ thực tế đó, nhóm đề xuất phát triển một hệ thống tư vấn và gợi ý xe nằm trên hạ tầng đám mây với tính sẵn sàng cao dựa trên dữ liệu thu thập từ website buôn bán xe \textbf{\textit{Cars.com}}, bao gồm nhiều mức giá và tình trạng xe khác nhau. Hệ thống tập trung vào việc tổng hợp thông tin, chuẩn hóa dữ liệu và hỗ trợ người dùng sàng lọc theo các tiêu chí quan trọng như khoảng giá, dòng xe, mục đích sử dụng và một số thông số kỹ thuật cơ bản. Từ đó, hệ thống hiển thị danh sách lựa chọn phù hợp hơn, giúp người dùng nhanh chóng khoanh vùng các mẫu xe đáp ứng đúng nhu cầu.
+
+Với bộ dữ liệu hơn \textbf{6.000 xe} (VIN duy nhất) đã thu thập và cập nhật hàng tuần, dự án không chỉ dừng lại ở việc gợi ý lựa chọn hiện tại mà còn hướng tới việc mở rộng trong việc phân tích xu hướng thị trường trong tương lai. Cụ thể, từ biến động giá theo thời gian và mức độ quan tâm của người mua, hệ thống có thể hỗ trợ nhận định xu hướng tăng hoặc giảm giá và tình hình cung cầu của một số dòng xe. Bên cạnh đó, việc thu thập và khai thác các nhận xét của khách hàng cũng tạo cơ hội cho việc phân tích cảm xúc và nhu cầu người dùng đối với từng dòng xe, qua đó bổ sung thêm một lớp thông tin hữu ích cho quá trình ra quyết định.
+
+Về giải pháp kỹ thuật, dự án phát triển hệ thống theo ba hướng chính:
+\begin{itemize}
+    \item \textbf{Recommender System (Hệ thống đề xuất):} Hệ thống đề xuất lai (hybrid) 3 giai đoạn bao gồm: (1) sinh ứng viên từ 4 nguồn (Collaborative Filtering qua bảng item\_similarity, Content-based, Vector search qua Qdrant, Popularity), (2) xếp hạng bằng bộ chấm điểm tuyến tính 7 đặc trưng, (3) tái xếp hạng bằng MMR để đảm bảo đa dạng kết quả.
+    \item \textbf{Agentic Chatbot (Chatbot tư vấn thông minh):} Xây dựng chatbot dạng agent sử dụng \textbf{LangGraph} với luồng hội thoại đa nhánh (7 loại intent: compare, analytics, specs, specific, vague, chitchat, off\_topic). Chatbot kết hợp truy vấn SQL trực tiếp trên gold.vehicles và tìm kiếm ngữ nghĩa qua Qdrant để đưa ra tư vấn cá nhân hóa, có dẫn chứng dữ liệu thực.
+    \item \textbf{Data Pipeline tự động:} Hệ thống pipeline dữ liệu tự động chạy hàng tuần sử dụng \textbf{Temporal} để điều phối toàn bộ luồng: thu thập dữ liệu (crawl) → chuyển đổi dữ liệu (dbt medallion) → tính toán ML (cosine similarity, embeddings).
+\end{itemize}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.2\linewidth]{CARS_LOGO.png}
+    \caption{\textit{Cars.com} -- Trang web chính được sử dụng để thu thập dữ liệu.}
+\end{figure}
+
+\FloatBarrier
+
+\section{Kiến trúc hệ thống tổng quát}
+
+Hệ thống được xây dựng trên nền tảng đám mây Google Cloud Platform (GCP) với kiến trúc microservices, bao gồm các thành phần chính như sau:
+
+\begin{itemize}
+    \item \textbf{Frontend:} Ứng dụng web đơn trang (SPA) xây dựng bằng React + TypeScript + Tailwind CSS, triển khai trên Google Cloud Run dưới dạng container nginx.
+    \item \textbf{Backend:} API server xây dựng bằng FastAPI (Python), triển khai trên Google Cloud Run, cung cấp các endpoint cho tìm kiếm, đề xuất, chat, xác thực và quản lý tương tác người dùng.
+    \item \textbf{Database:} AlloyDB (PostgreSQL 17) lưu trữ dữ liệu theo kiến trúc medallion (bronze/silver/gold). Qdrant Cloud làm vector database cho tìm kiếm ngữ nghĩa. Redis làm bộ nhớ đệm.
+    \item \textbf{Data Pipeline:} Temporal server tự triển khai (self-hosted) trên GCE VM điều phối toàn bộ luồng thu thập và xử lý dữ liệu tự động hàng tuần.
+    \item \textbf{Chuyển đổi dữ liệu:} dbt (data build tool) thực hiện chuyển đổi dữ liệu từ bronze thô sang silver (chuẩn hóa, 3NF) và gold (bảng phục vụ ứng dụng).
+\end{itemize}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{system_architecture_overview.png}
+    \caption{Kiến trúc tổng quát của hệ thống tư vấn mua bán xe.}
+\end{figure}
+
+\FloatBarrier
+
+\section{Giới thiệu về nguồn dữ liệu}
+
+Bộ dữ liệu được tổ chức theo \textbf{kiến trúc medallion} (Bronze → Silver → Gold) trên cơ sở dữ liệu PostgreSQL (AlloyDB), với dữ liệu được chuyển đổi tự động bằng dbt.
+
+\subsection{Tầng Bronze (Dữ liệu thô)}
+
+Sau khi thu thập dữ liệu trên trang web Cars.com, dữ liệu thô được lưu trữ trên \textbf{Google Cloud Storage (GCS)} theo cấu trúc phân vùng ngày:
+\begin{itemize}
+    \item Mỗi file JSON chứa toàn bộ thông tin của một chiếc xe (thông tin bài đăng, thông số kỹ thuật, tính năng, hình ảnh, thông tin người bán, đánh giá).
+    \item Cấu trúc lưu trữ: \texttt{gs://incremental\_raw/dt=YYYY-MM-DD/<page>/<vin>.json}
+    \item Hình ảnh xe và người bán được lưu kèm theo trong thư mục con.
+\end{itemize}
+
+Dữ liệu từ GCS sau đó được nạp vào bảng \texttt{bronze.raw\_listings} trên PostgreSQL dưới dạng JSONB. Bảng này là \textbf{append-only} — mỗi file JSON tương ứng một hàng, khóa idempotent là \texttt{file\_hash} (SHA-256 của nội dung file). Việc chạy lại pipeline không tạo bản ghi trùng lặp.
+
+\subsection{Tầng Silver (Dữ liệu chuẩn hóa)}
+
+Tầng Silver do \textbf{dbt} tự động xây dựng từ tầng Bronze, bao gồm hai bước:
+\begin{enumerate}
+    \item \textbf{Staging:} Giải trùng lặp theo VIN (lấy bản ghi mới nhất theo \texttt{crawl\_date}), sau đó trích xuất và phẳng hóa (flatten) cấu trúc JSON lồng nhau thành các trường riêng biệt.
+    \item \textbf{Mô hình chiều (Dimensional model):} Tổ chức thành bảng fact và dimension theo mô hình 3NF:
+    \begin{itemize}
+        \item \texttt{fct\_listing}: Bảng fact chính — mỗi hàng là một bài đăng xe (giá, quãng đường, tình trạng, động cơ, v.v.)
+        \item \texttt{dim\_car\_model}: Thông tin hãng xe và dòng xe
+        \item \texttt{dim\_seller}: Thông tin người bán/đại lý
+        \item \texttt{dim\_feature}: Danh mục tính năng xe
+        \item \texttt{dim\_listing\_image}: Hình ảnh xe
+        \item \texttt{bridge\_listing\_feature}: Liên kết N-N giữa bài đăng và tính năng
+        \item \texttt{fct\_model\_rating} và \texttt{fct\_model\_review}: Đánh giá và nhận xét theo dòng xe
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Tầng Gold (Dữ liệu phục vụ ứng dụng)}
+
+Tầng Gold cũng do dbt xây dựng, là các bảng denormalized tối ưu cho truy vấn từ backend. Các bảng chính:
+\begin{itemize}
+    \item \texttt{gold.vehicles}: Bảng chính (merge by VIN, incremental) — một hàng mỗi xe, chứa tất cả thông tin cần thiết (giá, hãng, dòng, tính năng, hình ảnh chính, đánh giá mô hình). Hiện tại có \textbf{6.072 VIN} duy nhất.
+    \item \texttt{gold.vehicle\_price\_history}: Lịch sử giá xe theo ngày thu thập.
+    \item \texttt{gold.car\_models}: Thông tin dòng xe tổng hợp (đánh giá, tỷ lệ khuyến nghị).
+    \item \texttt{gold.sellers}: Thông tin đại lý/người bán.
+    \item \texttt{gold.reviews}: Nhận xét chi tiết từ người dùng.
+    \item \texttt{gold.vehicle\_features} và \texttt{gold.vehicle\_images}: Tính năng và hình ảnh xe.
+\end{itemize}
+
+Ngoài ra, tầng Gold còn bao gồm các \textbf{bảng user-domain} do ứng dụng FastAPI ghi trực tiếp (không qua dbt):
+\begin{itemize}
+    \item \texttt{gold.users}: Thông tin người dùng (đăng ký, xác thực).
+    \item \texttt{gold.user\_interactions}: Lịch sử tương tác (view, click, compare, save, favorite, contact, inquiry).
+    \item \texttt{gold.item\_similarity}: Ma trận tương đồng xe (tính bằng cosine similarity, cập nhật hàng tuần).
+    \item \texttt{gold.chat\_sessions} và \texttt{gold.chat\_messages}: Lịch sử hội thoại chatbot của người dùng đã đăng nhập.
+\end{itemize}
+
+\section{Ý nghĩa và Thách thức}
+
+Bộ dữ liệu thu thập từ \textit{Cars.com} mang lại một số \textbf{ưu điểm} đáng chú ý:
+\begin{itemize}
+    \item \textbf{Tính cập nhật cao:} Dữ liệu được thu thập tự động hàng tuần qua pipeline Temporal, đảm bảo thông tin bài đăng và giá bán phản ánh tương đối sát thị trường tại thời điểm hiện tại.
+    \item \textbf{Thông tin đa dạng:} Dữ liệu bao gồm nhiều khía cạnh như thông tin cơ bản của xe, các tính năng (feature), hình ảnh, thông tin người bán và đánh giá từ người dùng.
+    \item \textbf{Nguồn dữ liệu phổ biến:} Website có lượng người dùng lớn, giúp thu thập được nhiều nhận xét thực tế, hỗ trợ phân tích hành vi và nhu cầu của người mua.
+    \item \textbf{Kiến trúc dữ liệu chuẩn:} Áp dụng kiến trúc medallion (Bronze → Silver → Gold) với dbt, đảm bảo dữ liệu được chuẩn hóa, có thể truy vết nguồn gốc (lineage) và dễ mở rộng.
+    \item \textbf{Idempotent và incremental:} Pipeline thu thập và xử lý dữ liệu đảm bảo tính idempotent — chạy lại bất kỳ bước nào cũng không tạo dữ liệu trùng lặp, nhờ cơ chế dedup theo \texttt{file\_hash} (bronze) và merge theo VIN (gold).
+\end{itemize}
+
+\noindent Tuy nhiên, bộ dữ liệu cũng tồn tại một số \textbf{thách thức}:
+\begin{itemize}
+    \item \textbf{Chống bot (Anti-scraping):} Cars.com sử dụng hệ thống bảo vệ Cloudflare Turnstile, khiến việc thu thập dữ liệu bằng trình duyệt headless thông thường thất bại. Nhóm phải sử dụng SeleniumBase UC mode (Undetected ChromeDriver) kết hợp Xvfb trên máy thật để vượt qua cơ chế này. Hệ quả là crawler \textbf{không thể chạy trong Docker container} mà phải chạy trực tiếp trên máy host.
+    \item \textbf{Về mặt địa lý:} Dữ liệu chủ yếu phản ánh thị trường ô tô tại Mỹ, do đó giá cả có thể lệch so với các quốc gia khác một số thời điểm.
+    \item \textbf{Về mặt thời gian:} Giá và tình trạng xe thay đổi nhanh theo thời điểm. Mặc dù hệ thống đã có cơ chế thu thập hàng tuần, nhưng vẫn tồn tại độ trễ nhất định.
+    \item \textbf{Về chất lượng dữ liệu:} Một số bài đăng có thể thiếu thông tin hoặc trình bày không đầy đủ; đồng thời người bán có thể không công bố (hoặc mô tả mơ hồ) các khuyết điểm của xe, gây khó khăn trong việc đối soát và đánh giá chính xác tình trạng xe thực tế.
+\end{itemize}
+
+\noindent Nhìn chung, bộ dữ liệu này là nền tảng quan trọng để phát triển các chức năng sàng lọc, gợi ý xe theo nhu cầu và xây dựng chatbot tư vấn dựa trên hệ thống đề xuất lai (hybrid Recommender System) và chatbot thông minh dạng agent (Agentic LangGraph chatbot).

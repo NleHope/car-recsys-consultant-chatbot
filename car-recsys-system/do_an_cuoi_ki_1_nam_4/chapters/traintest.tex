@@ -1,0 +1,38 @@
+\section{Kiểm tra tính cân bằng}
+
+Trước khi chia dataset, thực hiện kiểm tra \textbf{tính cân bằng} của dữ liệu. Dataset cuối cùng sau các bước tiền xử lý có \textit{68,604 mẫu} với phân phối nhãn:
+
+\begin{itemize}
+    \item \textbf{Tin thật (label = 1):} 34,526 mẫu (50.3\%)
+    \item \textbf{Tin giả (label = 0):} 34,078 mẫu (49.7\%)
+\end{itemize}
+
+\noindent Dataset cho thấy \textbf{tính cân bằng rất tốt} với sự chênh lệch chỉ 0.6\% giữa hai lớp. Điều này là một \textit{lợi thế quan trọng} vì:
+\begin{itemize}
+    \item Tránh được vấn đề \textit{class imbalance} trong machine learning
+    \item Model sẽ không thiên lệch về một lớp cụ thể
+    \item Các metric đánh giá (accuracy, precision, recall) sẽ đáng tin cậy
+    \item Không cần áp dụng các kỹ thuật resampling phức tạp
+\end{itemize}
+
+\section{Chia tập train và test}
+
+Việc chia dataset được thực hiện \textbf{trước bất kỳ bước tiền xử lý nào} để đảm bảo tính toàn vẹn của quá trình đánh giá. Chúng tôi sử dụng \texttt{train\_test\_split} với các tham số:
+
+\begin{itemize}
+    \item \textbf{Test size:} 20\% (13,721 mẫu test, 54,883 mẫu train)
+    \item \textbf{Stratified sampling:} Đảm bảo tỷ lệ tin thật/giả được duy trì trong cả train và test set
+\end{itemize}
+
+\noindent Việc chia dataset \textit{ngay từ đầu, trước mọi bước preprocessing} là \textbf{cực kỳ quan trọng} để tránh \textit{data leakage}:
+
+\begin{itemize}
+    \item \textbf{Ngăn chặn information leakage:} Thông tin từ test set không được "rò rỉ" vào quá trình training qua các bước feature engineering, scaling, hoặc vectorization
+    \item \textbf{Đảm bảo đánh giá chính xác:} Test set giữ nguyên trạng thái "unseen" để đánh giá hiệu suất thực tế của model
+    \item \textbf{Mô phỏng production environment:} Trong thực tế, model sẽ gặp dữ liệu hoàn toàn mới chưa được xử lý
+    \item \textbf{Tránh overfitting ẩn:} Các bước preprocessing như TF-IDF fitting, feature scaling được thực hiện độc lập cho train và test
+\end{itemize}
+
+\noindent Kết quả chia cho thấy cả train set (54,883 mẫu) và test set (13,721 mẫu) đều \textbf{duy trì tỷ lệ cân bằng} giữa tin thật và tin giả, đảm bảo tính đại diện và khả năng generalization của model.
+
+\noindent Từ bước này trở đi, mọi quá trình tiền xử lý, feature engineering, và training sẽ được thực hiện \textit{riêng biệt} cho train và test set để đảm bảo tính khách quan trong đánh giá.

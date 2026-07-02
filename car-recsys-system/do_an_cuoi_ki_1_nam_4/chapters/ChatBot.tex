@@ -1,0 +1,150 @@
+\section{Mục tiêu và phạm vi tư vấn}
+Dựa trên bộ dữ liệu thu thập từ \textit{Cars.com}, nhóm đặt mục tiêu xây dựng chatbot có khả năng hỗ trợ người dùng đặt câu hỏi và nhận tư vấn một cách tự nhiên, đồng thời đảm bảo câu trả lời bám sát nguồn thông tin thực tế hiện có trong dữ liệu. Chatbot được thiết kế để duy trì ngữ cảnh hội thoại, ghi nhớ các câu hỏi trước đó và khai thác thông tin đã cung cấp nhằm hiểu rõ hơn hành vi cũng như nhu cầu của người dùng trong suốt quá trình tương tác.
+
+\noindent \textbf{Phạm vi tư vấn}:
+\begin{itemize}
+    \item \textbf{Gợi ý xe theo nhu cầu:} Người dùng cung cấp các tiêu chí như khoảng giá, loại xe, hãng xe, màu sắc, các tính năng cần thiết; chatbot trả về danh sách các bài đăng phù hợp nhất và tóm tắt các thông tin quan trọng của từng lựa chọn.
+    \item \textbf{So sánh các lựa chọn:} Chatbot hỗ trợ so sánh nhiều mẫu xe trong cùng tầm giá dựa trên thông số và tính năng đã thu thập, giúp người dùng đánh giá ưu/nhược điểm để lựa chọn phù hợp.
+    \item \textbf{Hỏi thông số kỹ thuật:} Chatbot trả lời câu hỏi về thông số kỹ thuật, tính năng an toàn, động cơ, MPG của một mẫu xe cụ thể.
+    \item \textbf{Phân tích thống kê nền tảng:} Chatbot cung cấp thống kê tổng hợp như hãng phổ biến nhất, phân bổ loại nhiên liệu, mô hình được đánh giá cao nhất.
+    \item \textbf{Cung cấp hình ảnh minh họa:} Chatbot hiển thị hình ảnh của các mẫu xe được đề xuất thông qua URL từ dữ liệu.
+\end{itemize}
+
+
+
+\section{Xây dựng Vector Database cho ChatBot}
+Vector database nhóm sử dụng trong dự án là \textbf{Qdrant}. Ứng dụng kết nối đến Qdrant thông qua \textbf{QdrantClient}. Chatbot sử dụng collection \texttt{\textbf{car\_vectorize}} — lưu trữ thông tin xe dưới dạng \textbf{chunked documents} (chia nhỏ mô tả xe thành nhiều đoạn văn bản), phục vụ tìm kiếm ngữ nghĩa cho chatbot RAG.
+
+\textbf{Lưu ý quan trọng về hai Qdrant collection:}
+\begin{itemize}
+    \item \texttt{car\_vectorize}: dành riêng cho \textbf{chatbot} (chunked docs, tìm kiếm ngữ nghĩa).
+    \item \texttt{car\_chatbot\_vectors}: dành riêng cho \textbf{Recommendation Engine} (1 vector/VIN, VectorRecaller). Nhầm lẫn hai collection này sẽ phá vỡ cả chatbot lẫn hệ thống đề xuất.
+\end{itemize}
+
+\noindent Quá trình xây dựng vector database được thực hiện như sau:
+\begin{itemize}
+    \item \textbf{Trích xuất và tạo nội dung mô tả xe:} Nhóm truy vấn SQL để lấy các trường thông tin quan trọng từ \texttt{gold.vehicles} (năm sản xuất, hãng xe, dòng xe, dáng xe, động cơ, nhiên liệu, màu sắc, giá cả, số km, tình trạng, địa chỉ, tính năng, nhận xét) và tổng hợp thành đoạn mô tả cho từng xe. Thông tin xe sau đó được \textbf{chia nhỏ thành các chunk} để tăng độ chính xác tìm kiếm ngữ nghĩa.
+
+    \item \textbf{Khởi tạo collection:} Collection \texttt{car\_vectorize} được cấu hình với \texttt{size = 3072} (số chiều embedding từ mô hình \textbf{text-embedding-3-large}) và \texttt{distance = COSINE} (thước đo tương đồng).
+
+    \item \textbf{Nạp dữ liệu vào collection:} Dữ liệu được ingest theo từng \textit{batch} để tối ưu hiệu năng. Mỗi PointStruct có:
+    \begin{itemize}
+        \item \textbf{ID:} \texttt{uuid5(vin)} — ID xác định (deterministic), cho phép upsert idempotent.
+        \item \textbf{Vector:} embedding 3072 chiều của đoạn mô tả xe.
+        \item \textbf{Payload:} thông tin xe phục vụ lọc và hiển thị (VIN, năm, hãng, dòng xe, giá, số km, nhiên liệu, màu sắc, vị trí, features, image\_url, mô tả ngắn).
+    \end{itemize}
+    Việc dùng \texttt{uuid5(vin)} thay vì sequential ID đảm bảo rằng khi pipeline ML chạy lại hàng tuần, Qdrant thực hiện \textbf{upsert} (cập nhật nếu đã tồn tại) thay vì tạo bản sao, tránh trùng lặp dữ liệu.
+\end{itemize}
+
+\section{Kiến trúc Agentic: LangGraph StateGraph}
+
+Thay vì một RAG chain tuyến tính, chatbot được xây dựng trên \textbf{LangGraph StateGraph} — một đồ thị trạng thái điều phối luồng xử lý theo ý định câu hỏi. Toàn bộ trạng thái hội thoại được lưu trong \texttt{AgenticState} (TypedDict) truyền qua các nodes.
+
+\subsection{Hồ sơ người dùng (User Profile Slot-Fill)}
+
+Mỗi phiên hội thoại duy trì một \texttt{UserProfile} riêng biệt theo \texttt{session\_id}, lưu \textbf{in-memory} trong backend. Hồ sơ gồm hai nhóm thông tin:
+
+\begin{itemize}
+    \item \textbf{Core Slots} (thông tin cốt lõi): \texttt{budget\_max}, \texttt{body\_type}, \texttt{fuel\_type}, \texttt{brand}, \texttt{condition} — ba slots đầu tiên (\texttt{budget\_max}, \texttt{body\_type}, \texttt{fuel\_type}) là \textbf{bắt buộc} để thực hiện truy xuất tư vấn.
+    \item \textbf{Soft Preferences} (sở thích mềm): danh sách tính năng mong muốn (\texttt{features}), phong cách xe (\texttt{vibe}); cùng với \texttt{excluded\_brands} và \texttt{viewed\_models}.
+\end{itemize}
+
+Node \texttt{update\_profile} chạy đầu tiên trong mỗi request, dùng LLM để trích xuất thông tin mới từ câu hỏi hiện tại và cập nhật vào hồ sơ. Nếu câu hỏi thuộc intent \textit{vague} (nhu cầu chung) mà core slots chưa đủ, node \texttt{ask\_slot} tự động sinh câu hỏi dẫn dắt để thu thập thêm thông tin, thay vì trả về kết quả chưa đủ cơ sở.
+
+\subsection{Phân loại ý định (Intent Routing)}
+
+Node \texttt{route\_intent} sử dụng LLM với \textbf{structured output} (\texttt{IntentDecision}) để phân loại câu hỏi thành \textbf{7 loại intent}:
+
+\begin{center}
+\small
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Intent} & \textbf{Mô tả} & \textbf{Ví dụ} \\
+\hline
+\texttt{compare} & So sánh 2+ xe cụ thể & "Toyota Camry vs Honda Civic" \\
+\hline
+\texttt{analytics} & Thống kê nền tảng & "Hãng nào có nhiều xe nhất?" \\
+\hline
+\texttt{specs} & Thông số kỹ thuật 1 xe & "BMW X5 có những tính năng gì?" \\
+\hline
+\texttt{specific} & Tìm xe theo hãng/model & "Show me available BMW i5" \\
+\hline
+\texttt{vague} & Nhu cầu chung, không chỉ rõ xe & "Tôi cần xe gia đình \$40,000" \\
+\hline
+\texttt{chitchat} & Hội thoại liên quan đến xe & "Chào", "Cảm ơn" \\
+\hline
+\texttt{off\_topic} & Ngoài phạm vi xe & "Thời tiết hôm nay thế nào?" \\
+\hline
+\end{tabular}
+\end{center}
+
+Kết quả phân loại còn trích xuất \texttt{brand} và \texttt{model} nếu có trong câu hỏi. Node \texttt{route\_after\_intent} sau đó định tuyến đến nhánh xử lý phù hợp.
+
+\section{Hệ thống Hybrid Retrieval và Sinh câu trả lời}
+
+\subsection{Hybrid Retrieval}
+
+Với các intent \texttt{specific} và \texttt{vague} (sau khi đủ core slots), hệ thống thực hiện \textbf{hybrid retrieval} kết hợp hai nguồn song song:
+
+\begin{itemize}
+    \item \textbf{SQL Hard-Filter} (\texttt{sql\_search\_cars}): Truy vấn trực tiếp trên \texttt{gold.vehicles} với điều kiện lọc cứng: brand, model, khoảng giá, loại nhiên liệu, tình trạng xe (new/used), năm sản xuất, excluded brands. Trả về tối đa 6 kết quả khớp chính xác.
+    \item \textbf{Qdrant Semantic Search}: Tìm kiếm vector trên collection \texttt{car\_vectorize} với câu hỏi đã được chuẩn hóa (standalone question). Lọc bỏ kết quả có score $> 1.3$ (khoảng cách cosine quá xa). Trả về tối đa 5 kết quả ngữ nghĩa gần nhất.
+\end{itemize}
+
+Sau khi truy xuất, hệ thống tổng hợp thông tin từ \texttt{gold.vehicle\_images} và \texttt{gold.vehicle\_features} theo VIN để làm giàu context. Context cuối cùng có dạng:
+\[
+\texttt{[SQL Hard-Filter Matches] + [Semantic Matches]}
+\]
+
+\subsection{Các nhánh xử lý chuyên biệt}
+
+Mỗi nhánh intent có pipeline retrieval và prompt template riêng:
+
+\begin{itemize}
+    \item \textbf{compare\_retrieve / compare\_answer:} Trích xuất danh sách xe cần so sánh bằng \texttt{CompareExtraction} (structured output), truy vấn SQL từng xe, tổng hợp thông số đầy đủ. LLM sinh bảng so sánh side-by-side với verdict.
+
+    \item \textbf{analytics\_retrieve / analytics\_answer:} Thực thi nhiều SQL query tổng hợp song song (brand counts, price stats, top models, fuel distribution, top features) trên \texttt{gold.vehicles} và \texttt{gold.vehicle\_features}. LLM trình bày số liệu và insight.
+
+    \item \textbf{spec\_retrieve / spec\_answer:} Lấy thông số kỹ thuật chi tiết (engine, drivetrain, MPG, transmission, fuel type) cùng features theo VIN. LLM trình bày có phân loại (Performance, Drivetrain, Safety, Comfort, Technology).
+
+    \item \textbf{ask\_slot:} Khi intent là \textit{vague} nhưng thiếu core slots, sinh câu hỏi dẫn dắt tự nhiên để thu thập thông tin, có gợi ý cụ thể (ví dụ: SUV vs Sedan, Gasoline vs Hybrid vs Electric).
+
+    \item \textbf{redirect\_topic:} Khi intent là \textit{off\_topic}, lịch sự chuyển hướng cuộc trò chuyện về chủ đề xe.
+\end{itemize}
+
+\subsection{Sinh câu trả lời (Generation)}
+
+Hệ thống sử dụng mô hình LLM \textbf{gpt-4o-mini} của OpenAI với thiết lập \textbf{temperature = 0.5}. Mỗi nhánh có \textbf{system prompt riêng} được thiết kế theo ngữ cảnh tư vấn cụ thể:
+
+\begin{itemize}[noitemsep, topsep=2pt]
+    \item \textbf{System prompt:} Mô tả vai trò (tư vấn xe, so sánh xe, phân tích thống kê, v.v.) và quy tắc trả lời.
+    \item \textbf{Knowledge Context:} Ngữ cảnh đã truy xuất (SQL matches + semantic matches + features + images).
+    \item \textbf{Customer Profile (JSON):} Hồ sơ người dùng hiện tại để cá nhân hóa câu trả lời.
+    \item \textbf{Lịch sử hội thoại (\texttt{chat\_history}):} Tối đa 10 lượt gần nhất, duy trì ngữ cảnh phiên trò chuyện.
+    \item \textbf{Câu hỏi hiện tại:} Nội dung người dùng yêu cầu.
+\end{itemize}
+
+Một số quy tắc chung trong system prompt: (1) hiển thị giá với dấu phẩy phân tách (ví dụ: \$21,950); (2) \textbf{không} thêm link "View Details" vào nội dung câu trả lời — ứng dụng tự hiển thị vehicle cards bên dưới; (3) trả lời bằng ngôn ngữ của người dùng; (4) không đề xuất brand nằm trong \texttt{excluded\_brands} của hồ sơ.
+
+\subsection{Chuẩn hóa câu hỏi (Standalone Question)}
+
+Trước khi truy xuất, câu hỏi hiện tại được chuẩn hóa thành \textbf{standalone question}: nếu câu hỏi phụ thuộc ngữ cảnh trước đó (câu hỏi nối tiếp), LLM chuyển đổi thành câu hỏi độc lập chứa đủ thông tin. Câu hỏi chuẩn hóa này được dùng để tạo embedding và tìm kiếm Qdrant, đảm bảo kết quả retrieval chính xác.
+
+\section{Hạn chế và định hướng phát triển}
+
+\subsection{Hạn chế hiện tại}
+
+\begin{itemize}[noitemsep, topsep=2pt]
+    \item \textbf{UserProfile lưu in-memory:} Hồ sơ người dùng (\texttt{UserProfile}) được lưu in-memory per \texttt{session\_id} trong tiến trình backend. Khi backend restart hoặc Cloud Run scale down instance, toàn bộ hồ sơ mất. Đây là thiết kế có chủ đích cho Cloud Run (\texttt{--max-instances=1}) nhưng không phù hợp khi scale ngang.
+    \item \textbf{Không có persistence cho chat sessions:} Bảng \texttt{gold.chat\_sessions} và \texttt{gold.chat\_messages} đã được thiết kế trong schema nhưng chatbot hiện tại lưu lịch sử hội thoại in-memory (mảng \texttt{chat\_history\_buffer}), không ghi vào database.
+    \item \textbf{Ngưỡng score Qdrant cố định:} Score threshold để lọc kết quả Qdrant (\texttt{score > 1.3}) là giá trị cố định, chưa được tối ưu tự động theo độ phân bố dữ liệu.
+\end{itemize}
+
+\subsection{Định hướng phát triển}
+
+\begin{itemize}
+    \item \textbf{Persistent chat sessions:} Ghi lịch sử hội thoại và UserProfile vào database (\texttt{gold.chat\_sessions}, \texttt{gold.chat\_messages}) để hỗ trợ multi-instance deployment và khôi phục phiên.
+    \item \textbf{Tích hợp với Recommendation Engine:} Khi chatbot gợi ý xe, ghi lại tương tác (\texttt{gold.user\_interactions}) để recommendation engine học từ hành vi qua chatbot.
+    \item \textbf{Tối ưu hóa retrieval:} Thử nghiệm các chiến lược retrieval nâng cao như re-ranking (cross-encoder) hay Hypothetical Document Embeddings (HyDE) để cải thiện chất lượng kết quả ngữ nghĩa.
+    \item \textbf{Đánh giá tự động:} Xây dựng bộ test cases (câu hỏi + expected answer) để đánh giá định lượng chất lượng câu trả lời chatbot sau mỗi lần cập nhật dữ liệu.
+\end{itemize}
