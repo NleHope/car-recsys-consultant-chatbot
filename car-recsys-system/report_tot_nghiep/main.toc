@@ -1,0 +1,74 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{Lời cam đoan}{i}{}%
+\contentsline {chapter}{Nhận xét của giảng viên hướng dẫn}{ii}{}%
+\contentsline {chapter}{Nhận xét của giảng viên phản biện}{iii}{}%
+\contentsline {chapter}{Thuyết minh chỉnh sửa đề tài}{iv}{}%
+\contentsline {chapter}{Lời cảm ơn}{v}{}%
+\contentsline {chapter}{\numberline {1}TỔNG QUAN}{1}{}%
+\contentsline {section}{\numberline {1.1}Sơ lược về dự án}{1}{}%
+\contentsline {section}{\numberline {1.2}Kiến trúc hệ thống tổng quát}{1}{}%
+\contentsline {section}{\numberline {1.3}Giới thiệu về nguồn dữ liệu}{2}{}%
+\contentsline {subsection}{\numberline {1.3.1}Tầng Bronze (Dữ liệu thô)}{2}{}%
+\contentsline {subsection}{\numberline {1.3.2}Tầng Silver (Dữ liệu chuẩn hóa)}{2}{}%
+\contentsline {subsection}{\numberline {1.3.3}Tầng Gold (Dữ liệu phục vụ ứng dụng)}{3}{}%
+\contentsline {section}{\numberline {1.4}Ý nghĩa và Thách thức}{3}{}%
+\contentsline {chapter}{\numberline {2}CƠ SỞ LÝ THUYẾT}{5}{}%
+\contentsline {section}{\numberline {2.1}Kiến trúc Dữ liệu và Điều phối (Data Engineering \& Orchestration)}{5}{}%
+\contentsline {section}{\numberline {2.2}Hệ thống đề xuất (Recommendation System)}{5}{}%
+\contentsline {section}{\numberline {2.3}Tìm kiếm ngữ nghĩa và Truy xuất kết hợp (Hybrid Search)}{5}{}%
+\contentsline {section}{\numberline {2.4}Mô hình Retrieval-Augmented Generation (RAG) và Kiến trúc Agentic}{6}{}%
+\contentsline {chapter}{\numberline {3}QUÁ TRÌNH THU THẬP VÀ XỬ LÝ DỮ LIỆU}{7}{}%
+\contentsline {section}{\numberline {3.1}Xác định thông tin cần lưu trữ}{7}{}%
+\contentsline {section}{\numberline {3.2}Tiến hành thu thập dữ liệu}{7}{}%
+\contentsline {subsection}{\numberline {3.2.1}Vượt qua cơ chế chống bot (Cloudflare Turnstile)}{7}{}%
+\contentsline {subsection}{\numberline {3.2.2}Kiến trúc crawler}{7}{}%
+\contentsline {subsubsection}{Giai đoạn 1: Thu thập danh sách liên kết (link\_crawler.py)}{8}{}%
+\contentsline {subsubsection}{Giai đoạn 2: Thu thập chi tiết từng xe (detail\_scraper.py)}{8}{}%
+\contentsline {subsubsection}{Giai đoạn 3: Upload lên Google Cloud Storage (gcs\_uploader.py)}{8}{}%
+\contentsline {subsection}{\numberline {3.2.3}Điều phối tự động bằng Temporal}{8}{}%
+\contentsline {section}{\numberline {3.3}Xử lý và chuyển đổi dữ liệu (dbt Pipeline)}{9}{}%
+\contentsline {subsection}{\numberline {3.3.1}Nạp dữ liệu vào tầng Bronze (load\_bronze)}{9}{}%
+\contentsline {subsection}{\numberline {3.3.2}Chuyển đổi dữ liệu bằng dbt (Medallion Architecture)}{9}{}%
+\contentsline {subsubsection}{Staging (Silver Staging)}{9}{}%
+\contentsline {subsubsection}{Silver (Mô hình chiều -- Dimensional Model)}{9}{}%
+\contentsline {subsubsection}{Gold (Bảng phục vụ ứng dụng)}{10}{}%
+\contentsline {subsection}{\numberline {3.3.3}Refresh materialized view và tính toán ML}{10}{}%
+\contentsline {subsection}{\numberline {3.3.4}Tổng kết luồng xử lý dữ liệu}{10}{}%
+\contentsline {chapter}{\numberline {4}KIẾN TRÚC HỆ THỐNG, BACKEND VÀ HỆ THỐNG ĐỀ XUẤT}{12}{}%
+\contentsline {section}{\numberline {4.1}Giới thiệu}{12}{}%
+\contentsline {section}{\numberline {4.2}Kiến trúc tổng quan}{13}{}%
+\contentsline {section}{\numberline {4.3}Kiến trúc API}{14}{}%
+\contentsline {section}{\numberline {4.4}Thiết kế Database}{15}{}%
+\contentsline {section}{\numberline {4.5}Data Pipeline}{16}{}%
+\contentsline {section}{\numberline {4.6}Hệ thống Authentication}{16}{}%
+\contentsline {section}{\numberline {4.7}Caching và Tối ưu hiệu năng}{16}{}%
+\contentsline {subsection}{\numberline {4.7.1}Caching bằng Redis}{16}{}%
+\contentsline {subsection}{\numberline {4.7.2}Tối ưu truy vấn Database}{16}{}%
+\contentsline {section}{\numberline {4.8}Hệ thống Recommendation}{18}{}%
+\contentsline {subsection}{\numberline {4.8.1}Stage 1 — Candidate Generation}{19}{}%
+\contentsline {subsection}{\numberline {4.8.2}Stage 2 — Ranking}{19}{}%
+\contentsline {subsection}{\numberline {4.8.3}Stage 3 — Re-ranking}{20}{}%
+\contentsline {subsection}{\numberline {4.8.4}Tóm tắt luồng xử lý}{20}{}%
+\contentsline {chapter}{\numberline {5}XÂY DỰNG CHATBOT}{21}{}%
+\contentsline {section}{\numberline {5.1}Mục tiêu và phạm vi tư vấn}{21}{}%
+\contentsline {section}{\numberline {5.2}Xây dựng Vector Database cho ChatBot}{21}{}%
+\contentsline {section}{\numberline {5.3}Kiến trúc Agentic: LangGraph StateGraph}{22}{}%
+\contentsline {subsection}{\numberline {5.3.1}Hồ sơ người dùng (User Profile Slot-Fill)}{22}{}%
+\contentsline {subsection}{\numberline {5.3.2}Phân loại ý định (Intent Routing)}{22}{}%
+\contentsline {section}{\numberline {5.4}Hệ thống Hybrid Retrieval và Sinh câu trả lời}{22}{}%
+\contentsline {subsection}{\numberline {5.4.1}Hybrid Retrieval}{22}{}%
+\contentsline {subsection}{\numberline {5.4.2}Các nhánh xử lý chuyên biệt}{22}{}%
+\contentsline {subsection}{\numberline {5.4.3}Sinh câu trả lời (Generation)}{23}{}%
+\contentsline {subsection}{\numberline {5.4.4}Chuẩn hóa câu hỏi (Standalone Question)}{23}{}%
+\contentsline {section}{\numberline {5.5}Hạn chế và định hướng phát triển}{23}{}%
+\contentsline {subsection}{\numberline {5.5.1}Hạn chế hiện tại}{23}{}%
+\contentsline {subsection}{\numberline {5.5.2}Định hướng phát triển}{23}{}%
+\contentsline {chapter}{\numberline {6}KẾT QUẢ ĐẠT ĐƯỢC VÀ ĐÁNH GIÁ}{25}{}%
+\contentsline {section}{\numberline {6.1}Kết quả và Đánh giá}{25}{}%
+\contentsline {subsection}{\numberline {6.1.1}Kết quả xây dựng Giao diện hệ thống}{25}{}%
+\contentsline {subsection}{\numberline {6.1.2}Đánh giá Hệ thống Chatbot (Qualitative Evaluation)}{25}{}%
+\contentsline {subsection}{\numberline {6.1.3}Khả năng truy xuất dữ liệu (Hybrid Retrieval)}{25}{}%
+\contentsline {subsection}{\numberline {6.1.4}Tổng kết}{26}{}%
+\contentsline {chapter}{\numberline {7}TỔNG KẾT}{27}{}%
+\contentsline {section}{\numberline {7.1}Kết Luận}{27}{}%
+\contentsline {section}{\numberline {7.2}Ứng Dụng Thực Tế}{27}{}%

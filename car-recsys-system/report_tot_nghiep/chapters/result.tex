@@ -1,0 +1,58 @@
+\section{Kết quả và Đánh giá}
+
+\subsection{Kết quả xây dựng Giao diện hệ thống}
+Dự án đã phát triển thành công hệ thống website phục vụ nhu cầu tìm kiếm, so sánh và tư vấn mua bán xe ô tô với giao diện thân thiện, trực quan. Các tính năng chính đã được hiện thực hóa bao gồm:
+
+Toàn bộ giao diện được xây dựng bằng React, TypeScript và Tailwind CSS, được triển khai công khai tại địa chỉ \texttt{carsalesfinder.com} và phục vụ bộ dữ liệu gồm \textbf{5.337 xe} (VIN duy nhất) được cập nhật tự động hàng tuần.
+
+\textbf{1. Giao diện Trang chủ và Tìm kiếm:}
+Trang chủ (\textit{Index Page}) cung cấp cái nhìn tổng quan về các mẫu xe nổi bật và các danh mục xe theo kiểu dáng/nhiên liệu. Trang Tìm kiếm (\textit{Search Page}) cho phép người dùng lọc xe theo một bộ tiêu chí phong phú: hãng xe, khoảng giá, năm đăng ký (registration year), số dặm đã đi, loại nhiên liệu, hộp số, hệ dẫn động (drivetrain), kiểu dáng thân xe (body type), \textbf{màu ngoại thất} (được ánh xạ từ hàng trăm tên màu thô về 12 nhóm màu cơ bản và hiển thị dưới dạng swatch), và \textbf{danh sách tính năng} (features) với ngữ nghĩa AND — chỉ hiển thị các xe có đầy đủ tất cả tính năng được chọn.
+
+\textbf{2. Giao diện Chi tiết xe và So sánh:}
+Trang Chi tiết xe (\textit{Vehicle Detail Page}) hiển thị đầy đủ thông số kỹ thuật, hình ảnh, lịch sử xe (Vehicle History) và các bài đánh giá theo từng tiêu chí. Tính năng So sánh xe (\textit{Compare Page}) cho phép người dùng đặt hai hoặc nhiều mẫu xe cạnh nhau để dễ dàng đối chiếu các thông số như động cơ, kích thước và giá bán.
+
+\textbf{3. Giao diện Chatbot Tư vấn:}
+Giao diện Chat (\textit{Chat Page}) được tích hợp trực tiếp vào hệ thống, đóng vai trò như một tư vấn viên ảo. Giao diện này hỗ trợ hiển thị tin nhắn văn bản (định dạng Markdown) kết hợp với các thẻ thông tin xe (Vehicle Cards) trực quan ngay trong khung chat, giúp người dùng dễ dàng xem nhanh thông tin xe được đề xuất. Người dùng đã đăng nhập còn có thanh bên lưu và khôi phục lại các phiên hội thoại trước đó.
+
+\textbf{4. Giao diện Đăng bán và Định giá bằng AI:}
+Trang Đăng bán (\textit{Sell Page}) cho phép người bán nhập thông tin xe và tích hợp một nút \textbf{gợi ý giá bằng AI}: từ các thông tin đã nhập, hệ thống gọi mô hình định giá (được trình bày ở phần sau) để đưa ra mức giá thị trường ước tính kèm khoảng dao động, giúp người bán định giá hợp lý.
+
+% Chèn ảnh chụp màn hình các trang giao diện tại đây, ví dụ:
+% \begin{figure}[!htbp]
+%     \centering
+%     \includegraphics[width=\linewidth]{search_page.png}
+%     \caption{Giao diện trang Tìm kiếm với bộ lọc nâng cao}
+%     \label{fig:search-page}
+% \end{figure}
+
+\subsection{Đánh giá Hệ thống Chatbot (Qualitative Evaluation)}
+Do đặc thù của hệ thống Chatbot tư vấn phụ thuộc nhiều vào ngữ cảnh và nhu cầu cá nhân hóa, nhóm tiến hành đánh giá định tính (Qualitative) thông qua các kịch bản sử dụng thực tế. Chatbot sử dụng kiến trúc Agentic LangGraph đã thể hiện khả năng xử lý linh hoạt qua các kịch bản sau:
+
+\textbf{1. Kịch bản tư vấn từ nhu cầu mơ hồ (Slot-filling):}
+\begin{itemize}
+    \item \textbf{Tình huống:} Người dùng chỉ cung cấp thông tin "I want a reliable family SUV under \$30,000" (bộ dữ liệu là thị trường Mỹ, đơn vị USD).
+    \item \textbf{Kết quả xử lý:} Thay vì đưa ra một danh sách dài, Chatbot tự động nhận diện ý định và cập nhật \textit{UserProfile} (budget\_max: 30000, body\_type: SUV). Hệ thống nhận thấy còn thiếu thông tin quan trọng theo các core slot (ví dụ: loại nhiên liệu) nên đã chủ động đặt câu hỏi dẫn dắt: "Do you have a preference for the fuel type — gasoline, hybrid, or electric?".
+    \item \textbf{Đánh giá:} Khả năng duy trì ngữ cảnh (multi-turn) và thu thập thông tin (slot-filling) hoạt động tự nhiên, giúp thu hẹp phạm vi tìm kiếm hiệu quả mà không gây quá tải thông tin cho người dùng.
+\end{itemize}
+
+\textbf{2. Kịch bản so sánh xe phức tạp:}
+\begin{itemize}
+    \item \textbf{Tình huống:} "So sánh giúp tôi Honda CR-V và Mazda CX-5".
+    \item \textbf{Kết quả xử lý:} Bộ định tuyến (Intent Router) điều hướng chính xác vào luồng \texttt{compare\_retrieve}. Chatbot tổng hợp thông số của cả hai dòng xe từ cơ sở dữ liệu và sinh ra câu trả lời so sánh đối chiếu về giá, hiệu suất động cơ, và không gian nội thất, đồng thời đính kèm hai thẻ xe để người dùng click xem chi tiết.
+    \item \textbf{Đánh giá:} Hệ thống giảm tải thời gian tra cứu thủ công cho người dùng, cung cấp câu trả lời khách quan dựa trên dữ liệu thực tế (Grounded Generation).
+\end{itemize}
+
+\subsection{Khả năng truy xuất dữ liệu (Hybrid Retrieval)}
+Hệ thống sử dụng cơ chế Hybrid Retrieval kết hợp giữa SQL Hard-filter và Qdrant Semantic Search. 
+\begin{itemize}
+    \item \textbf{Tốc độ phản hồi (Latency):} Việc áp dụng SQL để lọc cứng các siêu dữ liệu (Metadata) như giá tiền, hãng xe, năm sản xuất trước khi đưa vào không gian vector (Qdrant) giúp giảm thiểu đáng kể số lượng vector cần tính toán. Nhờ đó, hệ thống đạt tốc độ phản hồi truy vấn rất nhanh, đáp ứng tốt trải nghiệm trò chuyện liên tục của người dùng.
+    \item \textbf{Độ chính xác ngữ nghĩa:} Qdrant đảm nhiệm việc tìm kiếm ngữ nghĩa đối với các yêu cầu không cấu trúc (ví dụ: "xe có cảm giác lái thể thao, cách âm tốt"), mang lại các kết quả đề xuất vượt ra khỏi các bộ lọc từ khóa truyền thống. Qua thử nghiệm thực tế, hệ thống luôn trả về top các kết quả thỏa mãn đồng thời cả ràng buộc cứng (giá, hãng) và ràng buộc mềm (phong cách, cảm giác lái).
+\end{itemize}
+
+\subsection{Mô hình định giá xe (Price Estimation)}
+Bên cạnh hệ thống đề xuất và chatbot, dự án hiện thực hóa một mô hình học máy độc lập để \textbf{dự đoán giá thị trường} của xe. Mô hình nhận đầu vào là các thông tin đặc tả (hãng, dòng xe, năm, số dặm, nhiên liệu, hộp số, màu sắc) kết hợp với đặc trưng trích xuất từ ảnh xe bằng mô hình thị giác \textbf{DINOv2}. Kết quả dự đoán được hợp nhất từ nhiều mô hình cây quyết định (CatBoost, LightGBM, XGBoost) qua một meta-model, đạt sai số MAPE khoảng \textbf{9{,}83\%} trên tập kiểm thử.
+
+Mô hình được đóng gói thành một dịch vụ riêng trên Cloud Run và được tích hợp vào trang Đăng bán: khi người bán nhập thông tin xe, hệ thống trả về mức giá ước tính kèm khoảng dao động (ví dụ: một chiếc Toyota Camry 2020, 35.000 dặm được ước tính khoảng \$28.200, khoảng \$25.400 -- \$31.000).
+
+\subsection{Tổng kết}
+Hệ thống tư vấn mua bán xe đã hoàn thiện với khả năng hoạt động ổn định. Giao diện được thiết kế hiện đại, đáp ứng đầy đủ luồng người dùng từ tìm kiếm, so sánh đến tư vấn trực tiếp qua AI. Đặc biệt, luồng Chatbot Agentic đã chứng minh được tính hiệu quả trong việc chủ động thu thập thông tin, cá nhân hóa đề xuất và phản hồi nhanh chóng, giải quyết tốt bài toán tư vấn mua bán xe vốn đòi hỏi tổng hợp nhiều thông tin đa chiều.

@@ -1,0 +1,49 @@
+\section{Kiến trúc Dữ liệu và Điều phối (Data Engineering \& Orchestration)}
+Trong các hệ thống phân tích và ứng dụng dữ liệu hiện đại, việc quản lý vòng đời dữ liệu từ thô đến tinh là yếu tố cốt lõi. Hệ thống áp dụng \textbf{Kiến trúc Medallion (Medallion Architecture)} - một mẫu thiết kế tổ chức dữ liệu thành ba tầng logic:
+\begin{itemize}
+    \item \textbf{Tầng Bronze (Dữ liệu thô):} Lưu trữ dữ liệu nguyên bản từ các nguồn ngoại vi (ví dụ: kết quả crawl từ website). Dữ liệu thường có dạng bán cấu trúc (JSON) và được lưu trữ theo cơ chế \textit{append-only}, đảm bảo khả năng truy vết (lineage) và không bị mất mát thông tin.
+    \item \textbf{Tầng Silver (Dữ liệu chuẩn hóa):} Dữ liệu từ tầng Bronze được làm sạch, giải trùng lặp (deduplication) và cấu trúc hóa (flattening) thành các bảng theo mô hình chiều (Dimensional Modeling) gồm fact và dimension.
+    \item \textbf{Tầng Gold (Dữ liệu phục vụ ứng dụng):} Dữ liệu được tổng hợp và phi chuẩn hóa (denormalized) thành các bảng tối ưu cho truy vấn nghiệp vụ (ví dụ: dashboard, API backend, hoặc huấn luyện mô hình Machine Learning).
+\end{itemize}
+
+Để tự động hóa luồng chuyển đổi qua các tầng, hệ thống ứng dụng lý thuyết \textbf{Điều phối Workflow (Workflow Orchestration)} thông qua công cụ như Temporal hoặc Airflow. Dữ liệu được xử lý theo các bước tuần tự (DAG), đồng thời tuân thủ nguyên tắc \textbf{Idempotent} (chạy lại một tác vụ nhiều lần không làm thay đổi trạng thái dữ liệu mong muốn) để đảm bảo tính an toàn (fail-safe).
+
+\section{Hệ thống đề xuất (Recommendation System)}
+Hệ thống đề xuất dự đoán "đánh giá" hoặc "sự ưa thích" của người dùng đối với một mặt hàng. Trong thực tế, các hệ thống quy mô lớn thường áp dụng kiến trúc \textbf{Đề xuất Đa giai đoạn (Multi-stage Recommendation)}:
+\begin{enumerate}
+    \item \textbf{Sinh ứng viên (Candidate Generation / Recall):} Trích xuất một tập nhỏ các mặt hàng tiềm năng từ cơ sở dữ liệu lớn (hàng triệu items) bằng nhiều thuật toán chạy song song:
+    \begin{itemize}
+        \item \textit{Lọc cộng tác (Collaborative Filtering):} Dựa trên hành vi quá khứ của những người dùng có sở thích tương tự.
+        \item \textit{Lọc dựa trên nội dung (Content-based):} Dựa trên sự tương đồng về đặc tính vật lý (hãng, giá, thông số).
+        \item \textit{Tìm kiếm theo vector (Vector / Semantic):} Truy xuất các mặt hàng tương đồng về ngữ nghĩa trong không gian embedding thông qua vector database.
+        \item \textit{Phổ biến (Popularity):} Đề xuất các mặt hàng được tương tác nhiều nhất (giải quyết bài toán cold-start).
+    \end{itemize}
+    \item \textbf{Xếp hạng (Ranking):} Sử dụng một mô hình đánh giá (như \textit{Weighted Linear Ranker}) để tính điểm (score) cho từng ứng viên dựa trên tập hợp các đặc trưng (features) kết hợp.
+    \item \textbf{Tái xếp hạng (Re-ranking):} Áp dụng thuật toán \textbf{MMR (Maximal Marginal Relevance)} nhằm giải quyết vấn đề danh sách đề xuất quá nhàm chán (ví dụ: toàn bộ xe cùng một hãng). MMR cân bằng giữa độ chính xác (\textit{Relevance}) và độ đa dạng (\textit{Diversity}) bằng công thức phạt sự trùng lặp với những mặt hàng đã được chọn trước đó.
+\end{enumerate}
+
+\section{Tìm kiếm ngữ nghĩa và Truy xuất kết hợp (Hybrid Search)}
+Tìm kiếm ngữ nghĩa (Semantic Search) vượt qua giới hạn của tìm kiếm từ khóa (keyword matching) bằng cách hiểu ngữ cảnh truy vấn. Văn bản được chuyển đổi thành \textbf{Vector nhúng (Embeddings)} trong không gian đa chiều nhờ mô hình học sâu. Mức độ tương đồng giữa truy vấn và tài liệu tỷ lệ nghịch với khoảng cách vector (Cosine, Euclidean).
+
+\textbf{Cơ sở dữ liệu Vector (Vector Database)} như Qdrant sử dụng các thuật toán \textit{Approximate Nearest Neighbor (ANN)} để truy vấn vector tốc độ cao. Tuy nhiên, tìm kiếm ngữ nghĩa đơn thuần có thể bỏ qua các ràng buộc chính xác (ví dụ: "giá dưới 500 triệu"). Do đó, \textbf{Tìm kiếm lai (Hybrid Search)} được áp dụng:
+\begin{itemize}
+    \item \textbf{Lọc cứng (Hard-filter):} Dùng truy vấn SQL truyền thống (RDBMS) để lọc tuyệt đối các điều kiện như giá cả, hãng xe, năm sản xuất.
+    \item \textbf{Kết hợp (Fusion):} Kết quả từ Vector Database và RDBMS được hòa trộn thành một ngữ cảnh thống nhất. Về mặt lý thuyết, một phương pháp phổ biến để hợp nhất nhiều danh sách xếp hạng là \textbf{Reciprocal Rank Fusion (RRF)} — xếp hạng lại các mặt hàng dựa trên nghịch đảo vị trí của chúng ở các danh sách kết quả độc lập. Trong hệ thống chatbot của dự án, phần truy xuất kết hợp hai nguồn (SQL hard-filter và Qdrant) theo hướng ghép ngữ cảnh (context concatenation) trước khi đưa vào mô hình sinh câu trả lời.
+\end{itemize}
+
+\section{Mô hình Retrieval-Augmented Generation (RAG) và Kiến trúc Agentic}
+RAG (Retrieval-Augmented Generation) kết hợp khả năng \textbf{truy xuất thông tin (Retrieval)} từ cơ sở dữ liệu nội bộ và khả năng \textbf{sinh ngôn ngữ (Generation)} của LLM, giúp Chatbot trả lời dựa trên thông tin thực tế, tránh ảo giác (hallucination). Kiến trúc RAG tổng quát được minh họa trong Hình~\ref{fig:rag_graph}.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.8\linewidth]{RAG_graph.png}
+    \caption{Mô hình RAG tổng quát làm nền tảng lý thuyết cho hệ thống chatbot tư vấn xe}
+    \label{fig:rag_graph}
+\end{figure}
+\FloatBarrier
+
+Nâng cấp từ RAG tuyến tính, kiến trúc \textbf{Agentic RAG} định tuyến động (conditional routing) các câu hỏi dựa trên ý định (Intent). Mô hình được thiết kế dưới dạng \textbf{Đồ thị trạng thái (State Graph)} như \textit{LangGraph}:
+\begin{itemize}
+    \item \textbf{Quản lý trạng thái (State Management):} Mỗi phiên hội thoại duy trì một trạng thái lưu trữ ngữ cảnh, lịch sử và kết quả truy xuất.
+    \item \textbf{Thu thập thông tin (Slot-filling):} Thay vì trả lời ngay, Agentic AI có khả năng nhận diện những thông tin còn thiếu (slots) trong yêu cầu (ví dụ: thiếu tầm giá). Chatbot sẽ chủ động đặt câu hỏi ngược lại người dùng để lấp đầy các slots này trước khi thực hiện truy xuất dữ liệu, tạo ra luồng tư vấn cá nhân hóa và tự nhiên như con người.
+\end{itemize}

@@ -1,0 +1,197 @@
+\section{Xác định thông tin cần lưu trữ}
+Nhóm tiến hành khảo sát website \textit{Cars.com} nhằm xác định cấu trúc hiển thị, phân loại nội dung và các trường thông tin có thể trích xuất. Kết quả khảo sát cho thấy dữ liệu trên website có cấu trúc tương đối thống nhất giữa các trang bài đăng, tạo điều kiện thuận lợi để tự động hóa quá trình thu thập và chuẩn hóa dữ liệu.
+
+Nhằm mở rộng phạm vi dữ liệu, không chỉ giới hạn ở các thông số và nội dung bài đăng xe, nhóm tiếp tục thu thập thêm bằng cách điều hướng sang trang người bán (seller/dealer) và trang đánh giá xe (review). Cách tiếp cận này giúp bổ sung thông tin về đại lý, mức độ uy tín, cũng như các nhận xét thực tế từ người dùng. Dữ liệu sau đó được phân thành các nhóm chính như sau:
+
+\begin{itemize}
+    \item \textbf{Thông tin bài đăng xe (Post):} trạng thái xe (mới hoặc cũ), tiêu đề, giá bán, số km đã đi, phương thức thanh toán trả góp, hình ảnh, và đường dẫn đến các trang chi tiết.
+    \item \textbf{Thông tin chi tiết kỹ thuật (Vehicle Details):} Các thuộc tính cơ bản như hãng xe, dòng xe, năm sản xuất, loại động cơ, hộp số, nhiên liệu, tình trạng bảo hành, và mã VIN. Đây là nhóm thông tin quan trọng nhất, giúp định danh và phân loại xe.
+    \item \textbf{Tính năng xe (Features):} Bao gồm danh sách các tính năng được chia theo nhóm như an toàn (Safety), tiện nghi (Convenience), công nghệ (Technology), hỗ trợ lái (Driver Assist), v.v.
+    \item \textbf{Người bán (Seller/Dealer):} Thông tin đại lý hoặc cá nhân đăng bán gồm tên, địa chỉ, liên hệ, thời gian mở cửa, điểm đánh giá và mô tả.
+    \item \textbf{Nhận xét của người dùng (Reviews/Ratings):} Thông tin phản hồi từ khách hàng như điểm đánh giá tổng quan, nội dung nhận xét, thời gian đánh giá, vị trí, và điểm chi tiết theo từng tiêu chí (Performance, Comfort, Interior, Reliability, Value, Exterior).
+\end{itemize}
+
+Sau khi khảo sát, nhóm nhận thấy mỗi xe sẽ mang một số VIN duy nhất nên đã quyết định lựa chọn mã \textbf{VIN} (Vehicle Identification Number) làm khóa định danh duy nhất cho mỗi bài đăng của xe, dùng để liên kết giữa các bảng dữ liệu trong giai đoạn xử lý và lưu trữ.
+
+\section{Tiến hành thu thập dữ liệu}
+
+\subsection{Vượt qua cơ chế chống bot (Cloudflare Turnstile)}
+
+Thách thức lớn nhất trong quá trình thu thập dữ liệu là hệ thống bảo vệ \textbf{Cloudflare Turnstile} mà Cars.com sử dụng. Cơ chế này phát hiện và chặn các trình duyệt tự động (headless browser) thông thường, khiến các thư viện crawling phổ biến như Selenium headless hay Scrapy không thể truy cập nội dung trang.
+
+Để giải quyết vấn đề này, nhóm sử dụng \textbf{SeleniumBase} ở chế độ \textbf{UC mode} (Undetected ChromeDriver) — một phương pháp ngắt kết nối ChromeDriver trong quá trình tải trang để Cloudflare không thể nhận diện (fingerprint) trình duyệt tự động. Khi phát hiện trang challenge ``Just a moment...'' hoặc ``Verifying...'', hệ thống tự động gọi \texttt{uc\_gui\_click\_captcha()} để giải captcha Turnstile.
+
+Hệ quả quan trọng: crawler \textbf{phải chạy trên máy thật} (host) với trình duyệt Chrome đầy đủ và \textbf{Xvfb} (X Virtual Framebuffer) để mô phỏng màn hình ảo. Việc chạy trong Docker container là không khả thi vì Turnstile phát hiện môi trường container.
+
+\subsection{Kiến trúc crawler}
+
+Quá trình thu thập dữ liệu được xây dựng dưới dạng package Python (\texttt{crawler/}) với kiến trúc module hóa, chia thành ba giai đoạn chính:
+
+\subsubsection{Giai đoạn 1: Thu thập danh sách liên kết (link\_crawler.py)}
+
+Module \texttt{link\_crawler.py} sử dụng một phiên trình duyệt SeleniumBase duy nhất để duyệt các trang kết quả tìm kiếm trên \textit{Cars.com}. Trình duyệt duy trì cookie Cloudflare xuyên suốt các trang để tránh bị challenge lặp lại. Mỗi trang kết quả chứa khoảng 20--25 liên kết bài đăng dạng \texttt{/vehicledetail/...}.
+
+Danh sách URL được lưu theo từng trang trong thư mục \texttt{car\_links/page\_\{n\}.txt}. Cơ chế \textbf{resumable}: nếu file liên kết đã tồn tại và không rỗng, trang đó sẽ được bỏ qua. Giữa các trang có khoảng nghỉ ngẫu nhiên (2--3.5 giây) để tránh bị rate limit. Khi gặp lỗi, hệ thống tự động retry với backoff lũy thừa (tối đa 3 lần).
+
+\subsubsection{Giai đoạn 2: Thu thập chi tiết từng xe (detail\_scraper.py)}
+
+Từ danh sách URL đã thu được, module \texttt{detail\_scraper.py} mở nhiều phiên trình duyệt song song (mặc định tối đa 5 worker) để tăng tốc. Mỗi worker xử lý một phần danh sách URL và lưu kết quả ra file JSON riêng biệt.
+
+Đối với mỗi URL xe, hệ thống thực hiện quy trình \texttt{scrape\_full} gồm các bước:
+\begin{enumerate}
+    \item \textbf{Scrape trang chi tiết xe (\texttt{scrape\_listing}):} Tải HTML qua SeleniumBase UC mode, sau đó sử dụng \textbf{BeautifulSoup} để phân tích cú pháp (parse) và trích xuất ba nhóm thông tin qua các parser chuyên biệt:
+    \begin{itemize}
+        \item \texttt{parse\_post}: Trích xuất thông tin bài đăng (giá, trạng thái new/used, tiêu đề, quãng đường, thanh toán trả góp, hình ảnh, mã VIN).
+        \item \texttt{parse\_seller}: Trích xuất thông tin người bán từ sidebar (tên đại lý, địa chỉ, đánh giá, liên kết dealer page).
+        \item \texttt{parse\_car}: Trích xuất thông số kỹ thuật (động cơ, hộp số, nhiên liệu, drivetrain), danh sách tính năng theo nhóm (Safety, Comfort, Technology, ...), và thông tin review tổng hợp (điểm đánh giá, tỷ lệ khuyến nghị, nhận xét chi tiết theo tiêu chí).
+    \end{itemize}
+    \item \textbf{Scrape trang đại lý (\texttt{scrape\_dealer}):} Nếu trang xe có liên kết đến trang dealer, hệ thống truy cập thêm để thu thập số điện thoại, giờ hoạt động, và thông tin bổ sung.
+    \item \textbf{Hợp nhất và lưu JSON:} Toàn bộ dữ liệu được hợp nhất thành một cấu trúc JSON duy nhất cho mỗi xe, lưu tại \texttt{raw\_data/\{page\}/\{index\}.json}.
+\end{enumerate}
+
+Cơ chế an toàn: mỗi file đã tồn tại sẽ được bỏ qua (skip), cho phép tiếp tục từ điểm dừng nếu quá trình bị gián đoạn. Mỗi URL thất bại sau 3 lần retry sẽ được ghi log nhưng không dừng pipeline.
+
+\subsubsection{Giai đoạn 3: Upload lên Google Cloud Storage (gcs\_uploader.py)}
+
+Sau khi thu thập xong, module \texttt{gcs\_uploader.py} đẩy toàn bộ file JSON và hình ảnh lên \textbf{Google Cloud Storage (GCS)} theo cấu trúc phân vùng ngày:
+
+\begin{itemize}
+    \item JSON: \texttt{gs://incremental\_raw/dt=\{crawl\_date\}/\{page\}/\{file\}.json}
+    \item Hình ảnh: \texttt{gs://incremental\_raw/dt=\{crawl\_date\}/images/\{path\}}
+\end{itemize}
+
+Mỗi lần chạy hàng tuần sử dụng một prefix \texttt{dt=} riêng biệt (ngày UTC hiện tại), đảm bảo \textbf{không bao giờ ghi đè} dữ liệu của các lần chạy trước. Cơ chế này hỗ trợ incremental loading ở tầng tiếp theo.
+
+\subsection{Điều phối tự động bằng Temporal}
+
+Toàn bộ ba giai đoạn trên được điều phối tự động bằng \textbf{Temporal} — một hệ thống workflow orchestration thay thế Airflow. Pipeline chạy theo lịch hàng tuần với workflow \texttt{WeeklyCrawlWorkflow}:
+
+\begin{enumerate}
+    \item \texttt{crawl\_links} → thu thập danh sách URL
+    \item \texttt{scrape\_details} → thu thập chi tiết từng xe
+    \item \texttt{upload\_gcs} → upload dữ liệu lên GCS
+\end{enumerate}
+
+Temporal cung cấp cơ chế retry tự động với backoff policy riêng cho mỗi activity (ví dụ: scrape retry tối đa 2 lần vì tốn tài nguyên, upload retry tối đa 3 lần). Nếu một activity thất bại vượt quá giới hạn retry, workflow dừng lại (fail-stop) mà không ảnh hưởng đến dữ liệu đã thu thập thành công.
+
+Crawler worker chạy trên \textbf{GCE VM} (cùng VM với Temporal server), sử dụng Chrome và Xvfb. Pipeline worker (dbt, embeddings) chạy trong Docker container trên cùng VM.
+
+\section{Xử lý và chuyển đổi dữ liệu (dbt Pipeline)}
+
+Sau khi dữ liệu thô được upload lên GCS, quá trình xử lý tiếp tục với hai bước: nạp dữ liệu vào database (load bronze) và chuyển đổi dữ liệu bằng dbt.
+
+\subsection{Nạp dữ liệu vào tầng Bronze (load\_bronze)}
+
+Module \texttt{bronze.py} thực hiện nạp dữ liệu từ GCS vào bảng \texttt{bronze.raw\_listings} trên PostgreSQL (AlloyDB):
+
+\begin{enumerate}
+    \item \textbf{Scan GCS:} Liệt kê tất cả file \texttt{.json} trong prefix \texttt{dt=\{crawl\_date\}/} (hoặc toàn bộ bucket nếu chạy backfill).
+    \item \textbf{Download và parse song song:} Sử dụng \texttt{ThreadPoolExecutor} (16 worker) để tải và phân tích JSON đồng thời. Mỗi file được tính \texttt{SHA-256 hash} làm khóa idempotent, đồng thời trích xuất các trường quan trọng từ payload (VIN, car\_model\_slug, crawled\_at).
+    \item \textbf{Bulk insert:} Chèn hàng loạt vào bảng bronze (batch 500 hàng) với mệnh đề \texttt{ON CONFLICT (file\_hash) DO NOTHING} — đảm bảo \textbf{idempotent}: chạy lại cùng dữ liệu không tạo bản ghi trùng.
+\end{enumerate}
+
+\subsection{Chuyển đổi dữ liệu bằng dbt (Medallion Architecture)}
+
+Sau khi dữ liệu đã nằm trong tầng bronze, \textbf{dbt} (data build tool) tự động chuyển đổi qua ba tầng:
+
+\subsubsection{Staging (Silver Staging)}
+
+Tầng staging giải quyết hai vấn đề chính:
+\begin{itemize}
+    \item \textbf{Giải trùng lặp:} Model \texttt{stg\_raw\_latest} sử dụng window function \texttt{ROW\_NUMBER() OVER (PARTITION BY vin ORDER BY crawl\_date DESC)} để giữ lại bản ghi mới nhất cho mỗi VIN. Điều này quan trọng vì bronze là append-only — cùng một xe có thể được crawl nhiều lần.
+    \item \textbf{Trích xuất và flatten JSON:} Các model staging (\texttt{stg\_listings}, \texttt{stg\_sellers}, \texttt{stg\_car\_models}, \texttt{stg\_listing\_features}, \texttt{stg\_listing\_images}, \texttt{stg\_model\_reviews}) trích xuất dữ liệu từ cột \texttt{payload} (JSONB) của bronze, phẳng hóa cấu trúc JSON lồng nhau thành các trường quan hệ riêng biệt. Ví dụ: \texttt{payload->'post'->'basic\_desc'->>'VIN'} được trích thành cột \texttt{vin}.
+\end{itemize}
+
+\subsubsection{Silver (Mô hình chiều -- Dimensional Model)}
+
+Tầng Silver tổ chức dữ liệu theo mô hình chiều (Dimensional Model) gồm các bảng fact và dimension:
+
+\begin{itemize}
+    \item \textbf{Bảng Fact:}
+    \begin{itemize}
+        \item \texttt{fct\_listing}: Mỗi hàng là một bài đăng xe (incremental, delete+insert). Chứa khóa ngoại đến các bảng dimension, cùng các metric chính (giá, quãng đường, MPG, v.v.).
+        \item \texttt{fct\_model\_rating}: Điểm đánh giá tổng hợp theo dòng xe.
+        \item \texttt{fct\_model\_review}: Nhận xét chi tiết của từng người dùng.
+    \end{itemize}
+    \item \textbf{Bảng Dimension:}
+    \begin{itemize}
+        \item \texttt{dim\_car\_model}: Hãng xe, dòng xe, slug.
+        \item \texttt{dim\_seller}: Tên đại lý, địa chỉ, thông tin liên hệ.
+        \item \texttt{dim\_feature}: Danh mục tính năng (tên, nhóm).
+        \item \texttt{dim\_listing\_image}: Hình ảnh xe (URL, thứ tự).
+    \end{itemize}
+    \item \textbf{Bảng Bridge:}
+    \begin{itemize}
+        \item \texttt{bridge\_listing\_feature}: Quan hệ nhiều-nhiều giữa bài đăng và tính năng.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Gold (Bảng phục vụ ứng dụng)}
+
+Tầng Gold là các bảng denormalized (phi chuẩn hóa có chủ đích) tối ưu cho truy vấn từ backend API:
+
+\begin{itemize}
+    \item \texttt{gold.vehicles}: Bảng chính — merge by VIN (incremental strategy). Mỗi hàng chứa toàn bộ thông tin cần thiết cho frontend: giá, hãng, dòng, body\_type, màu sắc, hình ảnh chính, số lượng tính năng, điểm đánh giá dòng xe. Trường \texttt{vehicle\_id} là alias của \texttt{vin} để tương thích ngược với backend.
+    \item \texttt{gold.vehicle\_price\_history}: Lịch sử biến động giá xe theo ngày crawl, cho phép theo dõi xu hướng giá.
+    \item \texttt{gold.car\_models}, \texttt{gold.sellers}, \texttt{gold.reviews}: Dữ liệu tổng hợp theo dòng xe, người bán, và nhận xét.
+    \item \texttt{gold.vehicle\_features}, \texttt{gold.vehicle\_images}: Tính năng và hình ảnh chi tiết.
+\end{itemize}
+
+\subsection{Refresh materialized view và tính toán ML}
+
+Toàn bộ pipeline được điều phối bởi \texttt{WeeklyPipelineWorkflow} — một workflow cha chuỗi (chain) ba workflow con theo thứ tự \textbf{fail-stop} (nếu bước trước thất bại thì không chạy bước sau):
+
+\begin{enumerate}
+    \item \texttt{WeeklyCrawlWorkflow}: crawl\_links → scrape\_details → upload\_gcs (chạy trên CRAWL\_TASK\_QUEUE, host machine).
+    \item \texttt{TransformWorkflow}: ensure\_partition → load\_bronze → dbt\_build → refresh\_matviews (chạy trên PIPELINE\_TASK\_QUEUE, Docker container).
+    \item \texttt{MLWorkflow}: compute\_item\_similarity $\parallel$ embed\_vehicles $\parallel$ embed\_chatbot\_vehicles (chạy song song trên PIPELINE\_TASK\_QUEUE).
+\end{enumerate}
+
+Sau khi dbt build hoàn tất, các bước ML thực hiện:
+
+\begin{itemize}
+    \item \texttt{refresh\_matviews}: Làm mới các materialized view phục vụ hệ thống đề xuất (\texttt{mv\_popular\_vehicles}, \texttt{mv\_trending\_models}).
+    \item \texttt{compute\_item\_similarity}: Tính ma trận cosine similarity giữa các xe dựa trên đặc trưng (giá, quãng đường, đánh giá, v.v.), lưu vào \texttt{gold.item\_similarity} phục vụ Collaborative Filtering.
+    \item \texttt{embed\_vehicles}: Tạo vector embedding cho từng xe bằng OpenAI \texttt{text-embedding-3-large} (3072 chiều), lưu vào Qdrant collection \texttt{car\_chatbot\_vectors} — phục vụ Vector Recall trong hệ thống đề xuất.
+    \item \texttt{embed\_chatbot\_vehicles}: Chia nhỏ (chunk) thông tin xe thành các đoạn văn bản, tạo embedding và lưu vào Qdrant collection \texttt{car\_vectorize} — phục vụ chatbot RAG.
+\end{itemize}
+
+\textbf{Lưu ý quan trọng:} Hai collection Qdrant phục vụ hai mục đích hoàn toàn khác nhau — nhầm lẫn giữa chúng sẽ phá vỡ hệ thống đề xuất hoặc chatbot. Ba bước \texttt{compute\_item\_similarity}, \texttt{embed\_vehicles} và \texttt{embed\_chatbot\_vehicles} chạy \textbf{song song} (parallel) nhờ Temporal, giảm thời gian xử lý tổng thể.
+
+\subsection{Tổng kết luồng xử lý dữ liệu}
+
+Toàn bộ pipeline từ thu thập đến sẵn sàng phục vụ ứng dụng được tóm tắt như sau:
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Tóm tắt các bước của pipeline dữ liệu từ thu thập đến phục vụ}
+\label{tab:pipeline-steps}
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{Bước} & \textbf{Mô tả} & \textbf{Công nghệ} \\
+\hline
+1 & Thu thập URL bài đăng & SeleniumBase UC mode \\
+\hline
+2 & Thu thập chi tiết xe + dealer & SeleniumBase + BeautifulSoup \\
+\hline
+3 & Upload dữ liệu thô lên GCS & Google Cloud Storage \\
+\hline
+4 & Nạp vào bronze (JSONB) & Python + psycopg2 \\
+\hline
+5 & Staging: dedup + flatten JSON & dbt (SQL view) \\
+\hline
+6 & Silver: mô hình chiều (dimensional) & dbt (SQL table) \\
+\hline
+7 & Gold: bảng denormalized & dbt (incremental merge) \\
+\hline
+8 & Refresh materialized views & SQL \\
+\hline
+9 & Cosine similarity matrix & Python (scikit-learn) \\
+\hline
+10 & Vector embeddings & OpenAI + Qdrant \\
+\hline
+\end{tabular}
+\end{table}
+
+Pipeline chạy hoàn toàn tự động hàng tuần qua Temporal \texttt{WeeklyPipelineWorkflow}, đảm bảo dữ liệu luôn được cập nhật mà không cần can thiệp thủ công.

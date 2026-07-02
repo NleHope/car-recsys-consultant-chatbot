@@ -1,0 +1,33 @@
+\section{Kết Luận}
+
+Car Recommendation System là một hệ thống tích hợp hoàn chỉnh, kết hợp \textbf{Data Engineering}, \textbf{Machine Learning}, \textbf{Natural Language Processing} và \textbf{modern web technologies} để giải quyết bài toán tìm kiếm và tư vấn mua xe thông minh.
+
+\noindent Những đóng góp kỹ thuật nổi bật của dự án:
+
+\begin{itemize}
+    \item \textbf{Pipeline dữ liệu tự động hoàn toàn:} Triển khai pipeline thu thập và xử lý dữ liệu hàng tuần sử dụng \textbf{Temporal} (orchestration) với kiến trúc fail-stop 3-workflow: WeeklyCrawl → Transform → ML. Dữ liệu trải qua \textbf{Medallion Architecture} (Bronze → Silver → Gold) được quản lý bởi \textbf{dbt}, đảm bảo tính incremental và idempotent.
+
+    \item \textbf{Hệ thống đề xuất 3-stage hybrid:} Thiết kế Recommendation Engine theo pipeline \textbf{Candidate Generation → Ranking → Re-ranking}. Stage 1 gồm 4 recaller song song (Collaborative, Content, Vector, Popularity); Stage 2 dùng \textbf{WeightedLinearRanker} với 7 features có trọng số cấu hình qua YAML; Stage 3 dùng \textbf{MMRReranker} (Maximal Marginal Relevance) để đảm bảo đa dạng kết quả với hard caps theo brand/model.
+
+    \item \textbf{Chatbot tư vấn Agentic RAG:} Xây dựng chatbot trên \textbf{LangGraph StateGraph} với 7 loại intent routing (compare, analytics, specs, specific, vague, chitchat, off\_topic), cơ chế \textbf{slot-fill profile} và \textbf{hybrid retrieval} (SQL hard-filter + Qdrant semantic search trên collection \texttt{car\_vectorize}).
+
+    \item \textbf{Kiến trúc database Medallion:} Thiết kế multi-schema (Bronze/Silver/Gold) với Silver theo mô hình chiều (dimensional model) do dbt quản lý, và Gold gồm các bảng denormalized (marts) phục vụ frontend cùng bảng user-domain do ứng dụng ghi trực tiếp.
+
+    \item \textbf{Mô hình định giá xe (Price Estimation):} Bổ sung một mô hình học máy độc lập dự đoán giá thị trường của xe từ thông tin đặc tả (hãng, dòng xe, năm, số dặm, nhiên liệu, hộp số) kết hợp đặc trưng hình ảnh (DINOv2). Mô hình được triển khai thành dịch vụ riêng và tích hợp vào trang đăng bán để gợi ý mức giá hợp lý cho người bán.
+
+    \item \textbf{Triển khai sản xuất trên GCP:} Hệ thống được đóng gói bằng Docker và triển khai lên \textbf{Google Cloud Platform}: Cloud Run cho backend và frontend, AlloyDB (PostgreSQL 17) cho cơ sở dữ liệu, Qdrant Cloud cho vector database, và \textbf{Temporal tự triển khai (self-hosted)} trên máy ảo GCE. Hệ thống được truy cập công khai tại \texttt{carsalesfinder.com}.
+\end{itemize}
+
+\section{Ứng Dụng Thực Tế}
+
+Hệ thống có thể được triển khai trong các tình huống thực tế sau:
+
+\begin{enumerate}
+    \item \textbf{Nền tảng thương mại điện tử} cho showroom và đại lý xe: cung cấp trải nghiệm mua sắm cá nhân hóa với chatbot AI tư vấn 24/7, hỗ trợ so sánh xe và gợi ý thông minh theo hành vi người dùng.
+
+    \item \textbf{Sàn giao dịch xe trực tuyến:} giúp người mua tìm xe phù hợp nhanh chóng thông qua tìm kiếm bằng ngôn ngữ tự nhiên thay vì lọc theo biểu mẫu phức tạp, đồng thời phân tích thống kê kho xe theo thời gian thực.
+
+    \item \textbf{Nền tảng phân tích khách hàng} cho nhà sản xuất và đại lý: khai thác thông tin từ dữ liệu hành vi người dùng (lượt xem, nhấp chuột, lưu yêu thích, liên hệ) để tối ưu kho xe và chiến lược định giá.
+
+    \item \textbf{Kiến trúc có khả năng mở rộng:} Nền tảng pipeline Temporal + dbt + vector database có thể được điều chỉnh cho các lĩnh vực dọc (vertical) khác như bất động sản, điện tử tiêu dùng, hoặc bất kỳ lĩnh vực nào cần tìm kiếm và gợi ý cá nhân hóa trên dữ liệu được thu thập định kỳ.
+\end{enumerate}
