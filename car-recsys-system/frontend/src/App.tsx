@@ -16,6 +16,7 @@ import ChatPage from "./pages/ChatPage";
 import ReviewsPage from "./pages/ReviewsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ProfilePage from "./pages/ProfilePage";
+import PriceEstimatePage from "./pages/PriceEstimatePage";
 import NotFound from "./pages/NotFound";
 import ChatPopup from "./components/ChatPopup";
 import ScrollToTop from "./components/ScrollToTop";
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/reviews" element={<ReviewsPage />} />
                 <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/price-estimate" element={<PriceEstimatePage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

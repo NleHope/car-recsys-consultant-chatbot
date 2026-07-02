@@ -2,7 +2,8 @@
     materialized='incremental',
     unique_key='vin',
     incremental_strategy='merge',
-    merge_exclude_columns=['first_seen_date']
+    merge_exclude_columns=['first_seen_date'],
+    on_schema_change='sync_all_columns'
 ) }}
 
 /*

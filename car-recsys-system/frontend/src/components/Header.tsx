@@ -63,6 +63,12 @@ const Header = () => {
             >
               AI Assistant
             </NavLink>
+            <NavLink
+              to="/price-estimate"
+              className="text-base font-semibold text-foreground/70 transition-all hover:bg-[#A87601]/10 hover:text-[#A87601] hover:scale-105 rounded-md px-3 py-2"
+            >
+              Price Estimate
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-2">
