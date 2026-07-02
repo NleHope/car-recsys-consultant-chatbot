@@ -1,0 +1,36 @@
+flowchart TB
+  req([Yêu cầu gợi ý<br/>user_id / seed VINs])
+
+  subgraph s1["Stage 1 · Candidate Generation (4 recaller song song)"]
+    direction LR
+    c1["Collaborative<br/>item_similarity"]:::rec
+    c2["Content<br/>SQL · gold.vehicles"]:::rec
+    c3["Vector<br/>Qdrant semantic"]:::rec
+    c4["Popularity<br/>mv_popular_vehicles"]:::rec
+    c1 ~~~ c2 ~~~ c3 ~~~ c4
+  end
+
+  pool["Hợp nhất → pool ứng viên (≤ 300)"]:::mid
+
+  subgraph s2["Stage 2 · Ranking"]
+    fa["FeatureAssembler<br/>7 features"]:::rank
+    wr["WeightedLinearRanker<br/>rank_score = Σ wᵢ·fᵢ"]:::rank
+  end
+
+  subgraph s3["Stage 3 · Re-ranking"]
+    mmr["MMRReranker (λ=0.7)<br/>diversity + caps 3/brand · 2/model"]:::rerank
+  end
+
+  out([Top-K = 20])
+
+  req --> s1
+  c1 --> pool
+  c2 --> pool
+  c3 --> pool
+  c4 --> pool
+  pool --> fa --> wr --> mmr --> out
+
+  classDef rec fill:#FDF6E8,stroke:#A87601,color:#1c1917;
+  classDef mid fill:#ffffff,stroke:#c9922a,color:#1c1917;
+  classDef rank fill:#FBF7EF,stroke:#A87601,stroke-width:1.5px,color:#1c1917;
+  classDef rerank fill:#efe7d6,stroke:#8a6100,color:#1c1917;
