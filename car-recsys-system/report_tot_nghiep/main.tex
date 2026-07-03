@@ -306,6 +306,11 @@
 
 %% ----- Giảm khoảng trống thừa do float (hình/bảng) -----
 \raggedbottom                        % không giãn khoảng trắng để lấp đầy trang
+% Chống dòng mồ côi/dòng góa: không cho 1 dòng lẻ của đoạn văn rơi sang đầu
+% trang mới (widow) hoặc bị bỏ lại cuối trang (orphan/club).
+\widowpenalty=10000
+\clubpenalty=10000
+\displaywidowpenalty=10000
 % Cho phép hình chiếm nhiều diện tích trang hơn trước khi bị đẩy sang trang float riêng
 \renewcommand{\topfraction}{0.9}
 \renewcommand{\bottomfraction}{0.8}

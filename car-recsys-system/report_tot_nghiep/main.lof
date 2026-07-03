@@ -1,15 +1,17 @@
 \babel@toc {english}{}\relax 
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces \textit {Cars.com} -- Trang web chính được sử dụng để thu thập dữ liệu.}}{2}{figure.1.1}%
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Kiến trúc tổng quát của hệ thống tư vấn mua bán xe.}}{3}{figure.1.2}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces \textit {Cars.com} -- Trang web chính được sử dụng để thu thập dữ liệu.}}{1}{figure.1.1}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Kiến trúc tổng quát của hệ thống tư vấn mua bán xe.}}{2}{figure.1.2}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Mô hình RAG tổng quát làm nền tảng lý thuyết cho hệ thống chatbot tư vấn xe}}{8}{figure.2.1}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Mô hình RAG tổng quát làm nền tảng lý thuyết cho hệ thống chatbot tư vấn xe}}{6}{figure.2.1}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Kiến trúc tổng quan hệ thống}}{16}{figure.4.1}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Kiến trúc phân tầng của Backend API}}{18}{figure.4.2}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Kiến trúc multi-schema database}}{19}{figure.4.3}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Luồng hoạt động của Recommendation Engine}}{22}{figure.4.4}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Kiến trúc tổng quan hệ thống}}{14}{figure.4.1}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Kiến trúc phân tầng của Backend API}}{15}{figure.4.2}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Kiến trúc multi-schema database}}{16}{figure.4.3}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Luồng hoạt động của Recommendation Engine}}{19}{figure.4.4}%
 \addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Kiến trúc pipeline của mô hình định giá xe}}{26}{figure.6.1}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
