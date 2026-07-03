@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1783100281.782 "main.tex" "main.pdf" "main" 1783100282.84691 0
+["pdflatex"] 1783100947.94721 "main.tex" "main.pdf" "main" 1783100949.04166 0
   "/etc/texmf/web2c/texmf.cnf" 1783099149.55967 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/duc-nguyen16/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/tcbx1200.600pk" 1783099466.17425 15056 61915009d01a8849e001a33158f917e2 ""
   "/home/duc-nguyen16/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.600pk" 1783099466.8193 14040 d3310176ff1b42d993b3dbd4d6b7e5fe ""
@@ -216,7 +216,7 @@
   "chapters/ThuThapDuLieu.tex" 1783011232.50129 17213 8a3ac09a5a6add9c0eaf231ae8b0c12e ""
   "chapters/ThuyetMinhChinhSua.tex" 1783010074.19201 821 d96ef9bb3700774d34bad912dd1e7694 ""
   "chapters/TongQuan.tex" 1783098461.23804 12837 8f052cd5b702a79681293fdd2858f880 ""
-  "chapters/backend.tex" 1783100169.26249 23051 3f44612d9f9838714367de4036d0b395 ""
+  "chapters/backend.tex" 1783100889.38234 23424 3d073b186cd77c3454f19f94b022ea64 ""
   "chapters/cosolythuyet.tex" 1783011253.51131 7338 63739e59b11c62e0862a3ba80135f632 ""
   "chapters/result.tex" 1783011019.07609 8376 8146fe674f6d7d3e5bb557a8a85c4921 ""
   "chapters/sumary.tex" 1783010733.63644 4233 0ef75d6ad2158ab4a6b5d505b37e4075 ""
@@ -227,12 +227,12 @@
   "images/database_schema_architecture.png" 1783100071.16336 427092 45a4e47d6e6b4bd2e9e842f1143432ec ""
   "images/recommendation_flow.png" 1783100071.16811 285410 3472f02bb9b68819034a1cddf7e7da20 ""
   "images/system_architecture_overview.png" 1783100071.14702 370557 6174c59492f86b4f1d52488b4a71a1f7 ""
-  "main.aux" 1783100282.72708 14210 2b51891dbfa7047ef3ecbce32665a861 "pdflatex"
-  "main.lof" 1783100282.72908 1107 109a2ebce88f3d50954396118e87ddb8 "pdflatex"
-  "main.lot" 1783100282.72908 721 0ecd9d687fc652c4d9ee2ff2f320f35d "pdflatex"
-  "main.out" 1783100282.72908 15392 5eca7bfa04dd09075c271be13071f307 "pdflatex"
-  "main.tex" 1783100099.72369 17535 6f5ddc9c9d9e039f700387569e50e814 ""
-  "main.toc" 1783100282.72908 7405 3959870227d85c67a233cbba5cee7863 "pdflatex"
+  "main.aux" 1783100948.89373 14210 6eb051da4845e3972cfa9763e9aa96b2 "pdflatex"
+  "main.lof" 1783100948.89573 1107 109a2ebce88f3d50954396118e87ddb8 "pdflatex"
+  "main.lot" 1783100948.89573 721 0ecd9d687fc652c4d9ee2ff2f320f35d "pdflatex"
+  "main.out" 1783100948.89573 15392 5eca7bfa04dd09075c271be13071f307 "pdflatex"
+  "main.tex" 1783100814.45485 17624 f18e1d40635824818e9da509168be47f ""
+  "main.toc" 1783100948.89573 7405 0689d2c828c95935fcbb9ea6eada3520 "pdflatex"
   (generated)
   "main.aux"
   "main.lof"

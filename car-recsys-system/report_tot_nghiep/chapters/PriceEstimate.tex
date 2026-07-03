@@ -1,0 +1,76 @@
+\section{Giới thiệu}
+
+Bên cạnh hệ thống đề xuất và chatbot tư vấn, dự án xây dựng một \textbf{mô hình định giá xe} (price estimation) nhằm dự đoán giá thị trường của một chiếc xe từ thông số kỹ thuật và hình ảnh đăng bán. Mô hình được triển khai thành một dịch vụ độc lập và tích hợp vào trang Đăng bán: người bán nhập thông tin xe, hệ thống trả về mức giá thị trường ước tính kèm khoảng dao động, giúp định giá hợp lý ngay khi tạo tin đăng.
+
+Quá trình xây dựng trải qua bốn giai đoạn chính --- trích xuất và tiền xử lý dữ liệu, xây dựng đặc trưng (bao gồm đặc trưng thị giác), huấn luyện và so sánh nhiều hướng tiếp cận, và cuối cùng là đóng gói triển khai --- được minh họa trong Hình~\ref{fig:price-architecture}.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.82\linewidth,height=0.72\textheight,keepaspectratio]{price_model_architecture.png}
+    \caption{Kiến trúc pipeline của mô hình định giá xe}
+    \label{fig:price-architecture}
+\end{figure}
+
+\section{Dữ liệu và tiền xử lý}
+
+Dữ liệu huấn luyện được trích xuất trực tiếp từ cơ sở dữ liệu PostgreSQL của hệ thống bằng SQLAlchemy, join các bảng bài đăng, thông số xe và đánh giá thành một bảng phẳng gồm \textbf{5.201 dòng} $\times$ \textbf{19 cột} (hãng, dòng xe, năm, số dặm, nhiên liệu, hộp số, màu sắc, động cơ, 5 điểm đánh giá thành phần, tình trạng tai nạn/bảo hành, danh sách ảnh, và giá --- biến mục tiêu).
+
+Khâu làm sạch bao gồm loại bỏ bản ghi trùng lặp và thiếu trường quan trọng, lọc ngoại lai về giá/số dặm, và chuẩn hóa các trường boolean. Đáng chú ý nhất là trường \texttt{engine}: từ \textbf{443 giá trị} văn bản tự do (ví dụ chuỗi đặc tả dài của nhà sản xuất), một bộ phân tích dựa trên biểu thức chính quy trích xuất dung tích, cấu hình xy-lanh, thương hiệu động cơ (HEMI, EcoBoost, Duramax\ldots), cờ tăng áp và loại truyền động, rút gọn còn khoảng \textbf{135 nhãn} nhất quán.
+
+\section{Xây dựng đặc trưng}
+
+Từ 19 cột thô, pipeline sinh ra khoảng \textbf{60 đặc trưng} mô hình hóa, trong đó các nhóm có đóng góp lớn nhất:
+
+\begin{itemize}
+    \item \textbf{Phân tích tiêu đề:} bộ parser luật trích \texttt{model\_name}, \texttt{trim}, hệ dẫn động (nhận diện từ token như xDrive, quattro, 4MATIC) và cờ xe off-road/EV từ tiêu đề tin đăng.
+    \item \textbf{Chuẩn hóa phân loại:} hộp số từ 108 biến thể văn bản về 5 nhóm (CVT/Manual/DCT/Automatic/Other); màu ngoại thất từ 923 tên thương mại về 9 họ màu ngữ nghĩa.
+    \item \textbf{Neo giá theo nhóm so sánh (price anchoring):} giá trung vị của các xe cùng nhóm (hãng $\times$ kiểu dáng $\times$ khoảng năm) được gắn vào từng dòng như một tín hiệu ``giá thị trường tham chiếu''; luôn tính trên tập huấn luyện để tránh rò rỉ dữ liệu.
+    \item \textbf{Bách phân vị số dặm trong nhóm tuổi:} thay vì chỉ dùng số dặm thô, mô hình biết xe chạy ít hay nhiều \textit{so với các xe cùng tuổi}.
+    \item \textbf{Đặc trưng thị giác:} mỗi ảnh tin đăng được mã hóa bằng \textbf{DINOv2-Small} (vision transformer tự giám sát của Meta AI) thành vector 384 chiều; nhiều ảnh của một xe được lấy trung bình. Vector này được giảm chiều bằng PCA (số thành phần 24--96, tinh chỉnh cùng các siêu tham số khác). Đặc trưng ảnh bắt được các tín hiệu bảng thông số không thể hiện: tình trạng xe, phong cách trim, chất lượng ảnh chụp.
+\end{itemize}
+
+Các cột phân loại có số lượng giá trị lớn (\texttt{brand\_model}, \texttt{trim}, \texttt{engine}\ldots) được mã hóa bằng \textbf{smoothed target encoding}: giá trị mã hóa là trung bình log-giá của nhóm, làm mượt về trung bình toàn cục theo số mẫu của nhóm (hệ số làm mượt $\alpha$ do Optuna tinh chỉnh trong khoảng 2--25), tránh việc mô hình tin tưởng thống kê tính trên quá ít mẫu.
+
+\section{Huấn luyện và so sánh các hướng tiếp cận}
+
+Ba mô hình cây quyết định (CatBoost, LightGBM, XGBoost) được huấn luyện với hàm mục tiêu hướng MAPE, trọng số mẫu tăng cường cho hai đuôi phân khúc giá (dưới \$20k và trên \$52k), và tìm kiếm siêu tham số bằng \textbf{Optuna} (80 trials, 3-fold cross-validation). Một \textbf{stacked ensemble} hợp nhất dự đoán out-of-fold của ba mô hình qua meta-model Ridge cũng được thử nghiệm, cùng một hướng tiếp cận hoàn toàn khác: fine-tune mô hình thị giác--ngôn ngữ \textbf{Qwen2-VL-7B} bằng QLoRA để dự đoán giá trực tiếp từ văn bản và ảnh.
+
+Kết quả trên tập kiểm thử 20\% (1.041 tin đăng) được tổng hợp trong Bảng~\ref{tab:price-results}.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{So sánh các hướng tiếp cận định giá trên tập kiểm thử}
+\label{tab:price-results}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Mô hình / Hướng tiếp cận} & \textbf{MAPE} & \textbf{MAE} \\
+\hline
+Baseline (LightGBM, không feature engineering) & 14{,}94\% & $\pm$\,\$5.801 \\
+\hline
+CatBoost (tinh chỉnh riêng) & 10{,}10\% & $\pm$\,\$3.816 \\
+\hline
+XGBoost (tinh chỉnh riêng) & 9{,}81\% & $\pm$\,\$3.523 \\
+\hline
+Stacked Ensemble + Ridge & 9{,}83\% & $\pm$\,\$3.738 \\
+\hline
+LightGBM (tinh chỉnh riêng) & \textbf{9{,}32\%} & $\pm$\,\$3.622 \\
+\hline
+Qwen2-VL-7B (QLoRA) & \textbf{7{,}38\%} & $\pm$\,\$2.728 \\
+\hline
+\end{tabular}
+\end{table}
+
+Ba quan sát chính rút ra từ bảng so sánh:
+
+\begin{enumerate}
+    \item \textbf{Feature engineering là nguồn cải thiện lớn nhất:} từ baseline 14{,}94\% xuống 9{,}32\% (giảm khoảng 38\% tương đối) --- lớn hơn nhiều so với khác biệt giữa các kiến trúc mô hình.
+    \item \textbf{Ensemble không vượt mô hình đơn tốt nhất:} do dự đoán của ba mô hình tương quan rất cao (>0{,}9), việc hợp nhất chỉ đạt 9{,}83\%, không cải thiện so với LightGBM đơn lẻ; tuy nhiên ensemble cho sai số ổn định hơn giữa các phân khúc giá.
+    \item \textbf{Mô hình thị giác--ngôn ngữ chính xác nhất nhưng không khả thi về chi phí:} Qwen2-VL-7B đạt MAPE 7{,}38\% --- thấp nhất toàn dự án --- nhưng yêu cầu GPU $\geq$24GB VRAM chạy liên tục, vượt xa ngân sách vận hành, nên bị loại khỏi phương án triển khai.
+\end{enumerate}
+
+\section{Triển khai}
+
+Toàn bộ thành phần cần cho suy luận (ba mô hình cơ sở, meta-model Ridge, bộ PCA, bảng target encoding, thống kê neo giá, cấu hình) được serialize thành gói \texttt{model\_artifacts/}. Dịch vụ định giá là một ứng dụng FastAPI đóng gói Docker, triển khai trên \textbf{Cloud Run}, nạp gói artifact khi khởi động và cung cấp endpoint \texttt{POST /predict\_price}; ảnh người dùng tải lên được mã hóa DINOv2 ngay tại thời điểm suy luận. Dự đoán của ba mô hình cơ sở được hợp nhất qua meta-model và trả về kèm khoảng dao động $\pm$9{,}83\% tương ứng sai số kiểm thử.
+
+Ở phía giao diện, trang Đăng bán tích hợp nút \textit{``Estimate with AI''}: đọc thông tin xe người bán đã nhập, gọi dịch vụ định giá và hiển thị giá ước tính cùng khoảng giá, kèm tùy chọn điền trực tiếp mức giá gợi ý vào tin đăng.

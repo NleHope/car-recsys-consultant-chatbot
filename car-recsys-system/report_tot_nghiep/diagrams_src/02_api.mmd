@@ -1,11 +1,11 @@
 flowchart TB
-  req([HTTP Request<br/>từ Frontend])
+  req([HTTP Request<br/>from Frontend])
 
   subgraph mw["1 · Middleware Layer"]
     m1["CORS · Logging · Rate limiting"]
   end
   subgraph au["2 · Authentication Layer"]
-    a1["Xác thực JWT · gắn user vào context"]
+    a1["Verify JWT · attach user to request context"]
   end
   subgraph rt["3 · Router Layer"]
     r1["auth"]:::r

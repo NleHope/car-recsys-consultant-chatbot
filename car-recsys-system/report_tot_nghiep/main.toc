@@ -41,8 +41,8 @@
 \contentsline {section}{\numberline {4.4}Thiết kế Database}{17}{section.4.4}%
 \contentsline {section}{\numberline {4.5}Data Pipeline}{20}{section.4.5}%
 \contentsline {section}{\numberline {4.6}Hệ thống Authentication}{20}{section.4.6}%
-\contentsline {section}{\numberline {4.7}Tối ưu hiệu năng}{21}{section.4.7}%
-\contentsline {subsection}{\numberline {4.7.1}Cache trong tiến trình}{21}{subsection.4.7.1}%
+\contentsline {section}{\numberline {4.7}Tối ưu hiệu năng}{20}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Cache trong tiến trình}{20}{subsection.4.7.1}%
 \contentsline {subsection}{\numberline {4.7.2}Tối ưu truy vấn Database}{21}{subsection.4.7.2}%
 \contentsline {section}{\numberline {4.8}Hệ thống Recommendation}{22}{section.4.8}%
 \contentsline {subsection}{\numberline {4.8.1}Stage 1 — Candidate Generation}{22}{subsection.4.8.1}%

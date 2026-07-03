@@ -1,7 +1,7 @@
 flowchart TB
-  req([Yêu cầu gợi ý<br/>user_id / seed VINs])
+  req([Reco request<br/>user_id / seed VINs])
 
-  subgraph s1["Stage 1 · Candidate Generation (4 recaller song song)"]
+  subgraph s1["Stage 1 · Candidate Generation (4 recallers in parallel)"]
     direction LR
     c1["Collaborative<br/>item_similarity"]:::rec
     c2["Content<br/>SQL · gold.vehicles"]:::rec
@@ -10,7 +10,7 @@ flowchart TB
     c1 ~~~ c2 ~~~ c3 ~~~ c4
   end
 
-  pool["Hợp nhất → pool ứng viên (≤ 300)"]:::mid
+  pool["Merge → candidate pool (≤ 300)"]:::mid
 
   subgraph s2["Stage 2 · Ranking"]
     fa["FeatureAssembler<br/>7 features"]:::rank
