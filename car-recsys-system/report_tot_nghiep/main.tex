@@ -221,14 +221,18 @@
 
 
 %% PREAMBLE
-% --- Font 12pt theo template; oneside để nộp PDF / in 1 mặt (không trang trắng).
-\documentclass[12pt,a4paper,oneside]{extreport}
+% --- Chuẩn trình bày VN: Times 13pt; oneside để nộp PDF / in 1 mặt.
+\documentclass[13pt,a4paper,oneside]{extreport}
 
 %% TODO: Add your useful packages here
 \usepackage[utf8]{inputenc}
 \usepackage[main=english,vietnamese]{babel}
 % \usepackage[utf8]{inputenc} % Đã bỏ dòng trùng lặp
 \usepackage{vntex}
+% Font Times New Roman (chuẩn trình bày luận văn VN) — vntex kèm bản Times
+% có đủ glyph tiếng Việt qua encoding T5; mathptmx đổi cả font toán.
+\usepackage[T5]{fontenc}
+\usepackage{mathptmx}
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage{placeins}
@@ -258,12 +262,13 @@
 %% Main Format
 \usepackage{setspace}
 \onehalfspacing
+% Lề chuẩn luận văn VN: trái 3cm (chừa gáy đóng cuốn), phải 2cm, trên/dưới 2.5cm.
 \usepackage[
   a4paper,
-  left=2.5cm,
+  left=3cm,
   right=2cm,
   top=2.5cm,
-  bottom=2cm
+  bottom=2.5cm
 ]{geometry}
 
 %% ================= HÌNH THỨC THEO TEMPLATE OVERLEAF =================
@@ -275,7 +280,7 @@
 % section mới bắt đầu cuối trang làm header lệch với nội dung trang).
 \fancyhead[L]{\bfseries\nouppercase{\leftmark}}  % "1. TỔNG QUAN"
 \fancyhead[R]{\bfseries\thepage}                 % số trang, in đậm
-\setlength{\headheight}{15pt}
+\setlength{\headheight}{16pt}
 \renewcommand{\headrulewidth}{1.0pt}             % đường kẻ đậm dưới header
 \renewcommand{\footrulewidth}{0pt}
 
@@ -356,8 +361,9 @@
 }
 
 %% Customize chapter titles - MODIFIED TO LOOK LIKE SECTIONS
+% Cỡ heading tương xứng thân bài 13pt: chapter 16 > section 14 > sub 13 đậm.
 \titleformat{\chapter}[hang]
-  {\fontsize{14pt}{16pt}\selectfont\bfseries}{\thechapter}
+  {\fontsize{16pt}{19pt}\selectfont\bfseries}{\thechapter}
   {1em}{}
 \titlespacing*{\chapter}
   {0pt}
@@ -366,13 +372,13 @@
 
 %% Điều chỉnh cỡ chữ section và subsection
 \titleformat{\section}
-  {\fontsize{12pt}{14pt}\selectfont\bfseries}{\thesection}{1em}{}
+  {\fontsize{14pt}{17pt}\selectfont\bfseries}{\thesection}{1em}{}
 
 \titleformat{\subsection}
-  {\fontsize{11.5pt}{13.8pt}\selectfont\bfseries}{\thesubsection}{1em}{}
+  {\fontsize{13pt}{16pt}\selectfont\bfseries}{\thesubsection}{1em}{}
 
 \titleformat{\subsubsection}
-  {\fontsize{11pt}{13pt}\selectfont\bfseries}{\thesubsubsection}{1em}{}
+  {\fontsize{13pt}{16pt}\selectfont\bfseries\itshape}{\thesubsubsection}{1em}{}
                       
 %% Fix appendix labeling
 \makeatletter
