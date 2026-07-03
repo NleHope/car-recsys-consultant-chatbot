@@ -426,10 +426,6 @@ INPUT ./chapters/backend.tex
 INPUT ./chapters/backend.tex
 INPUT ./chapters/backend.tex
 INPUT chapters/backend.tex
-INPUT ./images/diagram.png
-INPUT ./images/diagram.png
-INPUT ./images/diagram.png
-INPUT ./images/diagram.png
 INPUT ./images/system_architecture_overview.png
 INPUT ./images/system_architecture_overview.png
 INPUT ./images/system_architecture_overview.png

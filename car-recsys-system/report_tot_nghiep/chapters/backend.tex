@@ -6,9 +6,9 @@ Backend được xây dựng dựa trên framework \textbf{FastAPI} với ngôn 
 
 Hệ thống sử dụng \textbf{PostgreSQL} làm cơ sở dữ liệu quan hệ để lưu trữ các dữ liệu có cấu trúc như thông tin xe, người bán, giao dịch và metadata liên quan. PostgreSQL đảm bảo tính toàn vẹn dữ liệu, hỗ trợ các ràng buộc quan hệ và khả năng truy vấn phức tạp. Bên cạnh đó, \textbf{Qdrant} được sử dụng như một vector database, phục vụ cho bài toán tìm kiếm và gợi ý dựa trên vector embedding, cho phép hệ thống thực hiện các phép so sánh tương đồng (similarity search) hiệu quả trên không gian nhiều chiều.
 
-Hệ thống được thiết kế theo mô hình \textbf{microservices}, trong đó mỗi thành phần đảm nhiệm một vai trò riêng biệt và có thể triển khai, mở rộng độc lập. Frontend Service chạy trên cổng \textbf{3000}, chịu trách nhiệm hiển thị giao diện và tương tác trực tiếp với người dùng. Backend API chạy trên cổng \textbf{8000}, cung cấp các endpoint để xử lý nghiệp vụ và điều phối dữ liệu giữa các dịch vụ. PostgreSQL database hoạt động trên cổng \textbf{5432} và Qdrant vector database trên cổng \textbf{6333}.
+Hệ thống được thiết kế theo hướng \textbf{tách biệt dịch vụ}, trong đó mỗi thành phần đảm nhiệm một vai trò riêng và có thể triển khai, mở rộng độc lập. Trên môi trường sản xuất (Google Cloud Platform), Frontend và Backend là hai dịch vụ \textbf{Cloud Run} riêng biệt: Frontend (React, phục vụ qua Nginx) hiển thị giao diện tại tên miền \texttt{carsalesfinder.com} và ủy quyền các request \texttt{/api} sang Backend; Backend (FastAPI) xử lý nghiệp vụ, kết nối \textbf{AlloyDB} (PostgreSQL 17) qua kết nối SSL và \textbf{Qdrant Cloud} cho tìm kiếm vector. Cloud Run tự động co giãn số instance theo tải, giúp hệ thống không phải tự quản trị hạ tầng máy chủ.
 
-Toàn bộ các service được đóng gói và triển khai bằng \textbf{Docker}, giao tiếp với nhau thông qua \textbf{Docker bridge network}. Cách tiếp cận này giúp hệ thống dễ dàng triển khai trên nhiều môi trường khác nhau, đảm bảo tính nhất quán giữa môi trường phát triển và môi trường triển khai, đồng thời tạo tiền đề thuận lợi cho việc mở rộng hoặc tích hợp thêm các dịch vụ mới trong tương lai.
+Toàn bộ các service được đóng gói bằng \textbf{Docker}, nhờ đó môi trường phát triển cục bộ có thể tái lập đầy đủ hệ thống bằng Docker Compose (frontend cổng 3000, backend cổng 8000, PostgreSQL cổng 5432, Qdrant cổng 6333) với cùng một image như sản xuất. Cách tiếp cận này đảm bảo tính nhất quán giữa môi trường phát triển và triển khai, đồng thời tạo tiền đề thuận lợi cho việc mở rộng hoặc tích hợp thêm dịch vụ mới trong tương lai.
 
 \section{Kiến trúc tổng quan}
 
@@ -21,9 +21,9 @@ Toàn bộ các service được đóng gói và triển khai bằng \textbf{Doc
 
 Như minh họa trong Hình \ref{fig:system-architecture}, hệ thống được thiết kế theo kiến trúc phân tầng (layered architecture) kết hợp với mô hình microservices nhằm đảm bảo tính tách biệt chức năng, khả năng mở rộng và dễ bảo trì. Toàn bộ hệ thống được chia thành ba lớp chính: \textit{Client Layer}, \textit{Backend Layer} và \textit{Data Layer}.
 
-\textbf{Client Layer} bao gồm ứng dụng frontend được xây dựng bằng React, chạy trên cổng 3000. Lớp này chịu trách nhiệm hiển thị giao diện người dùng, thu thập dữ liệu đầu vào và gửi các yêu cầu đến backend thông qua các REST API. Client không xử lý logic nghiệp vụ phức tạp mà tập trung vào trải nghiệm người dùng và tương tác.
+\textbf{Client Layer} bao gồm ứng dụng frontend được xây dựng bằng React, được đóng gói tĩnh và phục vụ qua Nginx trên một dịch vụ Cloud Run riêng. Lớp này chịu trách nhiệm hiển thị giao diện người dùng, thu thập dữ liệu đầu vào và gửi các yêu cầu đến backend thông qua các REST API. Client không xử lý logic nghiệp vụ phức tạp mà tập trung vào trải nghiệm người dùng và tương tác.
 
-\textbf{Backend Layer} đóng vai trò trung tâm điều phối và xử lý nghiệp vụ của hệ thống. Backend được xây dựng trên nền tảng FastAPI, chạy trên cổng 8000, cung cấp các endpoint RESTful cho frontend. Bên trong backend, các chức năng được chia thành nhiều service độc lập nhằm tuân thủ nguyên tắc single responsibility:
+\textbf{Backend Layer} đóng vai trò trung tâm điều phối và xử lý nghiệp vụ của hệ thống. Backend được xây dựng trên nền tảng FastAPI, triển khai như một dịch vụ Cloud Run độc lập, cung cấp các endpoint RESTful cho frontend. Bên trong backend, các chức năng được chia thành nhiều service độc lập nhằm tuân thủ nguyên tắc single responsibility:
 \begin{itemize}
     \item \textit{Authentication Service}: quản lý xác thực người dùng, đăng nhập, phân quyền và kiểm soát truy cập.
     \item \textit{Search Service}: xử lý các yêu cầu tìm kiếm xe dựa trên tiêu chí lọc, từ khóa và các điều kiện truy vấn.
@@ -37,7 +37,7 @@ Các service trong backend có thể giao tiếp với nhau thông qua các lờ
 
 Ngoài ra, hệ thống còn tích hợp với các dịch vụ bên ngoài như OpenAI API để hỗ trợ chatbot và tạo embedding phục vụ cho Recommendation Engine. Việc tách biệt các dịch vụ bên ngoài giúp hệ thống linh hoạt trong việc thay thế hoặc mở rộng các nhà cung cấp khác trong tương lai.
 
-Tất cả các thành phần trong hệ thống được đóng gói và triển khai thông qua Docker, giao tiếp với nhau thông qua Docker bridge network. Cách tiếp cận này giúp đảm bảo tính nhất quán giữa các môi trường triển khai, đồng thời tạo nền tảng cho việc mở rộng hệ thống lên các hạ tầng orchestration phức tạp hơn như Kubernetes khi cần thiết.
+Tất cả các thành phần trong hệ thống được đóng gói dưới dạng container Docker và triển khai trên hạ tầng serverless của Cloud Run, giao tiếp với nhau qua HTTPS. Cách tiếp cận này giúp đảm bảo tính nhất quán giữa các môi trường triển khai, đồng thời tạo nền tảng cho việc mở rộng hệ thống lên các hạ tầng orchestration phức tạp hơn như Kubernetes khi cần thiết.
 
 \section{Kiến trúc API}
 
@@ -64,7 +64,7 @@ Hệ thống sử dụng kiến trúc multi-schema theo mô hình \textbf{Medall
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.72\linewidth,height=0.85\textheight,keepaspectratio]{database_schema_architecture.png}
+    \includegraphics[width=0.68\linewidth,height=0.68\textheight,keepaspectratio]{database_schema_architecture.png}
     \caption{Kiến trúc multi-schema database}
     \label{fig:database-schema}
 \end{figure}

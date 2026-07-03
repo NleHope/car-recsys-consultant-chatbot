@@ -271,8 +271,9 @@
 %% đường kẻ ngang đậm 1pt dưới header.
 \pagestyle{fancy}
 \fancyhf{}                                       % xoá header/footer mặc định
-% oneside: tên chương/section ở trái, số trang (đậm) ở phải — như template.
-\fancyhead[L]{\bfseries\nouppercase{\rightmark}} % "1.1 Tên section"
+% Header hiển thị TÊN CHƯƠNG (ổn định trong suốt chương — tránh trường hợp
+% section mới bắt đầu cuối trang làm header lệch với nội dung trang).
+\fancyhead[L]{\bfseries\nouppercase{\leftmark}}  % "1. TỔNG QUAN"
 \fancyhead[R]{\bfseries\thepage}                 % số trang, in đậm
 \setlength{\headheight}{15pt}
 \renewcommand{\headrulewidth}{1.0pt}             % đường kẻ đậm dưới header
