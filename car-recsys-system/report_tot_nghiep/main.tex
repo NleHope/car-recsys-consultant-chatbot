@@ -210,9 +210,6 @@
 % \chapter{QUÁ TRÌNH THU THẬP VÀ XỬ LÝ DỮ LIỆU}
 % \input{chapters/ThuThapDuLieu}
 
-% \chapter{EDA}
-% \input{chapters/preprocess}
-
 % \chapter{Backend và hệ thống đề xuất}
 % \input{chapters/backend}
 
@@ -224,8 +221,8 @@
 
 
 %% PREAMBLE
-% --- THAY ĐỔI: Đổi twoside -> oneside để tránh sinh trang trắng ngẫu nhiên
-\documentclass[13pt,a4paper,oneside]{extreport}
+% --- Font 12pt theo template; oneside để nộp PDF / in 1 mặt (không trang trắng).
+\documentclass[12pt,a4paper,oneside]{extreport}
 
 %% TODO: Add your useful packages here
 \usepackage[utf8]{inputenc}
@@ -258,16 +255,49 @@
 \titlespacing*{\subsubsection}{3.0em}{1.0ex}{0.6ex}% "4.1.1"
 
 
-%% Main Format 
+%% Main Format
 \usepackage{setspace}
 \onehalfspacing
 \usepackage[
   a4paper,
   left=2.5cm,
   right=2cm,
-  top=2cm,
+  top=2.5cm,
   bottom=2cm
 ]{geometry}
+
+%% ================= HÌNH THỨC THEO TEMPLATE OVERLEAF =================
+%% Header/footer: số trang in đậm ở góc ngoài, tên chương/section ở giữa,
+%% đường kẻ ngang đậm 1pt dưới header.
+\pagestyle{fancy}
+\fancyhf{}                                       % xoá header/footer mặc định
+% oneside: tên chương/section ở trái, số trang (đậm) ở phải — như template.
+\fancyhead[L]{\bfseries\nouppercase{\rightmark}} % "1.1 Tên section"
+\fancyhead[R]{\bfseries\thepage}                 % số trang, in đậm
+\setlength{\headheight}{15pt}
+\renewcommand{\headrulewidth}{1.0pt}             % đường kẻ đậm dưới header
+\renewcommand{\footrulewidth}{0pt}
+
+%% Trang mở đầu chương (plain): chỉ số trang canh giữa dưới, không kẻ header.
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+%% Định dạng nội dung mark cho header (số + tên chương/section).
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+
+%% Hyperlink có màu (link nội bộ đen, URL xanh) như template.
+\usepackage{hyperref}
+\hypersetup{%
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue,
+}
+%% ===================================================================
 
 %% TODO: Use \cmark for tick and \xmark for x
 \usepackage{pifont}
@@ -445,10 +475,6 @@
 \chapter{QUÁ TRÌNH THU THẬP VÀ XỬ LÝ DỮ LIỆU}
 \input{chapters/ThuThapDuLieu}
 
-
-
-%%\chapter{EDA}
-%%\input{chapters/preprocess}
 
 \chapter{KIẾN TRÚC HỆ THỐNG, BACKEND VÀ HỆ THỐNG ĐỀ XUẤT}
 \input{chapters/backend}

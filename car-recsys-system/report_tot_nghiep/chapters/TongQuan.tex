@@ -33,7 +33,7 @@ Hệ thống được xây dựng trên nền tảng đám mây Google Cloud Pla
 \begin{itemize}
     \item \textbf{Frontend:} Ứng dụng web đơn trang (SPA) xây dựng bằng React + TypeScript + Tailwind CSS, triển khai trên Google Cloud Run dưới dạng container nginx.
     \item \textbf{Backend:} API server xây dựng bằng FastAPI (Python), triển khai trên Google Cloud Run, cung cấp các endpoint cho tìm kiếm, đề xuất, chat, xác thực và quản lý tương tác người dùng.
-    \item \textbf{Database:} AlloyDB (PostgreSQL 17) lưu trữ dữ liệu theo kiến trúc medallion (bronze/silver/gold). Qdrant Cloud làm vector database cho tìm kiếm ngữ nghĩa. Redis làm bộ nhớ đệm.
+    \item \textbf{Database:} AlloyDB (PostgreSQL 17) lưu trữ dữ liệu theo kiến trúc medallion (bronze/silver/gold). Qdrant Cloud làm vector database cho tìm kiếm ngữ nghĩa.
     \item \textbf{Data Pipeline:} Temporal server tự triển khai (self-hosted) trên GCE VM điều phối toàn bộ luồng thu thập và xử lý dữ liệu tự động hàng tuần.
     \item \textbf{Chuyển đổi dữ liệu:} dbt (data build tool) thực hiện chuyển đổi dữ liệu từ bronze thô sang silver (chuẩn hóa theo mô hình chiều) và gold (bảng phục vụ ứng dụng).
 \end{itemize}

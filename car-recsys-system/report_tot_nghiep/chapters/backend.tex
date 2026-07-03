@@ -4,7 +4,7 @@ Hệ thống backend đóng vai trò là trung tâm xử lý chính của ứng 
 
 Backend được xây dựng dựa trên framework \textbf{FastAPI} với ngôn ngữ \textbf{Python}, cho phép phát triển các API theo kiến trúc RESTful với hiệu năng cao, khả năng mở rộng tốt và hỗ trợ tài liệu API tự động thông qua OpenAPI/Swagger. FastAPI được lựa chọn nhờ khả năng xử lý bất đồng bộ (asynchronous), phù hợp với các hệ thống cần phục vụ nhiều request đồng thời.
 
-Hệ thống sử dụng \textbf{PostgreSQL} làm cơ sở dữ liệu quan hệ để lưu trữ các dữ liệu có cấu trúc như thông tin xe, người bán, giao dịch và metadata liên quan. PostgreSQL đảm bảo tính toàn vẹn dữ liệu, hỗ trợ các ràng buộc quan hệ và khả năng truy vấn phức tạp. Bên cạnh đó, \textbf{Qdrant} được sử dụng như một vector database, phục vụ cho bài toán tìm kiếm và gợi ý dựa trên vector embedding, cho phép hệ thống thực hiện các phép so sánh tương đồng (similarity search) hiệu quả trên không gian nhiều chiều. Để tối ưu hiệu năng và giảm tải cho backend cũng như database, \textbf{Redis} được sử dụng làm hệ thống cache, lưu trữ các kết quả truy vấn thường xuyên hoặc dữ liệu tạm thời.
+Hệ thống sử dụng \textbf{PostgreSQL} làm cơ sở dữ liệu quan hệ để lưu trữ các dữ liệu có cấu trúc như thông tin xe, người bán, giao dịch và metadata liên quan. PostgreSQL đảm bảo tính toàn vẹn dữ liệu, hỗ trợ các ràng buộc quan hệ và khả năng truy vấn phức tạp. Bên cạnh đó, \textbf{Qdrant} được sử dụng như một vector database, phục vụ cho bài toán tìm kiếm và gợi ý dựa trên vector embedding, cho phép hệ thống thực hiện các phép so sánh tương đồng (similarity search) hiệu quả trên không gian nhiều chiều.
 
 \begin{figure}[!htbp]
     \centering
@@ -13,7 +13,7 @@ Hệ thống sử dụng \textbf{PostgreSQL} làm cơ sở dữ liệu quan hệ
     \label{fig:backend-diagram}
 \end{figure}
 
-Hệ thống được thiết kế theo mô hình \textbf{microservices}, trong đó mỗi thành phần đảm nhiệm một vai trò riêng biệt và có thể triển khai, mở rộng độc lập. Frontend Service chạy trên cổng \textbf{3000}, chịu trách nhiệm hiển thị giao diện và tương tác trực tiếp với người dùng. Backend API chạy trên cổng \textbf{8000}, cung cấp các endpoint để xử lý nghiệp vụ và điều phối dữ liệu giữa các dịch vụ. PostgreSQL database hoạt động trên cổng \textbf{5432}, Qdrant vector database trên cổng \textbf{6333}, và Redis cache trên cổng \textbf{6379}.
+Hệ thống được thiết kế theo mô hình \textbf{microservices}, trong đó mỗi thành phần đảm nhiệm một vai trò riêng biệt và có thể triển khai, mở rộng độc lập. Frontend Service chạy trên cổng \textbf{3000}, chịu trách nhiệm hiển thị giao diện và tương tác trực tiếp với người dùng. Backend API chạy trên cổng \textbf{8000}, cung cấp các endpoint để xử lý nghiệp vụ và điều phối dữ liệu giữa các dịch vụ. PostgreSQL database hoạt động trên cổng \textbf{5432} và Qdrant vector database trên cổng \textbf{6333}.
 
 Toàn bộ các service được đóng gói và triển khai bằng \textbf{Docker}, giao tiếp với nhau thông qua \textbf{Docker bridge network}. Cách tiếp cận này giúp hệ thống dễ dàng triển khai trên nhiều môi trường khác nhau, đảm bảo tính nhất quán giữa môi trường phát triển và môi trường triển khai, đồng thời tạo tiền đề thuận lợi cho việc mở rộng hoặc tích hợp thêm các dịch vụ mới trong tương lai.
 
@@ -40,7 +40,7 @@ Như minh họa trong Hình \ref{fig:system-architecture}, hệ thống được
 
 Các service trong backend có thể giao tiếp với nhau thông qua các lời gọi nội bộ và cùng truy cập các nguồn dữ liệu phía dưới, giúp hệ thống dễ dàng mở rộng hoặc bổ sung thêm service mới trong tương lai.
 
-\textbf{Data Layer} chịu trách nhiệm lưu trữ và truy xuất dữ liệu, bao gồm nhiều thành phần chuyên biệt cho từng loại dữ liệu. PostgreSQL được sử dụng làm cơ sở dữ liệu quan hệ để lưu trữ dữ liệu có cấu trúc như thông tin xe, người dùng và người bán. Redis được sử dụng làm hệ thống cache, giúp lưu trữ dữ liệu tạm thời và kết quả truy vấn thường xuyên nhằm giảm độ trễ và tăng hiệu năng. Qdrant đóng vai trò là vector database, phục vụ cho các bài toán tìm kiếm và gợi ý dựa trên độ tương đồng của vector embedding.
+\textbf{Data Layer} chịu trách nhiệm lưu trữ và truy xuất dữ liệu, bao gồm nhiều thành phần chuyên biệt cho từng loại dữ liệu. PostgreSQL (AlloyDB trên môi trường sản xuất) được sử dụng làm cơ sở dữ liệu quan hệ để lưu trữ dữ liệu có cấu trúc như thông tin xe, người dùng và người bán. Qdrant đóng vai trò là vector database, phục vụ cho các bài toán tìm kiếm và gợi ý dựa trên độ tương đồng của vector embedding.
 
 Ngoài ra, hệ thống còn tích hợp với các dịch vụ bên ngoài như OpenAI API để hỗ trợ chatbot và tạo embedding phục vụ cho Recommendation Engine. Việc tách biệt các dịch vụ bên ngoài giúp hệ thống linh hoạt trong việc thay thế hoặc mở rộng các nhà cung cấp khác trong tương lai.
 
@@ -117,18 +117,20 @@ Khi người dùng đăng nhập, hệ thống query user từ database theo use
 
 Với mỗi request cần xác thực, frontend gửi token trong header Authorization. Backend extract token, decode và verify signature với SECRET\_KEY, kiểm tra expiration time, sau đó query user từ database và gắn vào request context.
 
-\section{Caching và Tối ưu hiệu năng}
+\section{Tối ưu hiệu năng}
 
-Để đảm bảo hiệu năng và khả năng mở rộng, hệ thống áp dụng cơ chế caching nhiều tầng với \textbf{Redis} làm trung tâm, kết hợp tối ưu truy vấn ở tầng cơ sở dữ liệu.
+Để đảm bảo hiệu năng, hệ thống kết hợp cache trong tiến trình (in-process) cho các tài nguyên tĩnh và tối ưu truy vấn ở tầng cơ sở dữ liệu.
 
-\subsection{Caching bằng Redis}
+\subsection{Cache trong tiến trình}
 
-Hệ thống sử dụng Redis với TTL mặc định là \textbf{1 giờ} (\texttt{CACHE\_TTL = 3600}), bao gồm các lớp cache sau:
+Các tài nguyên có chi phí khởi tạo cao nhưng ít thay đổi được nạp một lần và lưu trong bộ nhớ tiến trình bằng \texttt{functools.lru\_cache}, thay vì tính lại ở mỗi request:
 
 \begin{itemize}
-    \item \textit{API Response Cache}: Lưu trữ kết quả của các truy vấn tìm kiếm phổ biến — các request có cùng tập tham số lọc sẽ được phục vụ trực tiếp từ cache, giảm tải cho PostgreSQL và Qdrant.
-    \item \textit{Recommendation Cache}: Lưu kết quả gợi ý xe cho từng người dùng. Cache được chủ động \textit{invalidate} khi hệ thống ghi nhận tương tác mới (click, save, contact, v.v.), đảm bảo kết quả gợi ý phản ánh hành vi mới nhất.
+    \item \textit{Cấu hình hệ thống gợi ý}: file \texttt{reco\_config.yaml} (trọng số, ngưỡng) được phân tích một lần và cache trong suốt vòng đời tiến trình.
+    \item \textit{Tài nguyên chatbot}: LLM client và vector store được khởi tạo một lần khi backend khởi động và tái sử dụng cho mọi lượt hội thoại.
 \end{itemize}
+
+Cách tiếp cận này phù hợp với cấu hình \texttt{max-instances = 1} của Cloud Run, giúp giảm độ trễ mà không cần một dịch vụ cache ngoài.
 
 \subsection{Tối ưu truy vấn Database}
 

@@ -10,7 +10,6 @@ flowchart TB
     subgraph data["Data & Vector Stores"]
       db[("AlloyDB<br/>PostgreSQL 17")]
       qd[("Qdrant Cloud<br/>Vector DB")]
-      rd[("Redis<br/>Cache")]
       gcs[("GCS<br/>Raw JSON")]
     end
     subgraph vm["GCE VM · Temporal (self-hosted)"]
@@ -28,7 +27,6 @@ flowchart TB
   fe -.->|Price Estimate| pe
   be --> db
   be --> qd
-  be --> rd
   be -->|RAG · chat| ext
 
   cw -->|crawl| cars
@@ -43,5 +41,5 @@ flowchart TB
   classDef store fill:#F4F4F5,stroke:#78716c,stroke-width:1.2px,color:#1c1917;
   classDef ext fill:#efe7d6,stroke:#8a6100,stroke-width:1.2px,color:#1c1917;
   class fe,be,pe,tmp,cw,pw svc;
-  class db,qd,rd,gcs store;
+  class db,qd,gcs store;
   class ext,cars ext;
