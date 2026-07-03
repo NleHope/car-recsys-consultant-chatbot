@@ -1,0 +1,83 @@
+user_input,expected_flow,reference,response,Information_Gathering_Score
+"Do you have any cars under $15,000?",need-more-info,"Yes, we do have options under $15,000! To help narrow it down, could you let me know your preferred body type, such as sedan, SUV, or hatchback? Additionally, do you have a preference for fuel type, like gasoline, hybrid, or electric?","Yes, we have several options under $15,000! To help narrow it down, could you let me know your preferred body type, such as a sedan, SUV, or hatchback? Additionally, do you have a preference for fuel type, like gasoline, hybrid, or electric?",0.8939603530267257
+Do you have new car?,need-more-info,"I appreciate your interest! Speaking of new cars, do you have a specific type or brand in mind that you're looking for? Or perhaps a budget you'd like to stick to? I'm here to help you find the perfect vehicle!","Yes, we do have new cars available! What type of vehicle are you interested in, or do you have a specific budget or brand in mind?",0.8106690585424478
+Are there any cars with a V8 engine?,need-more-info,"Absolutely, there are several cars available with a V8 engine. To help narrow down your options, could you please share your budget and any preferences you have for body type, such as sedan, SUV, or truck? Additionally, do you have a preference for fuel type, like gasoline or hybrid?","Yes, there are several cars available with a V8 engine. To better assist you, could you please share your budget and any preferences you have regarding body type, like SUV, sedan, or truck, as well as your preferred fuel type, such as gasoline or hybrid?",0.8770549112045284
+Please search for me a car with V8 engine,need-more-info,"Could you please share your budget and preferred body type, such as a sedan, SUV, or truck? Additionally, do you have a preference for gasoline, hybrid, or electric fuel types?","Could you please let me know your budget and if you have a preference for a specific body type, such as a sedan, SUV, or truck?",0.8650551347025177
+Do you have any certified pre-owned cars?,need-more-info,"That's a great question! Yes, we do have certified pre-owned cars available. What type of vehicle are you interested in, and do you have a specific budget or brand in mind?","That's a great question! We do have a selection of certified pre-owned cars available. Could you share what type of vehicle you're looking for, or if you have a specific budget or brand in mind? I'd be happy to help you explore your options!",0.8245085018646348
+Do you have any certified pre-owned cars?,need-more-info,"That's a great question! Yes, we do have a selection of certified pre-owned cars available. Are you looking for a specific make or model, or do you have a budget in mind? I'd be happy to help you find the perfect vehicle!","That's a great question! Yes, we do have a selection of certified pre-owned cars available. What specific features or budget are you considering for your next vehicle?",0.8067546694893777
+Show me a luxury sedan with all-wheel drive.,need-more-info,"I can definitely help with that! To narrow down the options, could you please share your budget range and whether you prefer gasoline, hybrid, or electric fuel types?","I’d be happy to help with that! To narrow down the options, could you please share your maximum budget and whether you prefer gasoline, hybrid, or electric fuel types?",0.8407474798407101
+I want to buy a luxury sedan with all-wheel drive. Give me a sample.,need-more-info,"That sounds great! To help you find the perfect luxury sedan, could you please let me know your maximum budget and if you have a preference for fuel type, such as gasoline, hybrid, or electric?","That sounds great! To help you find the perfect luxury sedan, could you please share your budget range and whether you prefer gasoline, hybrid, or electric options?",0.88186105101549
+"I want a fast, stylish sports car, preferably a Porsche under $250k. Give me some options.",need-more-info,"That sounds exciting! To help narrow down your options, could you let me know your preferred fuel type? Are you looking for gasoline, hybrid, or electric?","I’d be happy to help you find the perfect Porsche! Could you let me know your preference for fuel type? Are you looking for gasoline, hybrid, or electric?",0.7851952807606726
+"Can you recommend a highly fuel-efficient hybrid car for under $30,000?",need-more-info,"I'd be happy to help with that! Could you let me know what body type you're interested in? For example, are you looking for a sedan, SUV, or something else?","I'd be happy to help with that! To narrow down your options, could you please let me know what body type you prefer? For example, are you looking for a sedan, SUV, or maybe a hatchback?",0.860132420765067
+"I'm looking for an off-road capable truck around $40,000.",need-more-info,"That sounds great! To help narrow down your options, could you let me know your preferred fuel type? Are you looking for gasoline, diesel, or perhaps a hybrid option?","That sounds great! To help narrow down your options, could you let me know what type of fuel you're interested in for your truck? Would you prefer gasoline, diesel, or perhaps a hybrid option?",0.8348645135333946
+I want to buy a new car.,need-more-info,"That's great to hear! Could you please share your budget and what type of body style you prefer, such as an SUV, sedan, or something else? Additionally, do you have a preference for fuel type, like gasoline, hybrid, or electric?","That's great to hear! To help you find the perfect new car, could you share your budget and any preferences you have for body type, like SUV, sedan, or maybe a hatchback? Also, do you have a preference for fuel type, such as gasoline, hybrid, or electric?",0.9952574129010283
+Can you recommend a good SUV?,need-more-info,"I'd be happy to help! To narrow down the options, could you please share your budget range and if you have a preference for fuel type, such as gasoline, hybrid, or electric?","I'd be happy to help! Could you please let me know your budget range and whether you prefer gasoline, hybrid, or electric options for your SUV?",0.9547018519471699
+Which Honda should I buy?,need-more-info,"I'm be happy to help you find the perfect Honda! Could you share your budget and what type of body style you prefer, such as a sedan, SUV, or maybe a hatchback? Additionally, do you have a preference for fuel type, like gasoline, hybrid, or electric?","To help you find the perfect Honda, could you please share your budget and let me know if you prefer a specific body type, like a sedan, SUV, or hatchback? Additionally, do you have a preference for fuel type, such as gasoline, hybrid, or electric?",0.9679178686187837
+Find me a fast car.,need-more-info,"Could you please share your budget and preferred body type, such as a sedan, coupe, or SUV? Additionally, do you have a preference for fuel type, like gasoline, hybrid, or electric?","Could you please share your budget and your preferred body type, such as a sedan, coupe, or SUV? Additionally, do you have a preference for fuel type, like gasoline, hybrid, or electric?",0.9514153860495018
+I need a vehicle for my family.,need-more-info,"That's great to hear! To help you find the perfect SUV for your family, could you please share your budget range and whether you prefer gasoline, hybrid, or electric options?","That sounds great! To help you find the perfect SUV, could you please share your budget and whether you prefer gasoline, hybrid, or electric options?",0.849201845768236
+got anything cheap?,need-more-info,"I can definitely help you explore affordable options! To narrow things down, what's your target budget, and do you prefer a sedan, SUV, hatchback, or truck?","I can definitely help with that! To narrow down your options, could you let me know what type of vehicle you prefer? For example, are you looking for a sedan, SUV, or maybe something else? And do you have a preference for fuel type, such as gasoline, hybrid, or electric?",0.8458862804120322
+I need something for my commute.,need-more-info,"A good commuter car can make a big difference! Could you share your budget range, how many miles you drive daily, and whether you prefer gasoline, hybrid, or electric?","That sounds great! Could you share your budget for the sedan, and do you have a preference for fuel type, such as gasoline, hybrid, or electric?",0.9169054336338421
+show me toyotas,need-more-info,"Toyota has a lot of great models! To point you in the right direction, what's your budget, and are you leaning toward a sedan, SUV, truck, or hybrid?","Here are some excellent Toyota options that match your preferences:
+
+### 1. 2010 Toyota Tacoma Double Cab
+- **Brand:** Toyota
+- **Status:** Used
+- **Mileage:** 241,019 miles
+- **Price:** $10,000
+- **Exterior Color:** Magnetic Gray Metallic
+- **Key Features:** 
+  - Four-wheel Drive
+  - 5-Speed Automatic Transmission
+  - CD Player
+  - Brake Assist, Stability Control
+
+**Pros:** Affordable price point, reliable performance, and a classic Tacoma design.  
+**Cons:** Higher mileage may lead to increased maintenance needs.
+
+[View Details](https://carsalesfinder.com/vehicle/3TMLU4EN3AM052119)
+
+---
+
+### 2. 2013 Toyota Tacoma Base
+- **Brand:** Toyota
+- **Status:** Used
+- **Mileage:** 74,940 miles
+- **Price:** $18,473
+- **Exterior Color:** Brown
+- **Key Features:** 
+  - Four-wheel Drive
+  - Automatic Transmission
+  - Bluetooth® Connectivity
+  - Brake Assist, Automatic Emergency Braking
+
+**Pros:** Modern features like Bluetooth and safety enhancements, lower mileage compared to older models.  
+**Cons:** Slightly higher price point but offers more features.
+
+[View Details](https://carsalesfinder.com/vehicle/5TFUX4EN0DX019654)
+
+---
+
+### 3. 2020 Toyota Tacoma SR5
+- **Brand:** Toyota
+- **Status:** Used
+- **Mileage:** 114,066 miles
+- **Price:** $19,499
+- **Exterior Color:** Magnetic Gray Metallic
+- **Key Features:** 
+  - Rear-wheel Drive
+  - Automatic Transmission
+  - Android Auto®, Apple CarPlay®, Bluetooth®
+  - Brake Assist, Backup Camera, Lane Departure Warning
+
+**Pros:** Great blend of modern technology and safety features, good fuel efficiency.  
+**Cons:** Mileage is moderate, which may affect resale value.
+
+[View Details](https://carsalesfinder.com/vehicle/3TMAZ5CN2LM129647)
+
+---
+
+If you'd like more details or have specific questions about any of these options, feel free to ask!",0.31500267992428443
+looking 4 a used car,need-more-info,"Used cars can be a smart value! Could you tell me your budget, preferred body type, and whether you care more about low mileage, features, or fuel economy?","Great to hear you're looking for a used car! Could you please share your budget and any preferences you have for body type, like SUV, sedan, or hatchback? Also, do you have a preference for fuel type, such as gasoline, hybrid, or electric?",0.9463566649243405
+Something safe for a new driver.,need-more-info,"Safety is a great priority for a new driver! What's your budget range, and do you prefer a compact car, sedan, or small SUV? Any preference for brand or driver-assist features?","That's a great priority! To help you find the best option, could you please share your budget and if you have a preference for body type, like an SUV or sedan, as well as your preferred fuel type, such as gasoline, hybrid, or electric?",0.8984614172062978
+I want an electric car.,need-more-info,"Electric vehicles are a popular choice! To help narrow it down, what's your budget, do you need a certain driving range, and are you looking for a sedan, SUV, or hatchback?","Great choice! Could you please share your budget and what body type you prefer, such as a sedan, SUV, or hatchback?",0.85255936155634
+need a work truck,need-more-info,"Happy to help with truck options! Could you share your budget, whether you need crew cab or extended cab, and if towing capacity or bed length matters for your work?","Great choice! What is your budget range for the work truck, and do you have a preference for fuel type, such as gasoline, diesel, or maybe a hybrid option?",0.8407176504820744
