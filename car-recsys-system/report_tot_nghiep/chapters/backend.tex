@@ -6,13 +6,6 @@ Backend được xây dựng dựa trên framework \textbf{FastAPI} với ngôn 
 
 Hệ thống sử dụng \textbf{PostgreSQL} làm cơ sở dữ liệu quan hệ để lưu trữ các dữ liệu có cấu trúc như thông tin xe, người bán, giao dịch và metadata liên quan. PostgreSQL đảm bảo tính toàn vẹn dữ liệu, hỗ trợ các ràng buộc quan hệ và khả năng truy vấn phức tạp. Bên cạnh đó, \textbf{Qdrant} được sử dụng như một vector database, phục vụ cho bài toán tìm kiếm và gợi ý dựa trên vector embedding, cho phép hệ thống thực hiện các phép so sánh tương đồng (similarity search) hiệu quả trên không gian nhiều chiều.
 
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=0.8\linewidth]{diagram.png}
-    \caption{Sơ đồ tổng thể các thành phần hệ thống backend}
-    \label{fig:backend-diagram}
-\end{figure}
-
 Hệ thống được thiết kế theo mô hình \textbf{microservices}, trong đó mỗi thành phần đảm nhiệm một vai trò riêng biệt và có thể triển khai, mở rộng độc lập. Frontend Service chạy trên cổng \textbf{3000}, chịu trách nhiệm hiển thị giao diện và tương tác trực tiếp với người dùng. Backend API chạy trên cổng \textbf{8000}, cung cấp các endpoint để xử lý nghiệp vụ và điều phối dữ liệu giữa các dịch vụ. PostgreSQL database hoạt động trên cổng \textbf{5432} và Qdrant vector database trên cổng \textbf{6333}.
 
 Toàn bộ các service được đóng gói và triển khai bằng \textbf{Docker}, giao tiếp với nhau thông qua \textbf{Docker bridge network}. Cách tiếp cận này giúp hệ thống dễ dàng triển khai trên nhiều môi trường khác nhau, đảm bảo tính nhất quán giữa môi trường phát triển và môi trường triển khai, đồng thời tạo tiền đề thuận lợi cho việc mở rộng hoặc tích hợp thêm các dịch vụ mới trong tương lai.
@@ -71,7 +64,7 @@ Hệ thống sử dụng kiến trúc multi-schema theo mô hình \textbf{Medall
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=1\linewidth]{database_schema_architecture.png}
+    \includegraphics[width=0.72\linewidth,height=0.85\textheight,keepaspectratio]{database_schema_architecture.png}
     \caption{Kiến trúc multi-schema database}
     \label{fig:database-schema}
 \end{figure}

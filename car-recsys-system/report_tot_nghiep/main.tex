@@ -297,6 +297,19 @@
   citecolor=black,
   urlcolor=blue,
 }
+
+%% ----- Giảm khoảng trống thừa do float (hình/bảng) -----
+\raggedbottom                        % không giãn khoảng trắng để lấp đầy trang
+% Cho phép hình chiếm nhiều diện tích trang hơn trước khi bị đẩy sang trang float riêng
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+% Thu hẹp khoảng cách giữa float và phần chữ
+\setlength{\textfloatsep}{12pt plus 2pt minus 4pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{2pt}
 %% ===================================================================
 
 %% TODO: Use \cmark for tick and \xmark for x

@@ -1,45 +1,49 @@
 flowchart TB
   user([Người dùng])
 
-  subgraph GCP["Google Cloud Platform"]
-    subgraph run["Cloud Run"]
-      fe["Frontend<br/>React · Nginx<br/>carsalesfinder.com"]
-      be["Backend<br/>FastAPI"]
-      pe["Price Estimate<br/>Service"]
-    end
-    subgraph data["Data & Vector Stores"]
-      db[("AlloyDB<br/>PostgreSQL 17")]
-      qd[("Qdrant Cloud<br/>Vector DB")]
-      gcs[("GCS<br/>Raw JSON")]
-    end
-    subgraph vm["GCE VM · Temporal (self-hosted)"]
-      tmp["Temporal Server"]
-      cw["Crawl Worker<br/>Chrome + Xvfb"]
-      pw["Pipeline Worker<br/>dbt · Embeddings"]
-    end
+  subgraph run["Cloud Run"]
+    direction LR
+    fe["Frontend<br/>React · Nginx"]
+    be["Backend<br/>FastAPI"]
+    pe["Price Estimate<br/>Service"]
   end
 
   ext["OpenAI API<br/>gpt-4o-mini · embeddings"]
+
+  subgraph data["Data Stores"]
+    direction LR
+    db[("AlloyDB<br/>PostgreSQL 17")]
+    qd[("Qdrant Cloud<br/>Vector DB")]
+    gcs[("GCS<br/>Raw JSON")]
+  end
+
+  subgraph vm["GCE VM · Temporal self-hosted"]
+    direction LR
+    tmp["Temporal<br/>Server"]
+    cw["Crawl Worker<br/>Chrome + Xvfb"]
+    pw["Pipeline Worker<br/>dbt · Embeddings"]
+  end
+
   cars["Cars.com"]
 
   user -->|HTTPS| fe
   fe -->|/api| be
-  fe -.->|Price Estimate| pe
+  fe -.-> pe
   be --> db
   be --> qd
-  be -->|RAG · chat| ext
+  be --> ext
 
-  cw -->|crawl| cars
-  cw -->|upload| gcs
   tmp --- cw
   tmp --- pw
-  pw -->|load + dbt| db
+  cw -->|crawl| cars
+  cw -->|upload JSON| gcs
+  gcs -->|load_bronze| pw
+  pw -->|dbt build| db
   pw -->|embeddings| qd
-  gcs --> pw
 
-  classDef svc fill:#FDF6E8,stroke:#A87601,stroke-width:1.5px,color:#1c1917;
-  classDef store fill:#F4F4F5,stroke:#78716c,stroke-width:1.2px,color:#1c1917;
-  classDef ext fill:#efe7d6,stroke:#8a6100,stroke-width:1.2px,color:#1c1917;
+  classDef svc fill:#FDF6E8,stroke:#A87601,stroke-width:2px,color:#1c1917;
+  classDef store fill:#F4F4F5,stroke:#78716c,stroke-width:1.5px,color:#1c1917;
+  classDef extc fill:#efe7d6,stroke:#8a6100,stroke-width:1.5px,color:#1c1917;
   class fe,be,pe,tmp,cw,pw svc;
   class db,qd,gcs store;
-  class ext,cars ext;
+  class ext,cars extc;
