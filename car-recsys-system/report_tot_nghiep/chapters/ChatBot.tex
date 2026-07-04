@@ -1,153 +1,463 @@
-\section{Mục tiêu và phạm vi tư vấn}
-Dựa trên bộ dữ liệu thu thập từ \textit{Cars.com}, nhóm đặt mục tiêu xây dựng chatbot có khả năng hỗ trợ người dùng đặt câu hỏi và nhận tư vấn một cách tự nhiên, đồng thời đảm bảo câu trả lời bám sát nguồn thông tin thực tế hiện có trong dữ liệu. Chatbot được thiết kế để duy trì ngữ cảnh hội thoại, ghi nhớ các câu hỏi trước đó và khai thác thông tin đã cung cấp nhằm hiểu rõ hơn hành vi cũng như nhu cầu của người dùng trong suốt quá trình tương tác.
+\setlength{\parskip}{2pt}
 
-\noindent \textbf{Phạm vi tư vấn}:
+\section{Tổng quan và Đặt vấn đề}
+
+\subsection{Đặt vấn đề}
+
+Trong bối cảnh thị trường ô tô phát triển sôi động, sự phong phú về lựa chọn giúp người mua có nhiều cơ hội tiếp cận các sản phẩm đa dạng, nhưng đồng thời cũng làm tăng sự khó khăn trong việc đánh giá và lựa chọn một chiếc xe thực sự phù hợp với nhu cầu cá nhân. Thông thường, khi tương tác với một website mua bán xe, người dùng phải tự thực hiện hàng loạt các thao tác lọc (filter) thủ công, tuần tự theo từng tiêu chí để có thể khoanh vùng được chiếc xe ưng ý. Quá trình lọc dựa trên biểu mẫu (form-based filtering) này đôi khi phức tạp, kém linh hoạt và khó đáp ứng được những câu hỏi mang tính tổng hợp, so sánh đa chiều của khách hàng.
+
+Do đó, một chatbot có khả năng thấu hiểu ngôn ngữ tự nhiên, trực tiếp trả lời và tư vấn các lựa chọn phù hợp đã ra đời nhằm nhanh chóng đáp ứng nhu cầu đó. Thay vì phải chật vật với các bộ lọc, người dùng có thể thoải mái trò chuyện và đưa ra các yêu cầu cụ thể để hệ thống tự động tìm kiếm.
+
+Một Chatbot trong lĩnh vực tư vấn mua bán xe đòi hỏi về độ chính xác của các thông tin thực tế (thông số kỹ thuật, giá cả, tính trạng xe, ...). Việc chatbot cung cấp sai lệch thông tin có thể ảnh hưởng đến quyết định của người mua. Vì vậy, dựa trên dữ liệu các bài đăng hiện có trong website, nhóm đặt mục tiêu xây dựng một chatbot không chỉ giao tiếp tự nhiên, duy trì tốt ngữ cảnh hội thoại mà còn phải có cơ chế kiểm soát chặt chẽ, đảm bảo mọi câu trả lời luôn bám sát nguồn thông tin thực tế hiện có trong cơ sở dữ liệu.
+
+Bên cạnh đó, để nâng cao trải nghiệm người dùng, chatbot được thiết kế tối ưu nhằm duy trì ngữ cảnh hội thoại. Hệ thống có khả năng ghi nhớ các câu hỏi trước đó và khai thác triệt để những thông tin đã được cung cấp, qua đó giúp hiểu rõ hơn về hành vi cũng như nhu cầu thực sự của người dùng trong suốt quá trình tương tác.
+
+\subsection{Phạm vi tư vấn của hệ thống}
+Hệ thống Chatbot tư vấn mua bán xe được thiết kế để giải quyết toàn diện các bước trong hành trình tìm kiếm và lựa chọn xe của khách hàng. Phạm vi hỗ trợ của Chatbot bao gồm các luồng chức năng chính sau:
+
 \begin{itemize}
-    \item \textbf{Gợi ý xe theo nhu cầu:} Người dùng cung cấp các tiêu chí như khoảng giá, loại xe, hãng xe, màu sắc, các tính năng cần thiết; chatbot trả về danh sách các bài đăng phù hợp nhất và tóm tắt các thông tin quan trọng của từng lựa chọn.
-    \item \textbf{So sánh các lựa chọn:} Chatbot hỗ trợ so sánh nhiều mẫu xe trong cùng tầm giá dựa trên thông số và tính năng đã thu thập, giúp người dùng đánh giá ưu/nhược điểm để lựa chọn phù hợp.
-    \item \textbf{Hỏi thông số kỹ thuật:} Chatbot trả lời câu hỏi về thông số kỹ thuật, tính năng an toàn, động cơ, MPG của một mẫu xe cụ thể.
-    \item \textbf{Phân tích thống kê nền tảng:} Chatbot cung cấp thống kê tổng hợp như hãng phổ biến nhất, phân bổ loại nhiên liệu, mô hình được đánh giá cao nhất.
-    \item \textbf{Cung cấp hình ảnh minh họa:} Chatbot hiển thị hình ảnh của các mẫu xe được đề xuất thông qua URL từ dữ liệu.
+    \item \textbf{Chào hỏi và thấu hiểu nhu cầu người dùng:} Chatbot có khả năng giao tiếp tự nhiên, duy trì ngữ cảnh hội thoại để chào đón khách hàng. Đặc biệt, thông qua cơ chế thu thập thông tin (Slot-filling), hệ thống chủ động đặt các câu hỏi dẫn dắt nhằm khai thác các tiêu chí cốt lõi như: ngân sách dự kiến, kiểu dáng xe, hãng xe ưa thích, hoặc mục đích sử dụng, từ đó phác họa rõ nét chân dung và nhu cầu thực sự của người dùng.
+    
+    \item \textbf{Gợi ý và so sánh xe theo nhu cầu:} Dựa trên các tập thông tin đã thu thập được, hệ thống sẽ tiến hành truy xuất dữ liệu và trả về danh sách các bài đăng phù hợp nhất. Chatbot không chỉ liệt kê mà còn tóm tắt các thông tin quan trọng của từng lựa chọn trong cùng tầm giá, phân tích các thông số và tính năng nổi bật. Điều này giúp người dùng dễ dàng so sánh, đánh giá ưu/nhược điểm để đưa ra quyết định phù hợp nhất.
+
+    \item \textbf{Hỗ trợ trực quan và điều hướng mua hàng:} Nhằm nâng cao trải nghiệm thực tế, Chatbot có khả năng hiển thị trực tiếp hình ảnh của các mẫu xe được đề xuất thông qua đường dẫn ảnh (URL) lưu trữ trong hệ thống. Đồng thời, Chatbot cung cấp liên kết (link) dẫn trực tiếp đến trang chi tiết bài đăng gốc, giúp người dùng có góc nhìn trực quan nhất và dễ dàng thực hiện các thao tác chuyển đổi tiếp theo trên website.
+    
+    \item \textbf{Truy vấn thông số kỹ thuật chi tiết:} Khi người dùng có nhu cầu tìm hiểu sâu về một mẫu xe cụ thể, Chatbot đóng vai trò như một chuyên gia cung cấp chính xác các thông số kỹ thuật nổi bật (như động cơ, hiệu suất tiêu hao nhiên liệu, tính năng an toàn, nội/ngoại thất). Mọi thông tin đều được đảm bảo truy xuất trực tiếp từ cơ sở dữ liệu thực tế, loại bỏ rủi ro sai lệch thông tin.
+    
+    \item \textbf{So sánh trực quan đa chiều (Side-by-side Comparison):} Hệ thống hỗ trợ tính năng so sánh toàn diện giữa hai mẫu xe mục tiêu. Thông qua việc truy xuất đồng thời các dữ liệu thực tế (thông số kỹ thuật, mức giá, trang bị), Chatbot sẽ tự động tổng hợp, đối chiếu và phân tích chuyên sâu các ưu/nhược điểm của từng phương án. Điều này giúp cung cấp cho người dùng một góc nhìn khách quan, đa chiều để dễ dàng cân nhắc giữa các lựa chọn.
+
 \end{itemize}
 
+\section{Cơ sở lý thuyết và Công nghệ áp dụng}
 
+\subsection{Hạn chế của mô hình RAG truyền thống (Naive RAG)}
 
-\section{Xây dựng Vector Database cho ChatBot}
-Vector database nhóm sử dụng trong dự án là \textbf{Qdrant}. Ứng dụng kết nối đến Qdrant thông qua \textbf{QdrantClient}. Chatbot sử dụng collection \texttt{\textbf{car\_vectorize}} — lưu trữ thông tin xe dưới dạng \textbf{chunked documents} (chia nhỏ mô tả xe thành nhiều đoạn văn bản), phục vụ tìm kiếm ngữ nghĩa cho chatbot RAG.
+Theo bài khảo sát chuyên sâu \textit{Retrieval-Augmented Generation for Large Language Models: A Survey}~\cite{gao2024rag}, kiến trúc \textbf{Naive RAG} (RAG truyền thống) hoạt động theo một cơ chế tuyến tính cố định gọi là \textit{Retrieve-Then-Read}. Trong cơ chế này, hệ thống chỉ thực hiện truy xuất dữ liệu một lần duy nhất dựa trên câu hỏi đầu vào, sau đó đưa ngay ngữ cảnh tìm được cho mô hình ngôn ngữ (LLM) để sinh câu trả lời. Tuy nhiên, cách tiếp cận có phần nhanh chóng này bộc lộ những điểm yếu chí mạng khi áp dụng vào các kịch bản tư vấn mua bán xe thực tế:
 
-\textbf{Lưu ý quan trọng về hai Qdrant collection:}
 \begin{itemize}
-    \item \texttt{car\_vectorize}: dành riêng cho \textbf{chatbot} (chunked docs, tìm kiếm ngữ nghĩa).
-    \item \texttt{car\_chatbot\_vectors}: dành riêng cho \textbf{Recommendation Engine} (1 vector/VIN, VectorRecaller). Nhầm lẫn hai collection này sẽ phá vỡ cả chatbot lẫn hệ thống đề xuất.
+    \item \textbf{Thất bại trước các truy vấn phức tạp (Complex Queries):} Khi người dùng đặt những câu hỏi yêu cầu sự tổng hợp và đối chiếu thông tin từ nhiều nguồn, ví dụ: \textit{``So sánh giá lăn bánh và tiêu hao nhiên liệu của xe Mazda CX-5 và Hyundai Tucson''}, Naive RAG thường không thể đáp ứng. Nguyên nhân là do hệ thống thiếu khả năng chia nhỏ vấn đề (sub-querying) để tiến hành tìm kiếm từng dòng xe riêng biệt. Việc nhồi nhét quá nhiều thực thể vào một lượt tìm kiếm duy nhất dễ dẫn đến việc thiếu hụt dữ liệu hoặc cơ sở dữ liệu trả về kết quả sai lệch ngay từ lần thử đầu tiên.
+    
+    \item \textbf{Xử lý kém các truy vấn mơ hồ (Ambiguous Queries):} Trong thực tế, khách hàng thường bắt đầu bằng những câu hỏi rất chung chung và thiếu ngữ cảnh như: \textit{``Tôi đang muốn mua xe, bạn hãy tư vấn giúp tôi được không?''}. Một nhân viên tư vấn con người sẽ lập tức chủ động hỏi ngược lại để khai thác nhu cầu (như ngân sách, kiểu dáng, loại nhiêu liệu, ...). Ngược lại, vì bị bó buộc trong luồng tuyến tính, Naive RAG vẫn sẽ tiến hành tìm kiếm vector một cách máy móc dựa trên các từ khóa chung chung này. Hậu quả là hệ thống tự động trích xuất những đoạn tài liệu (context) ngẫu nhiên, không liên quan. Lượng thông tin dư thừa này tạo ra các thông tin nhiễu khiến LM mất phương hướng và trả lời một cách lan man và đặc biệt là lãng phí tài nguyên tính toán.
 \end{itemize}
 
-\noindent Quá trình xây dựng vector database được thực hiện như sau:
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.75\linewidth]{rag_model.png}
+    \caption{Luồng xử lý RAG truyền thống (Naive RAG)}
+    \label{fig:naive-rag}
+\end{figure}
+\FloatBarrier
+\subsection{Tổng quan về Agentic RAG}
+
+\textbf{Định hướng giải pháp:} Từ những khuyết điểm của mô hình Naive RAG đã phân tích, có thể thấy việc đơn thuần sử dụng một công cụ tìm kiếm cố định vào một Mô hình ngôn ngữ lớn (LLM) là không đủ để xây dựng một hệ thống tư vấn xe chuyên nghiệp và tối ưu. Để giải quyết triệt để bài toán này, đồ án yêu cầu một kiến trúc chủ động và thông minh hơn: một hệ thống biết tự phân loại ý định người dùng, biết tự phân tách các bước tìm kiếm phức tạp, và đặc biệt là có khả năng chủ động tương tác (đặt câu hỏi ngược lại) nhằm làm rõ nhu cầu của khách hàng trước khi thực hiện truy xuất. Đây chính là động lực cốt lõi dẫn đến việc đồ án lựa chọn và ứng dụng kiến trúc \textbf{Agentic RAG} (Mô hình RAG hướng tác tử).
+
+\textbf{Cơ chế hoạt động của Agentic RAG:} Khác với luồng xử lý tuyến tính truyền thống, Agentic RAG ra đời như một sự kết hợp hoàn hảo giữa năng lực suy luận (Reasoning) của LLM Agent và độ chính xác của hệ thống truy xuất thông tin (Retrieval). Thay vì tin tưởng tuyệt đối vào một lần tìm kiếm duy nhất, Agentic RAG là một hệ thống tư duy thông qua các cơ chế cốt lõi sau:
+
 \begin{itemize}
-    \item \textbf{Trích xuất và tạo nội dung mô tả xe:} Nhóm truy vấn SQL để lấy các trường thông tin quan trọng từ \texttt{gold.vehicles} (năm sản xuất, hãng xe, dòng xe, dáng xe, động cơ, nhiên liệu, màu sắc, giá cả, số km, tình trạng, địa chỉ, tính năng, nhận xét) và tổng hợp thành đoạn mô tả cho từng xe. Thông tin xe sau đó được \textbf{chia nhỏ thành các chunk} để tăng độ chính xác tìm kiếm ngữ nghĩa.
+    \item \textbf{Khả năng định tuyến và phân tách bài toán (Adaptive Routing \& Query Decomposition):} Lấy cảm hứng từ kiến trúc \textit{Adaptive-RAG} được đề xuất bởi Jeong và cộng sự (2024)~\cite{jeong2024adaptiverag}, hệ thống loại bỏ luồng xử lý cố định mang tính máy móc cho mọi câu hỏi đầu vào. Thay vào đó, LLM Agent đóng vai trò như một bộ định tuyến thông minh để tự động phân tích mức độ phức tạp của truy vấn. Đối với các câu hỏi đa mục tiêu hoặc yêu cầu đối chiếu diện rộng, Agent sẽ tiến hành phân tách bài toán lớn thành chuỗi các câu hỏi phụ (sub-queries), thực hiện tìm kiếm nhiều bước (Multi-step retrieval) tuần tự hoặc song song để xử lý triệt để từng khía cạnh trước khi tổng hợp ngữ cảnh.
 
-    \item \textbf{Khởi tạo collection:} Collection \texttt{car\_vectorize} được cấu hình với \texttt{size = 3072} (số chiều embedding từ mô hình \textbf{text-embedding-3-large}) và \texttt{distance = COSINE} (thước đo tương đồng).
+    \item \textbf{Cơ chế tự kiểm chứng và sửa lỗi (Self-Reflection \& Critique Loops):} Áp dụng tư tưởng của \textit{SELF-RAG}~\cite{asai2024selfrag}, hệ thống thiết lập các vòng lặp phản hồi (Feedback loops) nhằm loại bỏ rủi ro ảo giác (hallucination). Agent có khả năng tự đánh giá độ nhiễu của tài liệu trích xuất (để quyết định có cần viết lại câu hỏi và tìm kiếm lại không) cũng như tự phê bình câu trả lời của chính mình trước khi phản hồi cho khách hàng.
 
-    \item \textbf{Nạp dữ liệu vào collection:} Dữ liệu được ingest theo từng \textit{batch} để tối ưu hiệu năng. Mỗi PointStruct có:
+    \item \textbf{Điều hướng luồng công việc theo trạng thái (State-driven Workflows):} Kế thừa mô hình \textit{StateFlow}~\cite{wu2024stateflow}, quá trình tư vấn được quản lý chặt chẽ qua các biến trạng thái (State). Hệ thống duy trì một bộ nhớ ngữ cảnh liên tục, cho phép Agent thực hiện các thao tác thu thập thông tin (Slot-filling) và luân chuyển mượt mà giữa các bước suy luận, hành động (Action) và quan sát kết quả (Observation).
+\end{itemize}
+
+Việc hiện thực hóa một kiến trúc Agentic RAG với các vòng lặp tuần hoàn (Cyclic Graph) và khả năng kiểm soát trạng thái phức tạp vượt quá giới hạn của các công cụ chuỗi (Chain) thông thường. Do đó, hệ sinh thái \textbf{LangGraph} đã được nhóm quyết định lựa chọn làm nền tảng kỹ thuật cốt lõi để vận hành mạng lưới tư vấn thông minh này.
+
+\subsection{LangGraph}
+
+Để hiện thực hóa kiến trúc Agentic RAG với các cơ chế điều hướng phức tạp, chúng em quyết định lựa chọn khung \textbf{LangGraph} làm nền tảng công nghệ cốt lõi cho mô hình Agentic RAG. 
+
+\begin{itemize}
+    \item \textbf{Hiện thực hóa mô hình StateFlow một cách trực quan:} Lấy cảm hứng từ bài báo khoa học \textit{StateFlow}~\cite{wu2024stateflow}, việc giải quyết các bài toán phức tạp bằng mô hình ngôn ngữ lớn (LLM) không nên để AI tự do suy luận vô hướng, mà cần được tổ chức thành một "máy trạng thái" (State Machine) chặt chẽ. LangGraph cung cấp kiến trúc hoàn hảo để xây dựng điều này bằng cách biểu diễn luồng công việc dưới dạng đồ thị. Cụ thể, các \textbf{Nodes (Nút)} sẽ đóng vai trò là các "trạm xử lý" (như trạm thu thập thông tin, trạm tìm kiếm xe), và các \textbf{Edges (Cạnh)} là các "quy tắc điều hướng". Nhờ vậy, lập trình viên có thể kiểm soát và định tuyến mạch lạc từng bước trong một phiên tư vấn mua bán xe, giống như đang xây dựng một quy trình chuẩn (SOP) cho một tư vấn viên thực thụ.
+    
+    \item \textbf{Phân tách rõ ràng giữa "Bộ nhớ" và "Hành động" (Trạng thái và Tác vụ):} Điểm sáng của LangGraph là cơ chế duy trì một không gian bộ nhớ chung (\textit{State Machine Memory}) xuyên suốt toàn bộ cuộc hội thoại. Cơ chế này giúp chia tách rạch ròi hai quá trình: (1) Việc ghi nhớ ngữ cảnh (ngân sách, sở thích, hồ sơ của người dùng) và (2) Việc thực thi công cụ (như gọi lệnh SQL hay tìm kiếm Vector). Sự phân tách này giúp hệ thống Agentic RAG có thể thực hiện hàng loạt các tác vụ tìm kiếm phức tạp phía sau màn hình mà không làm xáo trộn hay đánh mất ngữ cảnh trò chuyện ban đầu. Từ đó, khắc phục triệt để tình trạng tràn bộ nhớ (prompt overflow) hay "quên" thông tin thường gặp ở các Agent truyền thống.
+
+    \item \textbf{Triển khai nhanh chóng và khả năng gỡ lỗi (Debugging) mạnh mẽ:} Mặc dù mang sức mạnh kiểm soát luồng phức tạp, LangGraph lại sở hữu giao diện lập trình (API) rất thân thiện, sử dụng mã Python tiêu chuẩn và tích hợp sâu với hệ sinh thái mã nguồn mở LangChain. Đặc biệt, hệ thống này cung cấp sẵn cơ chế "lưu điểm xét duyệt" (\textit{Checkpointing}). Tính năng này không chỉ cho phép ứng dụng tự động lưu trữ và khôi phục lại phiên trò chuyện của khách hàng bất cứ lúc nào, mà còn hỗ trợ lập trình viên theo dõi vết (tracing) từng bước suy luận của tác tử một cách minh bạch. Điều này giúp rút ngắn đáng kể thời gian từ khâu thiết kế lý thuyết đến khâu gỡ lỗi và triển khai sản phẩm thực tế.
+
+\end{itemize}
+
+\section{Kiến trúc tổng thể}
+
+\subsection{Sơ đồ kiến trúc tổng thể của hệ thống Agentic RAG}
+
+Kiến trúc tổng thể của hệ thống Agentic RAG được thiết kế để phân tách rõ ràng giữa quá trình xử lý dữ liệu nền tảng và quá trình tương tác thời gian thực với người dùng. Cụ thể, hệ thống bao gồm hai luồng hoạt động cốt lõi: luồng chuẩn bị dữ liệu (\textit{Data Ingestion}) và luồng tư vấn trực tiếp (\textit{Inference Workflow}).
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{RAG_graph.png}
+    \caption{Kiến trúc Agentic RAG trong hệ thống tư vấn mua bán xe}
+    \label{fig:agentic-rag-arch}
+\end{figure}
+\FloatBarrier
+
+\noindent Quá trình vận hành của hệ thống được chia thành \textbf{hai luồng hoạt động độc lập} nhưng bổ trợ chặt chẽ cho nhau, cụ thể như sau:
+
+\begin{enumerate}
+    \item \textbf{Luồng chuẩn bị dữ liệu (Data Ingestion):} Đây là tiến trình xây dựng cơ sở tri thức (Knowledge Base) cho Agent. Đầu tiên, các dữ liệu thô mang tính mô tả và thông số kỹ thuật của xe được trích xuất có chọn lọc từ cơ sở dữ liệu quan hệ (PostgreSQL). Sau đó, các đoạn văn bản quan trọng này được đưa qua mô hình nhúng (Embedding Model) để mã hóa thành các vector toán học trong không gian nhiều chiều. Cuối cùng, các vector này được lưu trữ và lập chỉ mục tại cơ sở dữ liệu vector chuyên dụng (Qdrant Database), tạo tiền đề vững chắc cho việc tìm kiếm độ tương đồng ngữ nghĩa sau này.
+
+    \item \textbf{Luồng tư vấn trực tiếp (Inference Workflow):} Đây là luồng tương tác trực tiếp theo thời gian thực (real-time) với khách hàng. Khi hệ thống tiếp nhận câu hỏi từ người dùng, Backend sẽ tiến hành khởi tạo phiên hội thoại, thiết lập công cụ LLM và kết nối tới các cơ sở dữ liệu. Lời gọi lệnh (prompt) và lịch sử hội thoại sau đó được đẩy vào trung tâm điều phối là đồ thị LangGraph. Tại đây, Tác tử (Agent) sẽ tự động phân tích ý định (\textit{intent}) từ câu hỏi của người dùng để lập kế hoạch xử lý. Tùy thuộc vào chủ đích này, Agent có thể quyết định đưa ra phản hồi trực tiếp (đối với các giao tiếp thông thường) hoặc kích hoạt chiến lược truy xuất lai (Hybrid Retrieval). Chiến lược này là sự kết hợp chặt chẽ giữa truy vấn ngữ nghĩa mềm (Semantic Search) trên Qdrant để tìm kiếm các bài đăng phù hợp, và truy vấn điều kiện cứng (SQL Hard-filter) trên PostgreSQL để trích xuất chính xác các thông số định lượng (như giá cả, năm sản xuất). Cuối cùng, toàn bộ ngữ cảnh thu thập được sẽ được LLM tổng hợp, kiểm chứng và sinh ra câu trả lời tư vấn hoàn chỉnh nhất.
+\end{enumerate}
+
+\subsection{Quy trình thu thập và xử lý dữ liệu (Data Ingestion)}
+
+Quá trình chuẩn bị dữ liệu (Data Ingestion) cho chatbot đóng vai trò tiên quyết trong việc xây dựng cơ sở tri thức cho hệ thống, được thực hiện tuần tự qua bốn giai đoạn:
+
+\begin{itemize}
+    \item \textbf{Thu thập và chuẩn hóa dữ liệu (Data Extraction \& Normalization):} Dữ liệu gốc được truy xuất trực tiếp từ hệ quản trị cơ sở dữ liệu AlloyDB PostgreSQL. Cụ thể, hệ thống khai thác các bảng dữ liệu đã qua tinh chế thuộc tầng \textit{Gold}, đảm bảo thông tin đầu vào đã được làm sạch, đồng nhất và tối ưu hóa cho các tác vụ phân tích quan trọng.
+
+    \item \textbf{Tổng hợp nội dung mô tả (Content Generation):} Dựa trên tập kết quả truy vấn SQL, các trường thuộc tính cốt lõi (như hãng sản xuất, dòng xe, mức giá, số km đã đi, thông số động cơ, màu sắc và các tính năng nổi bật) được hệ thống tự động ghép nối thành các đoạn văn bản mô tả liền mạch, giàu ngữ nghĩa. Quá trình này đồng thời đính kèm các siêu dữ liệu (\textit{metadata}) như mã VIN, phân khúc giá, loại hình nhiên liệu, \ldots nhằm phục vụ trực tiếp cho cơ chế lọc điều kiện cứng (Hard-filter) trong quá trình truy xuất lai sau này.
+
+    \item \textbf{Phân mảnh văn bản (Text Chunking):} Để tối ưu hóa độ chính xác của hệ thống tìm kiếm vector, các đoạn mô tả xe được chia nhỏ thông qua thuật toán \textit{RecursiveCharacterTextSplitter} với cấu hình tham số \texttt{chunk\_size=250} và độ chồng chéo \texttt{chunk\_overlap=30}. Chiến lược phân mảnh này giúp bảo toàn trọn vẹn ngữ cảnh liền kề giữa các khối thông tin, từ đó cải thiện đáng kể khả năng ánh xạ ngữ nghĩa khi người dùng đặt câu hỏi mô tả nhu cầu bằng ngôn ngữ tự nhiên.
+
+    \item \textbf{Nhúng vector và Lưu trữ (Embedding \& Storage):} Các phân mảnh văn bản (chunks) được đưa qua mô hình \textbf{text-embedding-3-large} của OpenAI để chuyển đổi thành các vector đặc trưng trong không gian $3072$ chiều, sử dụng độ đo khoảng cách \textbf{Cosine} để tính toán độ tương đồng. Các vector này sau đó được cập nhật (\textit{upsert}) vào collection \texttt{car\_vectorize} trên cơ sở dữ liệu Qdrant. Để đảm bảo hệ thống luôn nắm bắt được tình trạng tồn kho mới nhất, tiến trình (pipeline) này được thiết lập chạy tự động định kỳ hàng tuần với cơ chế tái tạo (\textit{recreate} collection), giúp ngăn chặn triệt để tình trạng tích lũy dữ liệu trùng lặp.
+\end{itemize}
+
+\subsection{Quy trình tương tác với người dùng và Luồng xử lý hội thoại}
+
+Quy trình tương tác giữa người dùng và Chatbot tư vấn mua bán xe được thiết kế tối ưu nhằm đảm bảo tính toàn vẹn của dữ liệu ngữ cảnh, khả năng xử lý thời gian thực và trải nghiệm người dùng liền mạch. Chu trình xử lý toàn diện cho mỗi lượt hội thoại (Turn-by-turn lifecycle) được hiện thực hóa qua các giai đoạn mang tính hệ thống sau:
+
+\begin{enumerate}
+    \item \textbf{Tiếp nhận và khởi tạo yêu cầu (Request Ingestion):} Luồng xử lý bắt đầu khi giao diện người dùng (tầng Frontend) gửi yêu cầu truy vấn đến máy chủ thông qua một giao thức API thiết lập sẵn. Tại tầng dịch vụ xử lý hội thoại của Backend, hệ thống thực hiện khởi tạo mô hình ngôn ngữ lớn (\texttt{gpt-4o-mini}) và thiết lập kết nối tới kho lưu trữ vector Qdrant. Tiến trình khởi tạo này chỉ thực hiện một lần duy nhất theo cơ chế bộ nhớ đệm toàn cục (Global Cache), giúp tối ưu hóa tài nguyên tính toán và giảm thiểu tối đa độ trễ phản hồi (Latency) cho các lượt truy vấn kế tiếp.
+    
+    \item \textbf{Quản lý trạng thái và lưu trữ phiên hội thoại (Session \& State Management):} Hệ thống áp dụng cơ chế quản lý phân cấp dựa trên định danh phiên (\texttt{session\_id}). Đối với nhóm người dùng vãng lai (Guest), lịch sử hội thoại và hồ sơ nhu cầu tạm thời được duy trì trực tiếp trên bộ nhớ trong (\textit{In-memory storage}). Ngược lại, đối với người dùng đã đăng nhập hệ thống, toàn bộ tiến trình hội thoại và các siêu dữ liệu liên quan được ghi nhận đồng bộ vào các bảng lưu trữ vật lý trong cơ sở dữ liệu.
+    
+    \item \textbf{Chuẩn hóa truy vấn độc lập (Query De-contextualization):} Nhằm loại bỏ tính phụ thuộc ngữ cảnh của ngôn ngữ tự nhiên trong hội thoại nhiều lượt, hệ thống kích hoạt module xử lý ngôn ngữ đặc biệt. Thông qua một bộ lọc LLM chuyên biệt, hệ thống phân tích lịch sử trò chuyện gần nhất để tự động chuyển đổi câu hỏi phụ thuộc ngữ cảnh của khách hàng thành một truy vấn độc lập (\textit{Standalone Question}). Giai đoạn này đảm bảo vector nhúng sinh ra phản ánh chính xác nhất chủ đích tìm kiếm thực tế khi thực hiện so khớp trên không gian vector tri thức.
+    
+    \item \textbf{Vận hành đồ thị trạng thái LangGraph (State Graph Execution):} Câu hỏi sau khi chuẩn hóa cùng toàn bộ dữ liệu phiên được nạp làm trạng thái đầu vào (\textit{Initial State}) để kích hoạt đồ thị trạng thái LangGraph. Quá trình xử lý nội tại của tác tử (Agent) lúc này được phân tách thành chuỗi các nút tác vụ (\textit{Nodes}) tuần tự:
     \begin{itemize}
-        \item \textbf{ID:} \texttt{uuid5(vin)} — ID xác định (deterministic), cho phép upsert idempotent.
-        \item \textbf{Vector:} embedding 3072 chiều của đoạn mô tả xe.
-        \item \textbf{Payload:} thông tin xe phục vụ lọc và hiển thị (VIN, năm, hãng, dòng xe, giá, số km, nhiên liệu, màu sắc, vị trí, features, image\_url, mô tả ngắn).
+        \item \textit{Cập nhật hồ sơ (\texttt{update\_profile}):} Tự động trích xuất các tiêu chí kỹ thuật và kinh tế của khách hàng (ngân sách dự kiến, kiểu dáng, nhiên liệu, hãng xe ưa thích hoặc danh sách hãng xe loại trừ) để cập nhật vào hồ sơ \texttt{UserProfile} của phiên hiện tại.
+        \item \textit{Phân loại ý định (\texttt{route\_intent}):} Sử dụng cơ chế định hình đầu ra (\textit{Structured Output}) của LLM để phân loại chính xác câu hỏi vào một trong bảy nhóm chủ đích cốt lõi (\textit{compare, analytics, specs, specific, vague, chitchat, off\_topic}).
+        \item \textit{Định tuyến luồng công việc (Routing Edges):} Dựa trên kết quả phân loại, hệ thống rẽ nhánh luồng xử lý sang các module chuyên biệt tương ứng (như so sánh đối chiếu xe, thống kê nền tảng, truy vấn thông số kỹ thuật chi tiết, hỏi thêm thông tin còn thiếu, hoặc chuyển hướng chủ đề hội thoại).
     \end{itemize}
-    Việc dùng \texttt{uuid5(vin)} thay vì sequential ID đảm bảo rằng khi pipeline ML chạy lại hàng tuần, Qdrant thực hiện \textbf{upsert} (cập nhật nếu đã tồn tại) thay vì tạo bản sao, tránh trùng lặp dữ liệu.
+    
+    \item \textbf{Truy xuất lai và làm giàu ngữ cảnh (Hybrid Retrieval \& Context Enrichment):} Đối với các nhóm chủ đích cần khai thác kho tri thức nền tảng (như \textit{specific} hoặc \textit{vague}), nút tác vụ tìm kiếm lai (\texttt{hybrid\_retrieve}) sẽ thực thi đồng thời hai tiến trình truy vấn song song:
+    \begin{itemize}
+        \item \textit{Truy vấn lọc cứng (SQL Hard-filter):} Thực hiện quét trực tiếp trên bảng dữ liệu xe tầng \textit{Gold} (\texttt{gold.vehicles}) nhằm loại bỏ cơ học các thực thể không thỏa mãn điều kiện tiên quyết (khoảng giá, hãng sản xuất, loại nhiên liệu, tình trạng xe), giữ lại tối đa 6 bản ghi phù hợp.
+        \item \textit{Truy vấn ngữ nghĩa mềm (Vector Semantic Search):} Thực hiện tìm kiếm độ tương đồng Cosine trên bộ chỉ mục Qdrant (\texttt{car\_vectorize}) dựa trên các mô tả định tính từ hồ sơ khách hàng (phong cách, tính năng mong muốn), áp dụng ngưỡng lọc điểm số tương đồng (\textit{similarity score} $> 1.3$) để giữ lại tối đa 5 kết quả chất lượng tốt nhất.
+    \end{itemize}
+    Tập ngữ cảnh thô sau đó tiếp tục được làm giàu cấu trúc bằng cách thiết lập liên kết khóa ngoại thông qua mã định danh \texttt{VIN} tới các bảng lưu trữ hình ảnh và tính năng mở rộng.
+    
+    \item \textbf{Tổng hợp tri thức và sinh phản hồi tư vấn (Contextual Response Generation):} Nút tác vụ sinh văn bản chuyên biệt nhận tập ngữ cảnh đã qua tinh chế và làm giàu để nạp vào mô hình \texttt{gpt-4o-mini}. Hệ thống áp dụng chiến lược giới hạn cửa sổ ngữ cảnh (chỉ duy trì tối đa 10 thông điệp gần nhất trong lịch sử) nhằm kiểm soát chi phí token và tránh hiện tượng nhiễu thông tin, từ đó sinh ra phản hồi tư vấn tự nhiên, khách quan và bám sát thực tế dữ liệu.
+    
+    \item \textbf{Đồng bộ hóa kết quả và hiển thị trực quan (Response Rendering):} Phản hồi hoàn chỉnh trả về từ API bao gồm nội dung văn bản tư vấn và mảng cấu trúc danh sách xe gợi ý (\texttt{vehicles[]}). Tại tầng giao diện (Frontend), nội dung tư vấn được tổ chức rõ ràng, đồng thời thông tin các mẫu xe được tách biệt hoàn toàn khỏi văn bản và hiển thị dưới dạng các thẻ sản phẩm trực quan (Vehicle Cards) chứa đầy đủ mã VIN, tiêu đề bài đăng, mức giá và hình ảnh thực tế. Quy trình thiết kế này đảm bảo chatbot không chèn trực tiếp các đường dẫn (URL) hỗn loạn vào nội dung nội văn, tối ưu hóa tính thẩm mỹ và trải nghiệm tương tác của người dùng.
+\end{enumerate}
+\section{Thiết kế luồng Agentic RAG bằng LangGraph}
+
+Mục này trình bày chi tiết thiết kế kiến trúc cốt lõi của chatbot. Điểm khác biệt mang tính quyết định so với mô hình RAG tuyến tính (Naive RAG) là hệ thống ứng dụng \textbf{LangGraph StateGraph} để điều phối luồng công việc một cách linh hoạt dựa trên ý định (\textit{intent}) của người dùng. Trong đồ thị này, mỗi nhánh xử lý sẽ tương ứng với một đường ống truy xuất (\textit{retrieval pipeline}) và chỉ thị hệ thống (\textit{system prompt}) độc lập, chuyên biệt cho từng loại câu hỏi. 
+
+\subsection{Khởi tạo tài nguyên và Chu trình thực thi (Execution Cycle)}
+
+Để tối ưu hóa tài nguyên tính toán và giảm thiểu độ trễ, các thành phần lõi của hệ thống được thiết lập theo cơ chế khởi tạo một lần (Singleton) và lưu trữ trong bộ nhớ đệm toàn cục (\textit{Global Cache}). Các thành phần này bao gồm:
+\begin{itemize}
+    \item \textbf{Mô hình ngôn ngữ (LLM):} Sử dụng \texttt{gpt-4o-mini} với tham số \texttt{temperature=0.5} nhằm cân bằng giữa tính sáng tạo trong giao tiếp và tính chính xác về mặt số liệu.
+    \item \textbf{Mô hình nhúng (Embedding Model):} Sử dụng \texttt{text-embedding-3-large} của OpenAI để biểu diễn văn bản thành vector.
+    \item \textbf{Cơ sở dữ liệu Vector:} Kết nối đến Qdrant phục vụ truy vấn mềm và tìm kiếm ngữ nghĩa.
+    \item \textbf{Đồ thị Tác tử (Agentic Graph):} Được biên dịch sẵn từ các Nodes và Edges thiết lập trước.
 \end{itemize}
 
-\section{Kiến trúc Agentic: LangGraph StateGraph}
+Trong quá trình vận hành, mỗi lượt tương tác của người dùng sẽ kích hoạt một chu trình xử lý chuẩn hóa bao gồm các bước:
+\begin{enumerate}
+    \item \textbf{Tiền xử lý và Chuẩn hóa câu hỏi:} Trước khi đưa vào đồ thị, hệ thống sử dụng một bộ lọc LLM để phân tích lịch sử hội thoại gần nhất, qua đó chuyển đổi câu hỏi ẩn ý của người dùng thành một câu hỏi độc lập ngữ cảnh (\textit{Standalone Question}). 
+    \item \textbf{Khôi phục và nạp ngữ cảnh khách hàng (User Profile Ingestion):} Hệ thống tiến hành trích xuất hồ sơ \texttt{UserProfile} hiện tại từ bộ nhớ tạm (\textit{in-memory storage}) dựa trên định danh phiên (\texttt{session\_id}). Tiến trình này giúp tái dựng toàn bộ trạng thái nhu cầu, sở thích và các tiêu chí phân khúc định lượng đã thu thập từ các lượt tương tác trước đó, thiết lập không gian ngữ cảnh cá nhân hóa (personalized context) trước khi nạp vào đồ thị tác tử.
+    \item \textbf{Thực thi đồ thị (Graph Invocation):} Lời gọi truy vấn cùng trạng thái ban đầu được truyền vào LangGraph để chạy qua chuỗi các nút tác vụ (phân loại ý định, truy xuất, sinh văn bản).
+    \item \textbf{Cập nhật và Lưu trữ trạng thái:} Sau khi đồ thị kết thúc luồng, hồ sơ người dùng (với các dữ kiện mới thu thập) sẽ được lưu lại. Đồng thời, bộ nhớ hội thoại được cập nhật và giữ lại tối đa 10 tin nhắn gần nhất để tránh tràn giới hạn token.
+    \item \textbf{Phản hồi:} Trả về câu trả lời cuối cùng kèm theo danh sách các thẻ xe (\texttt{vehicles}) hiển thị trên giao diện.
+\end{enumerate}
 
-Thay vì một RAG chain tuyến tính, chatbot được xây dựng trên \textbf{LangGraph StateGraph} — một đồ thị trạng thái điều phối luồng xử lý theo ý định câu hỏi. Toàn bộ trạng thái hội thoại được lưu trong \texttt{AgenticState} (TypedDict) truyền qua các nodes.
+\subsection{Định nghĩa Trạng thái Hội thoại (AgenticState)}
 
-\subsection{Hồ sơ người dùng (User Profile Slot-Fill)}
+Trong kiến trúc LangGraph, dữ liệu không được truyền đi một cách rời rạc mà được quản lý tập trung thông qua một đối tượng trạng thái chung gọi là \texttt{AgenticState}. Được thiết kế dưới dạng cấu trúc dữ liệu định kiểu (\texttt{TypedDict}), trạng thái này đóng vai trò như "bộ nhớ làm việc" (\textit{Working Memory}) của hệ thống, liên tục được cập nhật khi luồng dữ liệu đi qua các Nodes. 
 
-Mỗi phiên hội thoại duy trì một \texttt{UserProfile} riêng biệt theo \texttt{session\_id}, lưu \textbf{in-memory} trong backend. Hồ sơ gồm hai nhóm thông tin:
+Bảng~\ref{tab:agentic-state} mô tả chi tiết các không gian thông tin được lưu trữ và luân chuyển bên trong \texttt{AgenticState}:
+
+\begin{table}[!htbp]
+\centering
+\caption{Cấu trúc biến trạng thái AgenticState trong LangGraph}
+\label{tab:agentic-state}
+\renewcommand{\arraystretch}{1.3} % Tăng khoảng cách các dòng cho dễ nhìn
+\begin{tabular}{|p{0.25\textwidth}|p{0.7\textwidth}|}
+\hline
+\textbf{Trường dữ liệu} & \textbf{Mô tả chức năng} \\ \hline
+\texttt{messages} & Lưu trữ chuỗi lịch sử hội thoại liên tục giữa người dùng (\texttt{HumanMessage}) và hệ thống (\texttt{AIMessage}). \\ \hline
+\texttt{question} & Ghi nhận câu hỏi gốc dạng thô (raw input) từ người dùng. \\ \hline
+\texttt{query} & Lưu trữ câu hỏi đã được chuẩn hóa độc lập (Standalone question), tối ưu riêng cho tác vụ tìm kiếm vector trên Qdrant. \\ \hline
+\texttt{context} & Chứa toàn bộ ngữ cảnh được hệ thống truy xuất (Bao gồm dữ liệu SQL, kết quả Vector, đặc tả tính năng và đường dẫn hình ảnh). \\ \hline
+\texttt{answer} & Lưu trữ văn bản phản hồi cuối cùng do Generator Node sinh ra để trả về cho người dùng. \\ \hline
+\texttt{intent} & Nhãn phân loại ý định cốt lõi của lượt hội thoại (được map vào 1 trong 7 danh mục định sẵn). \\ \hline
+\texttt{brand}, \texttt{model} & Các thực thể (Entities) về hãng sản xuất và mẫu xe được bộ định tuyến trích xuất tự động từ câu hỏi. \\ \hline
+\texttt{session\_id} & Khóa định danh duy nhất (Unique ID) để theo dõi và quản lý phiên làm việc của từng khách hàng. \\ \hline
+\texttt{profile} & Đối tượng \texttt{UserProfile} chứa các nhu cầu đã được thu thập (ngân sách, màu sắc, \ldots) dưới định dạng từ điển (\texttt{dict}). \\ \hline
+\texttt{vehicles} & Mảng dữ liệu cấu trúc chứa danh sách các xe đề xuất, phục vụ việc hiển thị trực quan (Vehicle Cards) trên giao diện Frontend. \\ \hline
+\end{tabular}
+\end{table}
+\subsection{Cơ chế quản lý hồ sơ khách hàng và Thu thập thông tin (Slot-filling)}
+
+Trong các hệ thống đối thoại thông minh phức tạp, việc thấu hiểu sâu sắc nhu cầu người dùng đòi hỏi một cơ chế lưu trữ và cập nhật trạng thái liên tục xuyên suốt phiên làm việc. Để hiện thực hóa điều này, hệ thống tích hợp module quản lý hồ sơ khách hàng chuyên biệt, vận hành theo cơ chế thu thập thông tin định hướng mục tiêu (\textit{Slot-filling}). 
+
+Hồ sơ người dùng (\texttt{UserProfile}) được khởi tạo và duy trì cô lập theo từng định danh phiên (\texttt{session\_id}) trực tiếp trên bộ nhớ tạm thời của máy chủ - đảm bảo tính toàn vẹn dữ liệu khi hệ thống phải xử lý đồng thời nhiều yêu cầu từ lượng lớn khách hàng truy cập đồng thời.
+
+\subsubsection{Cấu trúc của Hồ sơ khách hàng}
+
+Không gian thông tin bên trong hồ sơ \texttt{UserProfile} không lưu trữ phẳng mà được cấu trúc phân cấp mạch lạc thành ba phân vùng chức năng nhằm phục vụ tối ưu cho cả hai chiến lược truy xuất điều kiện cứng (SQL Hard-filter) và tìm kiếm ngữ nghĩa mềm (Vector Search):
 
 \begin{itemize}
-    \item \textbf{Core Slots} (thông tin cốt lõi): \texttt{budget\_max}, \texttt{body\_type}, \texttt{fuel\_type}, \texttt{brand}, \texttt{condition} — ba slots đầu tiên (\texttt{budget\_max}, \texttt{body\_type}, \texttt{fuel\_type}) là \textbf{bắt buộc} để thực hiện truy xuất tư vấn.
-    \item \textbf{Soft Preferences} (sở thích mềm): danh sách tính năng mong muốn (\texttt{features}), phong cách xe (\texttt{vibe}); cùng với \texttt{excluded\_brands} và \texttt{viewed\_models}.
+    \item \textbf{Các thuộc tính cốt lõi (Core Slots):} Nhóm các dữ kiện định lượng bắt buộc phải thu thập để thiết lập bộ lọc cơ học cho kho dữ liệu xe, bao gồm: ngưỡng ngân sách tối thiểu (\texttt{budget\_min}), ngưỡng ngân sách tối đa (\texttt{budget\_max}), kiểu dáng hộp số/thân xe (\texttt{body\_type}), loại hình nhiên liệu sử dụng (\texttt{fuel\_type}), thương hiệu sản xuất (\texttt{brand}) và tình trạng xe cũ/mới (\texttt{condition}).
+    
+    \item \textbf{Các tùy chọn mềm định tính (Soft Preferences):} Nhóm các tiêu chí mang tính trải nghiệm cá nhân của khách hàng, được sử dụng làm đầu vào cho mô hình nhúng nhằm so khớp không gian vector ngữ nghĩa mềm trên Qdrant, bao gồm: danh sách các tính năng công nghệ/an toàn mong muốn (\texttt{features[]}) và phong cách thiết kế hoặc cảm giác lái mục tiêu (\texttt{vibe}).
+    
+    \item \textbf{Dữ liệu bổ trợ ngữ cảnh mở rộng:} Phân vùng lưu trữ hành vi động phục vụ cho việc tinh chỉnh prompt và cá nhân hóa tư vấn, bao gồm: danh sách các thương hiệu khách hàng chủ động loại trừ khỏi phạm vi tìm kiếm (\texttt{excluded\_brands}) và lịch sử các mẫu xe mà người dùng đã tiến hành xem chi tiết trong phiên hội thoại (\texttt{viewed\_models}).
 \end{itemize}
 
-Node \texttt{update\_profile} chạy đầu tiên trong mỗi request, dùng LLM để trích xuất thông tin mới từ câu hỏi hiện tại và cập nhật vào hồ sơ. Nếu câu hỏi thuộc intent \textit{vague} (nhu cầu chung) mà core slots chưa đủ, node \texttt{ask\_slot} tự động sinh câu hỏi dẫn dắt để thu thập thêm thông tin, thay vì trả về kết quả chưa đủ cơ sở.
+\subsubsection{Quá Trình Cập Nhật}
 
-\subsection{Phân loại ý định (Intent Routing)}
+Nút tác vụ cập nhật hồ sơ (\texttt{update\_profile}) được cấu trúc là điểm tiếp nhận đầu vào tiên quyết (Entry Node) trong mỗi request nạp vào đồ thị trạng thái LangGraph. Tác vụ xử lý tại nút này tuân theo một chu trình khép kín:
 
-Node \texttt{route\_intent} sử dụng LLM với \textbf{structured output} (\texttt{IntentDecision}) để phân loại câu hỏi thành \textbf{7 loại intent}:
+\begin{enumerate}
+    \item \textbf{Trích xuất cấu trúc văn bản (Information Extraction):} Ngay khi nhận được thông điệp mới từ người dùng, hệ thống sử dụng một mô hình ngôn ngữ lớn kết hợp cơ chế định hình cấu trúc đầu ra (\textit{LLM Structured Output}) dựa trên lược đồ chỉ định sẵn (\texttt{ProfileUpdate}). Quá trình này giúp cô lập, bắt giữ và chuyển đổi các thực thể thông tin tự nhiên xuất hiện trong câu chat thành các dữ liệu khóa được chuẩn hóa.
+    
+    \item \textbf{Hợp nhất dữ liệu tích lũy (Progressive Merging):} Các thực thể thông tin mới sau khi trích xuất sẽ được đối chiếu và hợp nhất vào hồ sơ hiện hành thông qua một cơ chế xử lý linh hoạt. Cụ thể, hệ thống sẽ tự động \textit{ghi đè (overwrite)} các giá trị cũ nếu phát hiện người dùng thay đổi ý định đối với các tham số cốt lõi (ví dụ: điều chỉnh mức ngân sách từ 500 triệu lên 700 triệu). Ngược lại, đối với các tham số tùy chọn, hệ thống áp dụng cơ chế thêm vào {(append)} để liên tục mở rộng danh sách tiêu chí (ví dụ: bổ sung thêm yêu cầu "cửa sổ trời" vào mảng tính năng mong muốn). Phương pháp tiếp cận này giúp duy trì tính nhất quán của dữ liệu, đồng thời ngăn chặn triệt để hiện tượng suy giảm hoặc mất dấu ngữ cảnh lịch sử trong các phiên hội thoại đa lượt.
+\end{enumerate}
 
-\begin{table}[H]
+\subsubsection{Hổ trợ cơ chế kiểm soát điều kiện tối thiểu khi tư vấn gợi ý xe}
+
+Để ngăn chặn việc truy xuất dữ liệu vô hướng gây lãng phí tài nguyên khi người dùng có ý định tìm kiếm mơ hồ (\textit{vague intent}), hệ thống thiết lập cơ chế kiểm soát dựa trên ba thuộc tính bắt buộc: $\text{CORE\_SLOTS} = \{\texttt{budget\_max}, \texttt{body\_type}, \texttt{fuel\_type}\}$. Sẽ có một cơ chế kiểm tra hồ sơ hiện tại; nếu khuyết thiếu bất kỳ thông số nào, luồng công việc sẽ lập tức rẽ nhánh sang trạng thái \texttt{ask\_slot}. Tại đây, hệ thống tạm hoãn truy xuất kho xe và chủ động sinh câu hỏi dẫn dắt để thu thập trọn vẹn nhu cầu của khách hàng.
+
+\subsection{Kiến trúc Sơ đồ Đồ thị LangGraph}
+
+Hệ thống Agentic RAG được mô hình hóa dưới dạng một đồ thị có hướng không tuần hoàn (DAG) thông qua framework LangGraph, bao gồm tổng cộng \textbf{12 nút tác vụ (nodes)}. Trong kiến trúc này, nút \texttt{update\_profile} được thiết lập làm điểm tiếp nhận đầu vào (Entry Point) cho mọi lượt hội thoại. Hình~\ref{fig:langgraph-flow} minh họa chi tiết mạng lưới các nút xử lý và các luồng điều hướng rẽ nhánh bên trong hệ thống.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{images/GraphState.drawio.png} 
+    \caption{Sơ đồ luồng xử lý và định tuyến rẽ nhánh trong mạng đồ thị LangGraph}
+    \label{fig:langgraph-flow}
+\end{figure}
+\FloatBarrier
+
+\subsubsection{Cấu trúc các Nút xử lý (Nodes)}
+
+Mỗi nút trong đồ thị đại diện cho một tác vụ tính toán độc lập, được đóng gói (encapsulated) với các chỉ thị (\textit{system prompt}) và đường ống xử lý riêng biệt. Bảng~\ref{tab:langgraph-nodes} trình bày chức năng cốt lõi của từng nút tác vụ trong hệ thống:
+
+\begin{table}[!htbp]
 \centering
-\small
-\caption{Bảy loại intent của chatbot và ví dụ minh họa}
-\label{tab:chatbot-intents}
-\begin{tabular}{|l|l|l|}
+\caption{Đặc tả chức năng các nút tác vụ (Nodes) trong đồ thị LangGraph}
+\label{tab:langgraph-nodes}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{0.25\textwidth}|p{0.7\textwidth}|}
 \hline
-\textbf{Intent} & \textbf{Mô tả} & \textbf{Ví dụ} \\
+\textbf{Nút tác vụ (Node)} & \textbf{Vai trò và Chức năng} \\ \hline
+\texttt{update\_profile} & Cập nhật và hợp nhất dữ liệu vào hồ sơ \texttt{UserProfile}. Đây là nút khởi đầu cho mọi chu trình xử lý. \\ \hline
+\texttt{route\_intent} & Sử dụng LLM để phân tích ngữ nghĩa, phân loại ý định (\textit{intent}) của câu hỏi và trích xuất các thực thể định danh (hãng sản xuất, mẫu xe). \\ \hline
+\texttt{ask\_slot} & Chủ động đặt câu hỏi để thu thập thêm dữ kiện khi hồ sơ khách hàng bị khuyết thiếu các tiêu chí bắt buộc (Core slots). \\ \hline
+\texttt{hybrid\_retrieve} & Thực thi truy xuất lai song song: Lọc điều kiện cứng cơ học (SQL Hard-filter) kết hợp tìm kiếm ngữ nghĩa mềm (Qdrant Semantic Search). \\ \hline
+\texttt{consult} & Nút sinh văn bản cốt lõi, tổng hợp ngữ cảnh và đưa ra phản hồi tư vấn có cơ sở (\textit{Grounded Generation}), loại trừ ảo giác. \\ \hline
+\texttt{compare\_retrieve} $\rightarrow$ \texttt{compare\_answer} & Nhánh chuyên biệt phục vụ tác vụ truy xuất song song nhiều thực thể và phân tích so sánh đối chiếu giữa 2 hoặc nhiều mẫu xe. \\ \hline
+\texttt{analytics\_retrieve} $\rightarrow$ \texttt{analytics\_answer} & Nhánh chuyên biệt xử lý các câu hỏi mang tính thống kê, phân tích dữ liệu tổng quan trên toàn bộ nền tảng. \\ \hline
+\texttt{spec\_retrieve} $\rightarrow$ \texttt{spec\_answer} & Nhánh chuyên biệt dùng để truy xuất và trả lời các thông số kỹ thuật chi tiết của một mẫu xe cụ thể. \\ \hline
+\texttt{redirect\_topic} & Xử lý các câu hỏi lạc đề (off-topic), đưa ra phản hồi từ chối lịch sự và chuyển hướng người dùng quay lại miền tri thức ô tô. \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Cơ chế Định tuyến rẽ nhánh (Routing Logic)}
+
+Điểm làm nên sự linh hoạt của kiến trúc này là cơ chế điều hướng có điều kiện (\textit{Conditional Edges}) được thực thi ngay sau khi nút \texttt{route\_intent} hoàn tất phân tích ý định (thông qua hàm \texttt{route\_after\_intent}). Hệ thống sẽ tự động rẽ nhánh luồng công việc theo các kịch bản sau:
+
+\begin{itemize}
+    \item \textbf{Nhóm truy vấn chuyên sâu:} Đối với các ý định đòi hỏi kỹ thuật truy xuất đặc thù như \texttt{compare} (so sánh), \texttt{analytics} (thống kê) hoặc \texttt{specs} (thông số), luồng công việc sẽ được định tuyến thẳng tới các đường ống xử lý tương ứng (\texttt{*\_retrieve} $\rightarrow$ \texttt{*\_answer} $\rightarrow$ END). Điều này giúp tối ưu hóa \textit{system prompt} riêng cho từng tác vụ hẹp.
+    
+    \item \textbf{Nhóm tư vấn tìm kiếm xe:}
+    \begin{itemize}
+        \item Khi ý định là \texttt{specific} (tìm kiếm cụ thể, rõ ràng): Hệ thống lập tức kích hoạt luồng \texttt{hybrid\_retrieve} $\rightarrow$ \texttt{consult} $\rightarrow$ END để tổng hợp kết quả.
+        \item Khi ý định là \texttt{vague} (mơ hồ, cần gợi ý chung chung): Hệ thống sẽ kiểm tra tình trạng của hồ sơ. Nếu \texttt{UserProfile} đã tích lũy đủ các tiêu chí bắt buộc (Core slots), luồng \texttt{hybrid\_retrieve} $\rightarrow$ \texttt{consult} mới được phép thực thi. Ngược lại, nếu thiếu dữ kiện, hệ thống sẽ rẽ nhánh sang nút \texttt{ask\_slot} $\rightarrow$ END để tạm hoãn truy xuất và yêu cầu cung cấp thêm thông tin.
+    \end{itemize}
+    
+    \item \textbf{Nhóm giao tiếp ngoại lệ:} 
+    \begin{itemize}
+        \item Khi ý định là \texttt{chitchat} (giao tiếp xã giao thông thường): Hệ thống bỏ qua hoàn toàn bước truy xuất tri thức và đi thẳng đến nút \texttt{consult} để đưa ra phản hồi giao tiếp trực tiếp, giúp tiết kiệm chi phí token.
+        \item Khi ý định là \texttt{off\_topic} (ngoài phạm vi tư vấn): Luồng dữ liệu được định tuyến sang \texttt{redirect\_topic} $\rightarrow$ END nhằm định hướng lại hành vi của người dùng.
+    \end{itemize}
+\end{itemize}
+
+\subsection{So sánh với thiết kế SELF-RAG / Adaptive-RAG}
+
+Thiết kế thực tế \textbf{không} triển khai các node \textit{Grader}, \textit{Hallucination/Critique}, \textit{Query Rewriting} hay vòng lặp \texttt{iteration\_count}. Thay vào đó:
+
+\begin{itemize}
+    \item \textbf{Định tuyến theo intent} (ý tưởng Adaptive-RAG): mỗi loại câu hỏi có pipeline retrieval và prompt riêng, tránh retrieval không cần thiết.
+    \item \textbf{Slot-filling chủ động}: thay vì retrieval mơ hồ khi thiếu thông tin, hệ thống hỏi ngược (\texttt{ask\_slot}).
+    \item \textbf{Grounded generation}: mọi node \texttt{*\_answer} và \texttt{consult} chỉ được phép dùng \texttt{context} đã truy xuất; SQL hard-filter đảm bảo số liệu định lượng chính xác.
+    \item \textbf{Hybrid retrieval}: kết hợp SQL (chính xác) và vector (ngữ nghĩa) thay vì RRF --- hai nguồn được ghép thành context text, không fusion ranking riêng.
+\end{itemize}
+
+Đây là kiến trúc \textbf{intent-driven multi-branch RAG} trên LangGraph: đồ thị có hướng, mỗi nhánh chuyên biệt, phù hợp bài toán tư vấn xe với nhiều loại câu hỏi khác nhau.
+\section{Đánh giá mô hình (Evaluation)}
+
+\subsection{Mục tiêu và Phương pháp luận}
+
+Trong quá trình phát triển các hệ thống xử lý ngôn ngữ tự nhiên phức tạp, việc sử dụng con người để đánh giá thủ công từng câu trả lời là một phương pháp tốn kém, mang tính chủ quan và không khả thi khi mở rộng quy mô. Để giải quyết bài toán này, đồ án kế thừa tư tưởng từ nghiên cứu \textit{Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena}~\cite{zheng2023llmjudge}, chính thức áp dụng phương pháp \textbf{LLM-as-a-Judge} (sử dụng Mô hình Ngôn ngữ lớn làm Giám khảo) thông qua framework đánh giá chuyên sâu \textbf{DeepEval GEval}. 
+
+Cụ thể, hệ thống cấu hình mô hình \texttt{gpt-4o-mini} đóng vai trò làm giám khảo độc lập. Mô hình này thực hiện chấm điểm tự động các phản hồi của chatbot dựa trên hệ thống tiêu chí đánh giá (\textit{custom rubrics}) được thiết kế riêng cho từng luồng nghiệp vụ. Điểm số được chuẩn hóa trên thang đo định lượng từ 0 đến 1. Quá trình đánh giá được thiết kế nhằm đáp ứng ba mục tiêu cốt lõi:
+
+\begin{itemize}
+    \item \textbf{Kiểm chứng năng lực định tuyến (Routing Verification):} Đánh giá độ nhạy bén và tính chính xác của tác tử (Agent) trong việc phân tích ý định, đảm bảo hệ thống rẽ đúng nhánh luồng xử lý (tư vấn chuyên sâu, giao tiếp xã giao, xử lý lạc đề, hoặc yêu cầu bổ sung thông tin).
+    \item \textbf{Đánh giá chất lượng sinh văn bản (Response Quality):} Đo lường hiệu năng của chatbot thông qua điểm số GEval. Đảm bảo câu trả lời đạt các tiêu chí khắt khe về mặt nghiệp vụ: chính xác, trung thực và bám sát tập ngữ cảnh thực tế đã được truy xuất (grounded context).
+\end{itemize}
+
+\subsection{Quy trình Đánh giá}
+
+Để đảm bảo tính khách quan, tập dữ liệu kiểm thử được xây dựng bao gồm khoảng 80 kịch bản hội thoại (test cases), phân bổ rải rác và bao phủ toàn bộ các nhóm ý định (intent) đầu vào. Toàn bộ quy trình đánh giá được đóng gói gọn gàng bên trong môi trường \texttt{RAG validation/DeepEval.ipynb} và vận hành theo chu trình khép kín sau:
+
+\begin{enumerate}
+    \item \textbf{Kích hoạt hệ thống (Invocation):} Các test case được nạp tự động vào hệ thống thông qua việc gọi trực tiếp đến API thực tế - mô phỏng chính xác hành vi của người dùng cuối.
+    
+    \item \textbf{Thực thi đồ thị (Graph Execution):} Câu hỏi đi qua mạng đồ thị LangGraph, thực thi các chuỗi tác vụ truy xuất và sinh văn bản tư vấn.
+    
+    \item \textbf{Lưu trữ bộ nhớ đệm (Response Caching):} Nhằm tối ưu hóa chi phí API và cô lập pha thu thập dữ liệu với pha chấm điểm, toàn bộ phản hồi đầu ra cùng tập ngữ cảnh tương ứng.
+    
+    \item \textbf{Chấm điểm và Trực quan hóa (Scoring \& Rendering):} Framework DeepEval GEval tiến hành đọc dữ liệu từ tệp bộ nhớ đệm, áp dụng các \textit{prompt} giám khảo chuyên biệt để tính toán điểm số. Cuối cùng, hệ thống tự động xuất báo cáo tổng hợp và biểu đồ phân tích, cung cấp cái nhìn trực quan về chất lượng của luồng Agentic RAG.
+\end{enumerate}
+
+\subsection{Xây dựng Bộ dữ liệu kiểm thử (Test Dataset)}
+
+Để phục vụ quá trình đánh giá tự động, đồ án đã tiến hành xây dựng một bộ dữ liệu kiểm thử tiêu chuẩn bao gồm 80 kịch bản hội thoại. Mỗi kịch bản được cấu trúc chặt chẽ thông qua ba trường dữ liệu: truy vấn đầu vào của người dùng (\texttt{user\_input}), luồng xử lý kỳ vọng (\texttt{expected\_flow}), và dữ liệu tham chiếu chuẩn (\texttt{reference} - ground truth). 
+
+Cần lưu ý rằng framework GEval không so khớp từ vựng máy móc (word-by-word) mà đánh giá dựa trên ngữ nghĩa. Cụ thể, LLM Giám khảo sẽ sử dụng dữ liệu tại cột \texttt{reference} làm hệ quy chiếu. Nó sẽ đọc hiểu câu trả lời của chatbot, đối chiếu ý nghĩa với hệ quy chiếu này, rồi chấm điểm theo các tiêu chí (rubrics) đặc thù của từng luồng nghiệp vụ.
+
+Bảng~\ref{tab:test-dataset-mapping} trình bày chi tiết phân bổ dữ liệu và cơ sở ánh xạ giữa luồng kiểm thử với các nút ý định kỹ thuật trong hệ thống LangGraph.
+
+\begin{table}[!htbp]
+\centering
+\caption{Phân bổ tập dữ liệu kiểm thử và cơ sở ánh xạ luồng nghiệp vụ}
+\label{tab:test-dataset-mapping}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{0.3\textwidth}|c|p{0.5\textwidth}|}
 \hline
-\texttt{compare} & So sánh 2+ xe cụ thể & "Toyota Camry vs Honda Civic" \\
+\textbf{Luồng đánh giá nghiệp vụ (\texttt{expected\_flow})} & \textbf{Số lượng (n)} & \textbf{Luồng xử lý tương ứng (LangGraph Intents)} \\
 \hline
-\texttt{analytics} & Thống kê nền tảng & "Hãng nào có nhiều xe nhất?" \\
+Tư vấn chuyên sâu (\texttt{consult}) & 27 & \texttt{analytics}, \texttt{specs}, \texttt{specific}, \texttt{vague} (đã đủ điều kiện slots), \texttt{compare} \\
 \hline
-\texttt{specs} & Thông số kỹ thuật 1 xe & "BMW X5 có những tính năng gì?" \\
+Xử lý ngoại lệ (\texttt{off-topic}) & 15 & \texttt{off\_topic} \\
 \hline
-\texttt{specific} & Tìm xe theo hãng/model & "Show me available BMW i5" \\
+Giao tiếp xã giao (\texttt{greeting}) & 15 & \texttt{chitchat} \\
 \hline
-\texttt{vague} & Nhu cầu chung, không chỉ rõ xe & "Tôi cần xe gia đình \$40,000" \\
+Bổ sung thông tin (\texttt{need-more-info}) & 23 & \texttt{vague} (khuyết thiếu điều kiện core slots) \\
 \hline
-\texttt{chitchat} & Hội thoại liên quan đến xe & "Chào", "Cảm ơn" \\
-\hline
-\texttt{off\_topic} & Ngoài phạm vi xe & "Thời tiết hôm nay thế nào?" \\
+\textbf{Tổng cộng} & \textbf{80} & \\
 \hline
 \end{tabular}
 \end{table}
 
-Kết quả phân loại còn trích xuất \texttt{brand} và \texttt{model} nếu có trong câu hỏi. Node \texttt{route\_after\_intent} sau đó định tuyến đến nhánh xử lý phù hợp.
+\subsection{Hệ thống Tiêu chí Đánh giá GEval theo Luồng Nghiệp vụ}
 
-\section{Hệ thống Hybrid Retrieval và Sinh câu trả lời}
+Để đảm bảo tính chính xác, mỗi luồng nghiệp vụ kiểm thử được thiết lập một bộ chỉ thị chấm điểm (\textit{custom rubrics}) riêng biệt trên framework DeepEval GEval thay vì áp dụng một tiêu chí chung chung. 
 
-\subsection{Hybrid Retrieval}
+Bảng~\ref{tab:geval-metrics} đặc tả các tham số đầu vào (\texttt{SingleTurnParams}) và hệ thống tiêu chí chấm điểm tương ứng cho từng kịch bản nghiệp vụ:
 
-Với các intent \texttt{specific} và \texttt{vague} (sau khi đủ core slots), hệ thống thực hiện \textbf{hybrid retrieval} kết hợp hai nguồn song song:
+\begin{table}[!ht] 
+\centering
+\small 
+\caption{Đặc tả các bộ tiêu chí chấm điểm và tham số đầu vào của GEval}
+\label{tab:geval-metrics}
+\renewcommand{\arraystretch}{1.2} 
+\begin{tabular}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.4\textwidth}|}
+\hline
+\textbf{Luồng nghiệp vụ} & \textbf{Tham số đầu vào} & \textbf{Tiêu chí chấm điểm chính (\textit{Rubric})} \\ \hline
+
+Tư vấn chuyên sâu \newline (\texttt{consult}) & 
+\textbullet~ \texttt{INPUT} \newline \textbullet~ \texttt{ACTUAL\_OUTPUT} \newline \textbullet~ \texttt{RETRIEVAL\_CONTEXT} & 
+Đánh giá độ chính xác thực tế (\textit{factual correctness}) và hình thức trình bày. Kiểm tra tính cơ sở (\textit{grounded generation}) dựa trên ngữ cảnh đã truy xuất để bắt lỗi ảo giác. \\ \hline
+
+Xử lý ngoại lệ \newline (\texttt{off-topic}) & 
+\textbullet~ \texttt{INPUT} \newline \textbullet~ \texttt{ACTUAL\_OUTPUT} & 
+Đánh giá năng lực nhận biết câu hỏi ngoài phạm vi, từ chối trả lời chuyên sâu và chủ động điều hướng người dùng quay lại miền tri thức ô tô. \\ \hline
+
+Giao tiếp xã giao \newline (\texttt{greeting}) & 
+\textbullet~ \texttt{INPUT} \newline \textbullet~ \texttt{ACTUAL\_OUTPUT} & 
+Đánh giá sự lịch sự, khả năng tự giới thiệu đúng vai trò trợ lý tư vấn xe và việc đưa ra câu hỏi mở để chủ động khai thác nhu cầu của khách hàng. \\ \hline
+
+Bổ sung thông tin \newline (\texttt{need-more-info}) & 
+\textbullet~ \texttt{INPUT} \newline \textbullet~ \texttt{ACTUAL\_OUTPUT} & 
+Kiểm tra năng lực dẫn dắt để thu thập các thuộc tính cốt lõi còn thiếu. Áp dụng quy tắc phạt nặng (trừ điểm) nếu chatbot cố tình gợi ý xe khi chưa đủ thông tin nền tảng. \\ \hline
+
+\end{tabular}
+\end{table}
+
+\subsection{Kết quả đánh giá}
+
+Sau quá trình thực thi và chấm điểm tự động toàn bộ 80 kịch bản kiểm thử thông qua framework DeepEval GEval, hệ thống đã trích xuất được các số liệu thống kê mô tả chi tiết cho từng luồng nghiệp vụ. Bảng~\ref{tab:deepeval-results} tổng hợp các chỉ số thống kê cốt lõi, đồng thời Hình~\ref{fig:deepeval-chart} minh họa trực quan phân phối điểm số của các luồng với ngưỡng cơ sở (baseline threshold) được thiết lập ở mức \textbf{0.7}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Kết quả đánh giá DeepEval GEval theo từng luồng nghiệp vụ (Thang điểm 0--1)}
+\label{tab:deepeval-results}
+\renewcommand{\arraystretch}{1.3} % Tạo độ thoáng cho các dòng
+\begin{tabular}{|l|l|c|c|c|c|c|}
+\hline
+\textbf{Luồng nghiệp vụ} & \textbf{Tên Metric} & \textbf{SL (n)} & \textbf{Trung bình} & \textbf{Độ lệch chuẩn} & \textbf{Min} & \textbf{Max} \\ \hline
+\texttt{consult} & \texttt{Consultation\_Quality} & 27 & 0.787 & 0.179 & 0.250 & 1.000 \\ \hline
+\texttt{off-topic} & \texttt{OffTopic\_Redirection} & 15 & 0.821 & 0.020 & 0.794 & 0.869 \\ \hline
+\texttt{greeting} & \texttt{Chitchat\_Greeting} & 15 & 0.920 & 0.136 & 0.527 & 1.000 \\ \hline
+\texttt{need-more-info} & \texttt{Information\_Gathering} & 23 & 0.853 & 0.130 & 0.315 & 0.995 \\ \hline
+\textbf{TB có trọng số} & --- & \textbf{80} & \textbf{0.837} & --- & --- & --- \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+    \centering
+    % Nhớ thay tên file 'deepeval_chart.png' thành tên file ảnh thực tế của bạn
+    \includegraphics[width=0.85\linewidth]{deepeval_chart.png}
+    \caption{Biểu đồ phân phối điểm số đánh giá theo luồng nghiệp vụ (Ngưỡng đạt: 0.7)}
+    \label{fig:deepeval-chart}
+\end{figure}
+\FloatBarrier
+
+\noindent \textbf{Phân tích số liệu thực nghiệm:}
+
+Dựa trên kết quả thu thập được, hệ thống Agentic RAG thể hiện hiệu năng tổng thể rất tích cực với điểm trung bình có trọng số đạt \textbf{0.837}, vượt xa ngưỡng tham chiếu an toàn (0.7). Hình~\ref{fig:deepeval-chart} minh họa trực quan sự phân bố điểm số của từng luồng xử lý:
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{deepeval_chart2.png}
+    \caption{Biểu đồ phân phối điểm số đánh giá theo luồng nghiệp vụ (Ngưỡng đạt: 0.7)}
+    \label{fig:deepeval-chart}
+\end{figure}
+\FloatBarrier
+
+\noindent Đi sâu vào phân tích từng luồng tương tác, đồ án rút ra các nhận định sau:
 
 \begin{itemize}
-    \item \textbf{SQL Hard-Filter} (\texttt{sql\_search\_cars}): Truy vấn trực tiếp trên \texttt{gold.vehicles} với điều kiện lọc cứng: brand, model, khoảng giá, loại nhiên liệu, tình trạng xe (new/used), năm sản xuất, excluded brands. Trả về tối đa 6 kết quả khớp chính xác.
-    \item \textbf{Qdrant Semantic Search}: Tìm kiếm vector trên collection \texttt{car\_vectorize} với câu hỏi đã được chuẩn hóa (standalone question). Lọc bỏ kết quả có score $> 1.3$ (khoảng cách cosine quá xa). Trả về tối đa 5 kết quả ngữ nghĩa gần nhất.
+    \item \textbf{Luồng giao tiếp và định hướng (\texttt{greeting}, \texttt{off-topic}):} Đạt hiệu suất cao và ổn định nhất. Đáng chú ý, luồng \texttt{off-topic} có độ lệch chuẩn cực thấp ($0.020$), minh chứng cho khả năng nhận diện và điều hướng các câu hỏi lạc đề một cách đúng đắn.
+    
+    \item \textbf{Luồng thu thập thông tin (\texttt{need-more-info}):} Đạt trung bình \textbf{0.853} điểm. Hệ thống thực thi xuất sắc cơ chế "khóa" truy xuất để chủ động hỏi thêm các tiêu chí còn thiếu (slot-filling). Dù có điểm dị biệt ($0.315$) do LLM đôi khi sinh câu hỏi dài dòng, hiệu quả dẫn dắt tổng thể vẫn rất tích cực.
+    
+    \item \textbf{Luồng tư vấn chuyên sâu (\texttt{consult}):} Đạt \textbf{0.787} điểm. Đây là nhánh tác vụ phức tạp nhất do chất lượng đầu ra phụ thuộc trực tiếp vào hệ thống truy xuất tri thức (Retrieval). Việc mức điểm trung bình vượt qua ngưỡng tham chiếu an toàn đã minh chứng cho tính đúng đắn của chiến lược truy xuất lai (Hybrid Retrieval) kết hợp cùng cơ chế sinh phản hồi có cơ sở, giúp hệ thống vận hành hiệu quả và đáp ứng tốt các nghiệp vụ tư vấn khắt khe.
 \end{itemize}
 
-Sau khi truy xuất, hệ thống tổng hợp thông tin từ \texttt{gold.vehicle\_images} và \texttt{gold.vehicle\_features} theo VIN để làm giàu context. Context cuối cùng có dạng:
-\[
-\texttt{[SQL Hard-Filter Matches] + [Semantic Matches]}
-\]
+\section{Kết luận và Hướng phát triển}
 
-\subsection{Các nhánh xử lý chuyên biệt}
+\subsection{Kết quả đạt được}
 
-Mỗi nhánh intent có pipeline retrieval và prompt template riêng:
-
+Hệ thống chatbot tư vấn mua bán xe dựa trên kiến trúc Agentic RAG đã đáp ứng tốt các mục tiêu ban đầu với những ưu điểm cốt lõi:
 \begin{itemize}
-    \item \textbf{compare\_retrieve / compare\_answer:} Trích xuất danh sách xe cần so sánh bằng \texttt{CompareExtraction} (structured output), truy vấn SQL từng xe, tổng hợp thông số đầy đủ. LLM sinh bảng so sánh side-by-side với verdict.
-
-    \item \textbf{analytics\_retrieve / analytics\_answer:} Thực thi nhiều SQL query tổng hợp song song (brand counts, price stats, top models, fuel distribution, top features) trên \texttt{gold.vehicles} và \texttt{gold.vehicle\_features}. LLM trình bày số liệu và insight.
-
-    \item \textbf{spec\_retrieve / spec\_answer:} Lấy thông số kỹ thuật chi tiết (engine, drivetrain, MPG, transmission, fuel type) cùng features theo VIN. LLM trình bày có phân loại (Performance, Drivetrain, Safety, Comfort, Technology).
-
-    \item \textbf{ask\_slot:} Khi intent là \textit{vague} nhưng thiếu core slots, sinh câu hỏi dẫn dắt tự nhiên để thu thập thông tin, có gợi ý cụ thể (ví dụ: SUV vs Sedan, Gasoline vs Hybrid vs Electric).
-
-    \item \textbf{redirect\_topic:} Khi intent là \textit{off\_topic}, lịch sự chuyển hướng cuộc trò chuyện về chủ đề xe.
+    \item \textbf{Kiểm soát tốt hiện tượng ảo giác (\textit{hallucination}):} Hệ thống đảm bảo cung cấp thông số kỹ thuật và giá xe hoàn toàn dựa trên dữ liệu thực tế, giải quyết được bài toán về tính chính xác -- yếu tố sống còn trong lĩnh vực thương mại ô tô.
+    \item \textbf{Kiến trúc linh hoạt, dễ mở rộng:} Khung đồ thị LangGraph giúp hệ thống dễ dàng phân luồng xử lý nhiều tác vụ phức tạp (so sánh nhiều xe, thống kê dữ liệu, hỏi thông số) mà vẫn duy trì được sự ổn định của cấu trúc tổng thể.
 \end{itemize}
 
-\subsection{Sinh câu trả lời (Generation)}
+\subsection{Hạn chế còn tồn tại}
 
-Hệ thống sử dụng mô hình LLM \textbf{gpt-4o-mini} của OpenAI với thiết lập \textbf{temperature = 0.5}. Mỗi nhánh có \textbf{system prompt riêng} được thiết kế theo ngữ cảnh tư vấn cụ thể:
-
-\begin{itemize}[noitemsep, topsep=2pt]
-    \item \textbf{System prompt:} Mô tả vai trò (tư vấn xe, so sánh xe, phân tích thống kê, v.v.) và quy tắc trả lời.
-    \item \textbf{Knowledge Context:} Ngữ cảnh đã truy xuất (SQL matches + semantic matches + features + images).
-    \item \textbf{Customer Profile (JSON):} Hồ sơ người dùng hiện tại để cá nhân hóa câu trả lời.
-    \item \textbf{Lịch sử hội thoại (\texttt{chat\_history}):} Tối đa 10 lượt gần nhất, duy trì ngữ cảnh phiên trò chuyện.
-    \item \textbf{Câu hỏi hiện tại:} Nội dung người dùng yêu cầu.
-\end{itemize}
-
-Một số quy tắc chung trong system prompt: (1) hiển thị giá với dấu phẩy phân tách (ví dụ: \$21,950); (2) \textbf{không} thêm link "View Details" vào nội dung câu trả lời — ứng dụng tự hiển thị vehicle cards bên dưới; (3) trả lời bằng ngôn ngữ của người dùng; (4) không đề xuất brand nằm trong \texttt{excluded\_brands} của hồ sơ.
-
-\subsection{Chuẩn hóa câu hỏi (Standalone Question)}
-
-Trước khi truy xuất, câu hỏi hiện tại được chuẩn hóa thành \textbf{standalone question}: nếu câu hỏi phụ thuộc ngữ cảnh trước đó (câu hỏi nối tiếp), LLM chuyển đổi thành câu hỏi độc lập chứa đủ thông tin. Câu hỏi chuẩn hóa này được dùng để tạo embedding và tìm kiếm Qdrant, đảm bảo kết quả retrieval chính xác.
-
-\section{Hạn chế và định hướng phát triển}
-
-\subsection{Hạn chế hiện tại}
-
-\begin{itemize}[noitemsep, topsep=2pt]
-    \item \textbf{UserProfile lưu in-memory:} Hồ sơ người dùng (\texttt{UserProfile}) được lưu in-memory per \texttt{session\_id} trong tiến trình backend. Khi backend restart hoặc Cloud Run scale down instance, toàn bộ hồ sơ mất. Đây là thiết kế có chủ đích cho Cloud Run (\texttt{--max-instances=1}) nhưng không phù hợp khi scale ngang.
-    \item \textbf{Persistence chỉ áp dụng cho người dùng đã đăng nhập:} Lịch sử hội thoại của người dùng đã đăng nhập được ghi vào \texttt{gold.chat\_sessions} và \texttt{gold.chat\_messages} (cho phép khôi phục phiên cũ), trong khi phiên của khách vãng lai (guest) chỉ tồn tại in-memory và mất khi backend restart.
-    \item \textbf{Ngưỡng score Qdrant cố định:} Score threshold để lọc kết quả Qdrant (\texttt{score > 1.3}) là giá trị cố định, chưa được tối ưu tự động theo độ phân bố dữ liệu.
+Tuy nhiên, để đạt được độ chính xác cao, kiến trúc hiện tại phải chấp nhận sự đánh đổi (\textit{trade-off}) về mặt hiệu năng:
+\begin{itemize}
+    \item \textbf{Tốc độ phản hồi chậm (\textit{High Latency}):} Thời gian chờ của người dùng bị kéo dài do luồng dữ liệu phải đi qua nhiều trạm xử lý (\textit{nodes}) để suy luận và kiểm chứng.
+    \item \textbf{Chi phí vận hành cao (\textit{API Cost}):} Việc sử dụng LLM liên tục cho các bước định tuyến, kiểm tra chéo và tự đánh giá tiêu tốn lượng token lớn hơn đáng kể so với mô hình RAG tuyến tính thông thường.
 \end{itemize}
 
 \subsection{Định hướng phát triển}
 
+Để hoàn thiện và đưa hệ thống vào triển khai thực tế, đồ án đề xuất các hướng nâng cấp sau:
+
 \begin{itemize}
-    \item \textbf{Persistent UserProfile:} Ghi \texttt{UserProfile} (hiện đang in-memory) vào database để hỗ trợ triển khai đa instance (multi-instance) và khôi phục ngữ cảnh hồ sơ người dùng, bổ sung cho phần lịch sử hội thoại đã được lưu.
-    \item \textbf{Tích hợp với Recommendation Engine:} Khi chatbot gợi ý xe, ghi lại tương tác (\texttt{gold.user\_interactions}) để recommendation engine học từ hành vi qua chatbot.
-    \item \textbf{Tối ưu hóa retrieval:} Thử nghiệm các chiến lược retrieval nâng cao như re-ranking (cross-encoder) hay Hypothetical Document Embeddings (HyDE) để cải thiện chất lượng kết quả ngữ nghĩa.
-    \item \textbf{Đánh giá tự động:} Xây dựng bộ test cases (câu hỏi + expected answer) để đánh giá định lượng chất lượng câu trả lời chatbot sau mỗi lần cập nhật dữ liệu.
+    \item \textbf{Khai thác thông tin và chuyển đổi khách hàng tiềm năng:} Mở rộng chức năng hệ thống để thu thập thông tin liên hệ của khách hàng (như số điện thoại, tên, email) khi đạt điều kiện tư vấn phù hợp. Các dữ liệu này, kết hợp cùng hồ sơ nhu cầu (\textit{UserProfile}) đã được tóm tắt, sẽ tự động chuyển tiếp đến bộ phận bán hàng (seller) tương ứng nhằm tối ưu hóa cơ hội tiếp cận và chăm sóc khách hàng tiềm năng.
+    
+    \item \textbf{Chủ động dẫn dắt và định hướng nhu cầu:} Nâng cấp tác tử từ cơ chế phản hồi thụ động sang chủ động đặt câu hỏi định hướng. Chatbot sẽ biết cách khơi gợi nhu cầu, cô lập các lựa chọn tối ưu theo từng giai đoạn tương tác và từng bước dẫn dắt người dùng đi đến quyết định mua xe một cách tự nhiên.
 \end{itemize}
+
