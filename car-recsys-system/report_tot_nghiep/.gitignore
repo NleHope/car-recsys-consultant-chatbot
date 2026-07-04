@@ -1,0 +1,16 @@
+# File build tạm do LaTeX / Overleaf tự sinh — không track.
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.bbl
+*.blg
+*.pdf
+*.nav
+*.snm
+*.vrb
