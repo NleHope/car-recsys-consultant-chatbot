@@ -384,7 +384,15 @@
 
 \titleformat{\subsubsection}
   {\fontsize{13pt}{16pt}\selectfont\bfseries\itshape}{\thesubsubsection}{1em}{}
-                      
+
+% Sau khi gộp chương, cấp \paragraph được dùng như một mục con có đánh số.
+% Cấu hình để nó CÓ SỐ, xuống dòng riêng và in đậm (thay vì chạy inline).
+\titleformat{\paragraph}[hang]
+  {\fontsize{13pt}{16pt}\selectfont\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}{0pt}{1.4ex plus 0.5ex}{0.8ex}
+\setcounter{secnumdepth}{4}   % đánh số tới cấp paragraph (a.b.c.d)
+\setcounter{tocdepth}{3}      % mục lục hiển thị tới subsubsection (đủ gọn)
+
 %% Fix appendix labeling
 \makeatletter
 \newcommand\AppendixName{Appendix}
@@ -491,29 +499,33 @@
 
 %% TODO: Add \chapter{Chapter name} followed by \input{chapters/filename} if you need more chapter or modify them
 \clearpage
-\chapter{TỔNG QUAN}
+% ===== Chương 1 =====
+\chapter{GIỚI THIỆU}
 \pagenumbering{arabic}
 \setcounter{page}{1}
 \input{chapters/TongQuan}
+
+% ===== Chương 2 =====
 \chapter{CƠ SỞ LÝ THUYẾT}
 \input{chapters/cosolythuyet}
-\chapter{QUÁ TRÌNH THU THẬP VÀ XỬ LÝ DỮ LIỆU}
+
+% ===== Chương 3: gộp 4 phần thành các section lớn =====
+\chapter{PHƯƠNG PHÁP ĐỀ XUẤT}
+\section{Thu thập và xử lý dữ liệu}
 \input{chapters/ThuThapDuLieu}
-
-
-\chapter{KIẾN TRÚC HỆ THỐNG, BACKEND VÀ HỆ THỐNG ĐỀ XUẤT}
+\section{Kiến trúc hệ thống, backend và hệ thống đề xuất}
 \input{chapters/backend}
-
-\chapter{XÂY DỰNG CHATBOT}
+\section{Xây dựng chatbot tư vấn}
 \input{chapters/ChatBot}
-
-\chapter{MÔ HÌNH ĐỊNH GIÁ XE}
+\section{Mô hình định giá xe}
 \input{chapters/PriceEstimate}
 
+% ===== Chương 4 =====
 \chapter{KẾT QUẢ ĐẠT ĐƯỢC VÀ ĐÁNH GIÁ}
 \input{chapters/result}
 
-\chapter{TỔNG KẾT}
+% ===== Chương 5 =====
+\chapter{KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN}
 \input{chapters/sumary}
 
 \end{document}

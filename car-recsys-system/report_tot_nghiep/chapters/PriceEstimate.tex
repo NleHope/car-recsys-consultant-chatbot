@@ -1,4 +1,4 @@
-\section{Giới thiệu}
+\subsection{Giới thiệu}
 
 Bên cạnh hệ thống đề xuất và chatbot tư vấn, dự án xây dựng một \textbf{mô hình định giá xe} (price estimation) nhằm dự đoán giá thị trường của một chiếc xe từ thông số kỹ thuật và hình ảnh đăng bán. Mô hình được triển khai thành một dịch vụ độc lập và tích hợp vào trang Đăng bán: người bán nhập thông tin xe, hệ thống trả về mức giá thị trường ước tính kèm khoảng dao động, giúp định giá hợp lý ngay khi tạo tin đăng.
 
@@ -11,13 +11,13 @@ Quá trình xây dựng trải qua bốn giai đoạn chính --- trích xuất v
     \label{fig:price-architecture}
 \end{figure}
 
-\section{Dữ liệu và tiền xử lý}
+\subsection{Dữ liệu và tiền xử lý}
 
 Dữ liệu huấn luyện được trích xuất trực tiếp từ cơ sở dữ liệu PostgreSQL của hệ thống bằng SQLAlchemy, join các bảng bài đăng, thông số xe và đánh giá thành một bảng phẳng gồm \textbf{5.201 dòng} $\times$ \textbf{19 cột} (hãng, dòng xe, năm, số dặm, nhiên liệu, hộp số, màu sắc, động cơ, 5 điểm đánh giá thành phần, tình trạng tai nạn/bảo hành, danh sách ảnh, và giá --- biến mục tiêu).
 
 Khâu làm sạch bao gồm loại bỏ bản ghi trùng lặp và thiếu trường quan trọng, lọc ngoại lai về giá/số dặm, và chuẩn hóa các trường boolean. Đáng chú ý nhất là trường \texttt{engine}: từ \textbf{443 giá trị} văn bản tự do (ví dụ chuỗi đặc tả dài của nhà sản xuất), một bộ phân tích dựa trên biểu thức chính quy trích xuất dung tích, cấu hình xy-lanh, thương hiệu động cơ (HEMI, EcoBoost, Duramax\ldots), cờ tăng áp và loại truyền động, rút gọn còn khoảng \textbf{135 nhãn} nhất quán.
 
-\section{Xây dựng đặc trưng}
+\subsection{Xây dựng đặc trưng}
 
 Từ 19 cột thô, pipeline sinh ra khoảng \textbf{60 đặc trưng} mô hình hóa, trong đó các nhóm có đóng góp lớn nhất:
 
@@ -31,7 +31,7 @@ Từ 19 cột thô, pipeline sinh ra khoảng \textbf{60 đặc trưng} mô hìn
 
 Các cột phân loại có số lượng giá trị lớn (\texttt{brand\_model}, \texttt{trim}, \texttt{engine}\ldots) được mã hóa bằng \textbf{smoothed target encoding}: giá trị mã hóa là trung bình log-giá của nhóm, làm mượt về trung bình toàn cục theo số mẫu của nhóm (hệ số làm mượt $\alpha$ do Optuna tinh chỉnh trong khoảng 2--25), tránh việc mô hình tin tưởng thống kê tính trên quá ít mẫu.
 
-\section{Huấn luyện và so sánh các hướng tiếp cận}
+\subsection{Huấn luyện và so sánh các hướng tiếp cận}
 
 Ba mô hình cây quyết định (CatBoost, LightGBM, XGBoost) được huấn luyện với hàm mục tiêu hướng MAPE, trọng số mẫu tăng cường cho hai đuôi phân khúc giá (dưới \$20k và trên \$52k), và tìm kiếm siêu tham số bằng \textbf{Optuna} (80 trials, 3-fold cross-validation). Một \textbf{stacked ensemble} hợp nhất dự đoán out-of-fold của ba mô hình qua meta-model Ridge cũng được thử nghiệm, cùng một hướng tiếp cận hoàn toàn khác: fine-tune mô hình thị giác--ngôn ngữ \textbf{Qwen2-VL-7B} bằng QLoRA để dự đoán giá trực tiếp từ văn bản và ảnh.
 
@@ -69,7 +69,7 @@ Ba quan sát chính rút ra từ bảng so sánh:
     \item \textbf{Mô hình thị giác--ngôn ngữ chính xác nhất nhưng không khả thi về chi phí:} Qwen2-VL-7B đạt MAPE 7{,}38\% --- thấp nhất toàn dự án --- nhưng yêu cầu GPU $\geq$24GB VRAM chạy liên tục, vượt xa ngân sách vận hành, nên bị loại khỏi phương án triển khai.
 \end{enumerate}
 
-\section{Triển khai}
+\subsection{Triển khai}
 
 Toàn bộ thành phần cần cho suy luận (ba mô hình cơ sở, meta-model Ridge, bộ PCA, bảng target encoding, thống kê neo giá, cấu hình) được serialize thành gói \texttt{model\_artifacts/}. Dịch vụ định giá là một ứng dụng FastAPI đóng gói Docker, triển khai trên \textbf{Cloud Run}, nạp gói artifact khi khởi động và cung cấp endpoint \texttt{POST /predict\_price}; ảnh người dùng tải lên được mã hóa DINOv2 ngay tại thời điểm suy luận. Dự đoán của ba mô hình cơ sở được hợp nhất qua meta-model và trả về kèm khoảng dao động $\pm$9{,}83\% tương ứng sai số kiểm thử.
 
